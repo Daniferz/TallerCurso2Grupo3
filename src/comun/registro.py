@@ -66,12 +66,22 @@ CATALOGO: dict[str, Agente] = {
         paquete="src.agente_restaurantes",
         url=_url("URL_RESTAURANTES", "http://127.0.0.1:8001"),
     ),
+    "dani": Agente(
+        clave="dani",
+        nombre="Agente de Maleta de Dani",
+        descripcion=(
+            "Prepara listas de equipaje con ropa, documentos, tecnología y botiquín para Punta Arenas, Pucón e Iquique, según los días y la temporada. "
+            "No busca ni compara vuelos, hoteles o precios, ni informa clima, visas o políticas de equipaje de aerolíneas."
+        ),
+        paquete="src.agente_dani",
+        url=_url("URL_DANI", "http://127.0.0.1:8003"),
+    ),
     "coordinador": Agente(
         clave="coordinador",
         nombre="Coordinador",
         descripcion=(
-            "Recibe la pregunta del usuario y reparte el trabajo entre los agentes "
-            "de viajes y restaurantes."
+            "Recibe preguntas y elige entre viajes, restaurantes y agentes de compañeros configurados por URLS_AGENTES. "
+            "Si ninguno corresponde, informa qué temas están disponibles."
         ),
         paquete="src.coordinador",
         url=_url("URL_COORDINADOR", "http://127.0.0.1:8002"),

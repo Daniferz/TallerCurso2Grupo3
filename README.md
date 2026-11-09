@@ -1,13 +1,13 @@
-# Agentes de viajes y restaurantes (A2A)
+# Agentes A2A de viajes, restaurantes y equipaje
 
-Base del proyecto: tres agentes que se hablan entre sí por el protocolo A2A.
+Proyecto con agentes de dominio que se comunican por A2A y un coordinador.
 
 - `agente_viajes`: responde consultas de viajes.
 - `agente_restaurantes`: responde consultas de restaurantes.
-- `coordinador`: recibe la pregunta del usuario y reparte el trabajo entre los otros dos.
+- `agente_dani`: prepara listas de equipaje con guías estáticas.
+- `coordinador`: elige entre viajes y restaurantes según las fichas A2A disponibles.
 
-Por ahora existen el agente de viajes (LangGraph), el de restaurantes (CrewAI)
-y el coordinador (LangGraph, un solo nodo).
+Existen el agente de viajes (LangGraph), el de restaurantes (CrewAI), el Agente de Maleta de Dani (LangGraph) y el coordinador (LangGraph).
 
 ## Versión instalada de a2a-sdk
 
@@ -69,7 +69,7 @@ Para salir del entorno: `deactivate`.
 
 ```
 .
-├── main.py                    entrada por terminal para los tres agentes
+├── main.py                    entrada por terminal para los agentes
 ├── AGENTS.md                  reglas del proyecto
 ├── requirements.txt
 ├── .env.example
@@ -79,6 +79,7 @@ Para salir del entorno: `deactivate`.
 │   ├── portal/                consola web: app.py, cliente.py, estatico/
 │   ├── agente_viajes/         tools.py, prompts.py, graph.py (o crew.py), server.py
 │   ├── agente_restaurantes/   tools.py, prompts.py, graph.py (o crew.py), server.py
+│   ├── agente_dani/           tools.py, prompts.py, graph.py, server.py
 │   └── coordinador/           cliente.py, graph.py, server.py
 ├── scripts/                   utilidades para probar los agentes desde la terminal
 └── tests/
@@ -89,6 +90,7 @@ Para salir del entorno: `deactivate`.
 ```bash
 python main.py viajes "vuelo a Lima el 15 de marzo" --saltos
 python main.py restaurantes "¿Dónde comer barato en Providencia?" --saltos
+python main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué llevo?" --saltos
 python main.py coordinador "Arma un fin de semana gastronómico en Valparaíso" --diagrama
 ```
 
@@ -130,7 +132,9 @@ Lo único obligatorio son los skills: `crear_tarjeta` falla con un error de una
 línea si se le pasa la lista vacía, porque la spec A2A los exige.
 
 Las direcciones salen de `.env` (`URL_VIAJES`, `URL_RESTAURANTES`,
-`URL_COORDINADOR`). Cada conversación conserva su `context_id`, que el agente usa
+`URL_COORDINADOR`, `URL_DANI`). `URL_PUBLICA` es opcional y publica una dirección
+HTTPS en la ficha; `URLS_AGENTES` agrega túneles de compañeros al catálogo del
+supervisor. Cada conversación conserva su `context_id`, que el agente usa
 como memoria; el botón "Nueva conversación" genera uno nuevo. La espera máxima
 por respuesta se ajusta con `TIEMPO_ESPERA_A2A` (120 segundos por defecto) y la
 de la ficha con `TIEMPO_FICHA_A2A` (3 segundos por defecto).
@@ -176,21 +180,37 @@ python main.py restaurantes --diagrama
 uvicorn src.agente_restaurantes.server:app --port 8001
 ```
 
+## Agente de Maleta de Dani
+
+LangGraph con Gemini y una herramienta local que arma listas desde guías estáticas
+para Punta Arenas (invierno y verano), Pucón (invierno y verano) e Iquique
+(verano). Acepta temporadas o meses del calendario chileno; no consulta ni afirma
+conocer el clima real. Destinos y combinaciones no incluidos devuelven un mensaje
+de una línea sin inventar una lista.
+
+```powershell
+python main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué llevo?" --saltos
+python main.py dani --diagrama
+uvicorn src.agente_dani.server:app --port 8003 --reload
+```
+
+El Agente de Maleta se puede probar directamente en el puerto 8003 o desde la
+consola web. Un coordinador remoto puede incluirlo mediante `URLS_AGENTES`.
+
 ## Coordinador
 
-No sabe nada de viajes: es un grafo de LangGraph con **un solo nodo** que le
-pregunta al agente de viajes por A2A y repite su respuesta.
+El supervisor de LangGraph descubre al arrancar las fichas de viajes,
+restaurantes y las URLs incluidas en `URLS_AGENTES`. Con cada pregunta elige una
+usando sus descripciones como datos; si ninguna aplica, responde que no hay un
+agente para ese tema. Las respuestas
+delegadas comienzan con el nombre del agente entre corchetes y muestran el motivo
+de selección.
 
-- `cliente.py`: `obtener_cliente(url)` baja la ficha con `A2ACardResolver` y
-  arma el cliente con `create_client` (sin streaming, JSON-RPC); el cliente
-  queda guardado por URL para no bajar la ficha dos veces. `preguntar(cliente,
-  texto, context_id)` manda el mensaje y devuelve el texto, sea que vuelva como
-  mensaje directo o como tarea (en ese caso espera a que termine y junta el
-  texto de sus artifacts).
-- `graph.py`: `START → delegar → END` con estado `MessagesState` y
-  `MemorySaver`. El nodo usa el `thread_id` de la conversación como
-  `context_id`, así el agente de viajes recuerda lo anterior.
-- `server.py`: ficha "Coordinador" y la misma `crear_app` de siempre.
+- `catalogo.py`: obtiene una vez las fichas y clientes A2A de viajes, restaurantes
+  y URLs de compañeros; si uno no responde, informa en una línea y sigue con los demás.
+- `graph.py`: `START → supervisor → agente_remoto | sin_agente → END`, con
+  `MemorySaver`, `responder`, `saltos` y `diagrama`.
+- `server.py`: al iniciar imprime `Supervisor con N agentes`.
 
 ```bash
 python main.py coordinador "¿Cuánto cuesta volar de Santiago a Lima?" --saltos
@@ -198,8 +218,8 @@ python main.py coordinador --diagrama
 uvicorn src.coordinador.server:app --port 8002
 ```
 
-**El agente de viajes tiene que estar corriendo en el 8000**, o el coordinador
-no tendrá con quién hablar.
+Levanta primero viajes en el 8000 y restaurantes en el 8001; luego inicia el
+coordinador en el 8002 para que descubra sus fichas y los agentes remotos.
 
 `scripts/probar_coordinador.py` le hace dos preguntas con el mismo
 `context_id` y comprueba que la segunda respuesta recuerda la primera:
@@ -207,6 +227,43 @@ no tendrá con quién hablar.
 ```bash
 python scripts/probar_coordinador.py
 ```
+
+Para revisar las seis decisiones del supervisor:
+
+```bash
+python scripts/probar_supervisor.py
+```
+
+## Probar entre computadores
+
+1. Levanta tu agente en su puerto local; para Dani usa el entorno `.venv` y el
+   puerto 8003:
+
+   ```powershell
+   .\.venv\Scripts\python.exe -m uvicorn src.agente_dani.server:app --port 8003 --reload
+   ```
+
+2. En otra terminal, abre el túnel de Cloudflare al mismo puerto. En Mac/Linux:
+   `bash scripts/tunel.sh 8003`; en Windows: `.\scripts\tunel.ps1 -Puerto 8003`.
+   Si falta Cloudflare Tunnel, el script indica `brew install cloudflared` o
+   `winget install Cloudflare.cloudflared`. Si Windows no tiene `winget`, el
+   script muestra el enlace oficial para descargar el ejecutable x64. Mantén
+   esta terminal abierta.
+
+3. Copia la URL HTTPS que imprime el túnel en `URL_PUBLICA` de tu `.env` y
+   reinicia el servidor del agente para que la Agent Card publique esa URL.
+   Compruébala con `curl.exe -sS https://TU-URL.trycloudflare.com/.well-known/agent-card.json`.
+
+4. Pásale la URL a tu compañero para agregarla a `URLS_AGENTES` en su `.env`;
+   si ya tiene otros compañeros, sepáralas con comas. Debe reiniciar el
+   coordinador para que vuelva a leer las fichas al arrancar.
+
+5. Comprueben el enrutamiento con `python scripts/probar_supervisor.py` o
+   consulten directamente la URL pública con un mensaje A2A.
+
+La dirección cambia al reiniciar el túnel. Cierra la terminal con Ctrl+C al
+terminar y comparte la URL solo con personas de confianza: cualquiera que la
+conozca podrá enviar consultas al agente mientras el túnel esté abierto.
 
 ## Pruebas
 

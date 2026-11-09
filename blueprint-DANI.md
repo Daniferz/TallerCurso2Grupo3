@@ -10,4 +10,4 @@
 | Nunca sin persona  | No supone el clima, las reglas de una aerolínea ni requisitos migratorios cuando esos datos no fueron proporcionados. |
 | Deriva a otro      | Si preguntan por vuelos, hoteles, precios, clima o visas, indica en una frase que corresponde al agente de viajes y no responde esa parte. |
 | Dónde se ejecuta   | `http://127.0.0.1:8003` · `src/agente_dani/` · `python main.py dani "pregunta"`. |
-| Dirección pública  | Se completa en el paso 6 con la URL HTTPS que entregue el túnel de Cloudflare. |
+| Dirección pública  | `https://starting-pics-infrastructure-persian.trycloudflare.com` |

@@ -24,3 +24,27 @@ def test_rechaza_ficha_sin_skills():
         crear_tarjeta("Agente X", "Prueba", "http://127.0.0.1:8000", [])
 
     assert "skill" in str(error.value)
+
+
+def test_url_publica_reemplaza_la_local_en_la_ficha(monkeypatch):
+    monkeypatch.setenv("URL_PUBLICA", "https://azul-rio-123.trycloudflare.com/")
+    tarjeta = crear_tarjeta(
+        "Agente X",
+        "Prueba",
+        "http://127.0.0.1:8003",
+        [("eco", "Eco", "Repite el mensaje.", "hola")],
+    )
+
+    assert tarjeta.supported_interfaces[0].url == "https://azul-rio-123.trycloudflare.com"
+
+
+def test_url_local_se_conserva_si_url_publica_esta_vacia(monkeypatch):
+    monkeypatch.setenv("URL_PUBLICA", "")
+    tarjeta = crear_tarjeta(
+        "Agente X",
+        "Prueba",
+        "http://127.0.0.1:8003/",
+        [("eco", "Eco", "Repite el mensaje.", "hola")],
+    )
+
+    assert tarjeta.supported_interfaces[0].url == "http://127.0.0.1:8003"

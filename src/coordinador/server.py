@@ -18,13 +18,13 @@ tarjeta = crear_tarjeta(
         (
             "elegir_agente",
             "Elegir un agente por tema",
-            "Lee las fichas de viajes y restaurantes, elige el agente adecuado y explica brevemente el motivo.",
+            "Lee las fichas de viajes, restaurantes y compañeros configurados, elige el agente adecuado y explica brevemente el motivo.",
             "¿Cuánto cuesta volar de Santiago a Lima?",
         ),
         (
             "sin_agente",
             "Detectar temas fuera de catálogo",
-            "Indica cuando la pregunta no corresponde a viajes ni restaurantes y muestra los temas disponibles.",
+            "Indica cuando ningún agente del catálogo corresponde a la pregunta y muestra los temas disponibles.",
             "¿Quién ganó el mundial de 1962?",
         ),
     ],

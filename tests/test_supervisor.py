@@ -16,10 +16,14 @@ def test_descubrir_omite_agente_caido_y_cachea_el_catalogo(monkeypatch, capsys):
         {clave: SimpleNamespace(url=url) for clave, url in direcciones.items()},
     )
     monkeypatch.setattr(catalogo, "_agentes", None)
+    monkeypatch.setenv(
+        "URLS_AGENTES",
+        "http://viajes, https://compa-uno.trycloudflare.com, , https://compa-dos.trycloudflare.com/",
+    )
 
     async def obtener_cliente(url):
         llamadas.append(url)
-        if url == "http://restaurantes":
+        if url in {"http://restaurantes", "https://compa-dos.trycloudflare.com"}:
             raise RuntimeError("servidor fuera de línea\nreintentar")
         return object()
 
@@ -27,16 +31,27 @@ def test_descubrir_omite_agente_caido_y_cachea_el_catalogo(monkeypatch, capsys):
     monkeypatch.setattr(
         catalogo,
         "obtener_tarjeta_cacheada",
-        lambda url: SimpleNamespace(name="Agente de viajes", description="Vuelos y hoteles."),
+        lambda url: SimpleNamespace(
+            name={
+                "http://viajes": "Agente de viajes",
+                "https://compa-uno.trycloudflare.com": "Agente de Dani",
+            }[url],
+            description="Ficha de prueba.",
+        ),
     )
 
     primera = asyncio.run(catalogo.descubrir())
     segunda = asyncio.run(catalogo.descubrir())
 
-    assert [agente.nombre for agente in primera] == ["Agente de viajes"]
-    assert [agente.nombre for agente in segunda] == ["Agente de viajes"]
-    assert llamadas == ["http://viajes", "http://restaurantes"]
-    assert "servidor fuera de línea reintentar" in capsys.readouterr().out
+    assert [agente.nombre for agente in primera] == ["Agente de viajes", "Agente de Dani"]
+    assert [agente.nombre for agente in segunda] == ["Agente de viajes", "Agente de Dani"]
+    assert llamadas == [
+        "http://viajes",
+        "http://restaurantes",
+        "https://compa-uno.trycloudflare.com",
+        "https://compa-dos.trycloudflare.com",
+    ]
+    assert capsys.readouterr().out.count("servidor fuera de línea reintentar") == 2
 
 
 def test_grafo_supervisor_tiene_rama_para_sin_agente(monkeypatch):
@@ -44,4 +59,5 @@ def test_grafo_supervisor_tiene_rama_para_sin_agente(monkeypatch):
     from src.coordinador.graph import Decision, graph
 
     assert Decision(agente="ninguno", motivo="Fuera de tema.").agente == "ninguno"
+    assert Decision(agente="Agente de Dani", motivo="Pregunta sobre equipaje.").agente == "Agente de Dani"
     assert {"supervisor", "agente_remoto", "sin_agente"}.issubset(graph.get_graph().nodes)
