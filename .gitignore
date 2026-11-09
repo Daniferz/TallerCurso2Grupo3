@@ -1,6 +1,10 @@
 .env
 .venv/
+.venv-crew/
 __pycache__/
 *.pyc
 .langgraph_api/
 .ipynb_checkpoints/
+
+# Pauta local del taller: no se sube ni se entrega
+TallerPauta.html
