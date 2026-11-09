@@ -28,6 +28,7 @@ tarjeta = crear_tarjeta(
             "¿Quién ganó el mundial de 1962?",
         ),
     ],
+    usar_url_publica=False,
 )
 
 app = crear_app(tarjeta, responder)

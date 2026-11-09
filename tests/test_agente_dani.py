@@ -43,6 +43,7 @@ def test_grafo_dani_se_compila_sin_invocar_gemini(monkeypatch):
 
 def test_ficha_a2a_de_dani_tiene_nombre_url_y_skill(monkeypatch):
     monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    monkeypatch.setenv("URL_PUBLICA", "")
     from src.agente_dani.server import tarjeta
 
     assert tarjeta.name == "Agente de Maleta de Dani"

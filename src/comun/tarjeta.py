@@ -23,8 +23,10 @@ def crear_tarjeta(
     descripcion: str,
     url: str,
     skills: Iterable[Skill],
+    *,
+    usar_url_publica: bool = True,
 ) -> AgentCard:
-    """Arma la ficha del agente: quién es, dónde vive y qué sabe hacer."""
+    """Arma una ficha; los agentes base pueden excluir el override público global."""
     habilidades = list(skills)
     if not habilidades:
         # La spec A2A exige al menos un skill: sin ellos la consola no puede
@@ -33,7 +35,7 @@ def crear_tarjeta(
             f"La ficha de {nombre} necesita al menos un skill: la spec A2A lo exige."
         )
 
-    url_publica = os.getenv("URL_PUBLICA", "").strip().rstrip("/")
+    url_publica = os.getenv("URL_PUBLICA", "").strip().rstrip("/") if usar_url_publica else ""
     url_ficha = url_publica or url.rstrip("/")
 
     return AgentCard(

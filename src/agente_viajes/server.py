@@ -27,6 +27,7 @@ tarjeta = crear_tarjeta(
             "Busca hoteles en Lima para tres noches.",
         ),
     ],
+    usar_url_publica=False,
 )
 
 app = crear_app(tarjeta, responder)

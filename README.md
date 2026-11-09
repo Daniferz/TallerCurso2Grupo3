@@ -9,6 +9,12 @@ Proyecto con agentes de dominio que se comunican por A2A y un coordinador.
 
 Existen el agente de viajes (LangGraph), el de restaurantes (CrewAI), el Agente de Maleta de Dani (LangGraph) y el coordinador (LangGraph).
 
+## Identificación del grupo
+
+**Grupo:** 3
+
+**Integrantes:** Daniella Fernández, Cristian Meza y Patricio Vergara.
+
 ## Versión instalada de a2a-sdk
 
 ```
@@ -139,6 +145,9 @@ como memoria; el botón "Nueva conversación" genera uno nuevo. La espera máxim
 por respuesta se ajusta con `TIEMPO_ESPERA_A2A` (120 segundos por defecto) y la
 de la ficha con `TIEMPO_FICHA_A2A` (3 segundos por defecto).
 
+Los servidores base de viajes, restaurantes y coordinador excluyen `URL_PUBLICA`
+para conservar sus propias direcciones; los agentes personales usan el override.
+
 ## Agente de viajes
 
 LangGraph con Gemini y dos herramientas con datos inventados:
@@ -233,6 +242,21 @@ Para revisar las seis decisiones del supervisor:
 ```bash
 python scripts/probar_supervisor.py
 ```
+
+## Generar `compañeros.md`
+
+La Agent Card no incluye el nombre de quien creó el agente, así que el manifiesto
+`companeros.json` relaciona cada autor con su URL pública. Parte de la plantilla:
+
+```powershell
+Copy-Item companeros.json.example companeros.json
+# Completa autor y url para cada compañero y luego ejecuta:
+.\.venv\Scripts\python.exe scripts\generar_companeros.py
+```
+
+El script descarga cada ficha A2A con timeout y genera `compañeros.md` con autor,
+nombre, skills, URL y JSON completo. Si una ficha no responde, registra el error
+en una línea y continúa con las demás.
 
 ## Probar entre computadores
 

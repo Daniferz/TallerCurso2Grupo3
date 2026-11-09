@@ -5,7 +5,8 @@ import pytest
 from src.comun.tarjeta import crear_tarjeta
 
 
-def test_arma_ficha_con_skills():
+def test_arma_ficha_con_skills(monkeypatch):
+    monkeypatch.setenv("URL_PUBLICA", "")
     tarjeta = crear_tarjeta(
         "Agente X",
         "Prueba",
@@ -48,3 +49,16 @@ def test_url_local_se_conserva_si_url_publica_esta_vacia(monkeypatch):
     )
 
     assert tarjeta.supported_interfaces[0].url == "http://127.0.0.1:8003"
+
+
+def test_url_publica_no_reemplaza_la_url_del_agente_base(monkeypatch):
+    monkeypatch.setenv("URL_PUBLICA", "https://tunnel-de-otro-agente.trycloudflare.com")
+    tarjeta = crear_tarjeta(
+        "Agente de viajes",
+        "Busca vuelos.",
+        "http://127.0.0.1:8000",
+        [("vuelos", "Buscar vuelos", "Encuentra vuelos.", "Vuelo a Lima")],
+        usar_url_publica=False,
+    )
+
+    assert tarjeta.supported_interfaces[0].url == "http://127.0.0.1:8000"
