@@ -1,10 +1,8 @@
 .env
-.venv/
-.venv-crew/
+.venv*
 __pycache__/
-*.pyc
-.langgraph_api/
-.ipynb_checkpoints/
+.pytest_cache/
 
-# Pauta local del taller: no se sube ni se entrega
-TallerPauta.html
+# Material de referencia local del taller; no pertenece al proyecto entregable.
+/TallerPauta.html
+/A2A*

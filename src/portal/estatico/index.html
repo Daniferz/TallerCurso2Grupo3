@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consola de agentes</title>
+  <link rel="stylesheet" href="/estatico/estilos.css">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="marca">
+      <span class="marca-punto" aria-hidden="true"></span>
+      <div>
+        <h1>Consola de agentes</h1>
+        <p>Habla con tus agentes A2A por <code>message/send</code></p>
+      </div>
+    </div>
+    <button id="recargar" class="boton-fantasma" type="button">Recargar registro</button>
+  </header>
+
+  <main class="tablero">
+    <aside class="panel-agentes" aria-label="Agentes registrados">
+      <div class="panel-titulo">
+        <h2>Agentes registrados</h2>
+        <span id="contador" class="contador">0</span>
+      </div>
+      <p id="aviso-registro" class="aviso" role="alert" hidden></p>
+      <ul id="lista-agentes" class="lista-agentes"></ul>
+    </aside>
+
+    <section class="panel-chat" aria-label="Conversación">
+      <div id="sin-seleccion" class="vacio">
+        <div class="vacio-icono" aria-hidden="true">◇</div>
+        <h2>Elige un agente</h2>
+        <p>Selecciona un agente de la izquierda para empezar a conversar.</p>
+      </div>
+
+      <div id="chat" class="chat" hidden>
+        <div class="chat-cabecera">
+          <div class="chat-identidad">
+            <h2 id="chat-nombre">—</h2>
+            <p id="chat-destino" class="chat-destino"></p>
+          </div>
+          <button id="nueva-conversacion" class="boton-fantasma" type="button">
+            Nueva conversación
+          </button>
+        </div>
+
+        <div id="ficha" class="ficha" hidden>
+          <div class="ficha-cabecera">
+            <span class="ficha-titulo">Ficha A2A</span>
+          </div>
+          <div id="ficha-datos" class="ficha-datos"></div>
+          <div id="ficha-skills" class="ficha-skills"></div>
+          <p id="ficha-aviso" class="ficha-aviso" role="status" hidden></p>
+        </div>
+
+        <div id="mensajes" class="mensajes" aria-live="polite"></div>
+
+        <form id="formulario" class="formulario">
+          <textarea
+            id="campo"
+            rows="1"
+            placeholder="Escribe tu mensaje…"
+            aria-label="Mensaje para el agente"
+          ></textarea>
+          <button id="enviar" class="boton-enviar" type="submit">Enviar</button>
+        </form>
+        <p class="pie-contexto">
+          <span id="pie-contexto">context_id: —</span>
+          <span class="atajo">Enter envía · Shift + Enter salta de línea</span>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/estatico/app.js"></script>
+</body>
+</html>

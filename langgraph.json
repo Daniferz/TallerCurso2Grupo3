@@ -1,7 +1,0 @@
-{
-  "dependencies": ["."],
-  "graphs": {
-    "agente_viajes": "./src/agente_viajes/graph.py:graph"
-  },
-  "env": ".env"
-}
