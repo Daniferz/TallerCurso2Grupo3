@@ -1,13 +1,13 @@
-# Agentes de viajes y restaurantes (A2A)
+# Agentes de viajes, restaurantes y coordinación A2A
 
-Base del proyecto: tres agentes que se hablan entre sí por el protocolo A2A.
+Proyecto con dos agentes de dominio, un coordinador y soporte para agentes A2A de compañeros.
 
 - `agente_viajes`: responde consultas de viajes.
 - `agente_restaurantes`: responde consultas de restaurantes.
-- `coordinador`: recibe la pregunta del usuario y reparte el trabajo entre los otros dos.
+- `coordinador`: elige un agente por tema entre viajes, restaurantes y URLs remotas configuradas.
 
-Por ahora existen el agente de viajes (LangGraph), el de restaurantes (CrewAI)
-y el coordinador (LangGraph, un solo nodo).
+El agente de viajes usa LangGraph, el de restaurantes usa CrewAI y el coordinador
+usa LangGraph como supervisor.
 
 ## Versión instalada de a2a-sdk
 
@@ -130,7 +130,12 @@ Lo único obligatorio son los skills: `crear_tarjeta` falla con un error de una
 línea si se le pasa la lista vacía, porque la spec A2A los exige.
 
 Las direcciones salen de `.env` (`URL_VIAJES`, `URL_RESTAURANTES`,
-`URL_COORDINADOR`). Cada conversación conserva su `context_id`, que el agente usa
+`URL_COORDINADOR`). `URL_PUBLICA` permite publicar la URL de un túnel en la Agent
+Card y `URLS_AGENTES` agrega túneles de compañeros al catálogo del supervisor.
+Los servidores base de viajes, restaurantes y coordinador conservan sus URLs
+locales aunque `URL_PUBLICA` esté configurada; los agentes personales nuevos usan
+el override por defecto.
+Cada conversación conserva su `context_id`, que el agente usa
 como memoria; el botón "Nueva conversación" genera uno nuevo. La espera máxima
 por respuesta se ajusta con `TIEMPO_ESPERA_A2A` (120 segundos por defecto) y la
 de la ficha con `TIEMPO_FICHA_A2A` (3 segundos por defecto).
@@ -178,19 +183,17 @@ uvicorn src.agente_restaurantes.server:app --port 8001
 
 ## Coordinador
 
-No sabe nada de viajes: es un grafo de LangGraph con **un solo nodo** que le
-pregunta al agente de viajes por A2A y repite su respuesta.
+El supervisor de LangGraph descubre al arrancar las fichas de viajes,
+restaurantes y las URLs incluidas en `URLS_AGENTES`. Con cada pregunta elige una
+usando las descripciones de las fichas como datos; si ninguna aplica, responde
+que no hay un agente para ese tema. Las respuestas delegadas incluyen el nombre
+del agente entre corchetes y el motivo de selección.
 
-- `cliente.py`: `obtener_cliente(url)` baja la ficha con `A2ACardResolver` y
-  arma el cliente con `create_client` (sin streaming, JSON-RPC); el cliente
-  queda guardado por URL para no bajar la ficha dos veces. `preguntar(cliente,
-  texto, context_id)` manda el mensaje y devuelve el texto, sea que vuelva como
-  mensaje directo o como tarea (en ese caso espera a que termine y junta el
-  texto de sus artifacts).
-- `graph.py`: `START → delegar → END` con estado `MessagesState` y
-  `MemorySaver`. El nodo usa el `thread_id` de la conversación como
-  `context_id`, así el agente de viajes recuerda lo anterior.
-- `server.py`: ficha "Coordinador" y la misma `crear_app` de siempre.
+- `catalogo.py`: obtiene una vez las fichas y clientes A2A de viajes, restaurantes
+  y URLs de compañeros; si uno no responde, informa en una línea y sigue con los demás.
+- `graph.py`: `START → supervisor → agente_remoto | sin_agente → END`, con
+  `MemorySaver`, `responder`, `saltos` y `diagrama`.
+- `server.py`: al iniciar imprime `Supervisor con N agentes`.
 
 ```bash
 python main.py coordinador "¿Cuánto cuesta volar de Santiago a Lima?" --saltos
@@ -198,8 +201,8 @@ python main.py coordinador --diagrama
 uvicorn src.coordinador.server:app --port 8002
 ```
 
-**El agente de viajes tiene que estar corriendo en el 8000**, o el coordinador
-no tendrá con quién hablar.
+Levanta primero viajes en el 8000 y restaurantes en el 8001; luego inicia el
+coordinador en el 8002 para que descubra las fichas y los agentes remotos.
 
 `scripts/probar_coordinador.py` le hace dos preguntas con el mismo
 `context_id` y comprueba que la segunda respuesta recuerda la primera:
@@ -207,6 +210,40 @@ no tendrá con quién hablar.
 ```bash
 python scripts/probar_coordinador.py
 ```
+
+Para revisar las seis decisiones del supervisor:
+
+```bash
+python scripts/probar_supervisor.py
+```
+
+## Probar entre computadores
+
+1. Levanta el agente que quieras compartir en su puerto local. Por ejemplo,
+   viajes escucha en el 8000 y los agentes personales suelen usar el 8003:
+
+   ```powershell
+   .\.venv\Scripts\python.exe -m uvicorn src.agente_viajes.server:app --port 8000 --reload
+   ```
+
+2. En otra terminal, crea el túnel para ese puerto. En Mac/Linux:
+   `bash scripts/tunel.sh 8000`; en Windows: `.\scripts\tunel.ps1 -Puerto 8000`.
+   Si falta Cloudflare Tunnel, el script indica cómo instalarlo. Mantén esta
+   terminal abierta.
+
+3. Copia la URL HTTPS del túnel a `URL_PUBLICA` en `.env` y reinicia el servidor
+   del agente para que su Agent Card publique esa URL. Verifícala con
+   `curl.exe -sS https://TU-URL.trycloudflare.com/.well-known/agent-card.json`.
+
+4. Pasa la URL a tus compañeros para que la agreguen a `URLS_AGENTES` en su
+   `.env`; separen varias URLs con comas. Deben reiniciar el coordinador para
+   que vuelva a leer las fichas al arrancar.
+
+5. Prueben la selección con `python scripts/probar_supervisor.py`.
+
+La URL temporal cambia al reiniciar el túnel. Ciérralo con Ctrl+C al terminar y
+compártelo solo con personas de confianza: cualquiera con la URL puede enviar
+consultas mientras el túnel esté activo.
 
 ## Pruebas
 

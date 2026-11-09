@@ -27,6 +27,7 @@ tarjeta = crear_tarjeta(
             "Dame más datos de Don Julio.",
         ),
     ],
+    usar_url_publica=False,
 )
 
 app = crear_app(tarjeta, responder)

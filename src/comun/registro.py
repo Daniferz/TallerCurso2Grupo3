@@ -70,8 +70,8 @@ CATALOGO: dict[str, Agente] = {
         clave="coordinador",
         nombre="Coordinador",
         descripcion=(
-            "Recibe la pregunta del usuario y reparte el trabajo entre los agentes "
-            "de viajes y restaurantes."
+            "Recibe preguntas y elige entre viajes, restaurantes y agentes de compañeros configurados por URLS_AGENTES. "
+            "Si ninguno corresponde, informa qué temas están disponibles."
         ),
         paquete="src.coordinador",
         url=_url("URL_COORDINADOR", "http://127.0.0.1:8002"),
