@@ -1,0 +1,16 @@
+{
+  "id": "1",
+  "jsonrpc": "2.0",
+  "result": {
+    "contextId": "0c7076ce-2b22-4d62-9d49-81df301bcfa1",
+    "kind": "message",
+    "messageId": "7ba47f89-f1de-4a7e-a373-07c93ac43c34",
+    "parts": [
+      {
+        "kind": "text",
+        "text": "El tríceps braquial se origina en la escápula (cabeza larga) y en la cara posterior del húmero (cabezas lateral y medial), insertándose en el olécranon del cúbito. Su función principal es la extensión del codo, y la cabeza larga también participa en la extensión y aducción del hombro.\n\nPara trabajarlo de forma efectiva puedes hacer ejercicios como la extensión sobre la cabeza, press francés, extensión en polea o fondos. Como nota práctica, la extensión sobre la cabeza estira la cabeza larga y ha demostrado generar mayor hipertrofia (Maeo et al., 2023)."
+      }
+    ],
+    "role": "agent"
+  }
+}
