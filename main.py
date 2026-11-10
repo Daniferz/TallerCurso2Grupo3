@@ -3,6 +3,7 @@
 Uso:
     python main.py viajes "pregunta"
     python main.py restaurantes "pregunta" --saltos
+    python main.py pato "pregunta" --saltos
     python main.py coordinador "pregunta" --diagrama
 """
 
