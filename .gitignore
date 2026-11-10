@@ -2,6 +2,7 @@
 .venv*
 __pycache__/
 .pytest_cache/
+companeros.json
 
 # Material de referencia local del taller; no pertenece al proyecto entregable.
 /TallerPauta.html

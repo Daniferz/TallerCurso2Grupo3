@@ -1,13 +1,19 @@
-# Agentes de viajes, restaurantes y coordinación A2A
+# Agentes A2A de viajes, restaurantes y agentes personales
 
-Proyecto con dos agentes de dominio, un coordinador y soporte para agentes A2A de compañeros.
+Proyecto con dos agentes base, agentes personales de integrantes y un coordinador
+supervisor que puede descubrir agentes remotos mediante sus Agent Cards.
 
-- `agente_viajes`: responde consultas de viajes.
-- `agente_restaurantes`: responde consultas de restaurantes.
-- `coordinador`: elige un agente por tema entre viajes, restaurantes y URLs remotas configuradas.
+- `agente_viajes`: vuelos y hoteles (LangGraph).
+- `agente_restaurantes`: recomendaciones de restaurantes (CrewAI).
+- `agente_pato`: anatomía muscular y rutinas de entrenamiento (LangGraph).
+- `agente_dani`: listas de equipaje (LangGraph).
+- `coordinador`: elige entre viajes, restaurantes y las URLs remotas configuradas.
 
-El agente de viajes usa LangGraph, el de restaurantes usa CrewAI y el coordinador
-usa LangGraph como supervisor.
+## Identificación del grupo
+
+**Grupo:** 3
+
+**Integrantes:** Daniella Fernández, Cristian Meza y Patricio Vergara.
 
 ## Versión instalada de a2a-sdk
 
@@ -69,7 +75,7 @@ Para salir del entorno: `deactivate`.
 
 ```
 .
-├── main.py                    entrada por terminal para los tres agentes
+├── main.py                    entrada por terminal para los agentes
 ├── AGENTS.md                  reglas del proyecto
 ├── requirements.txt
 ├── .env.example
@@ -77,8 +83,10 @@ Para salir del entorno: `deactivate`.
 ├── src/
 │   ├── comun/                 código compartido: registro.py, executor.py, servidor.py, tarjeta.py
 │   ├── portal/                consola web: app.py, cliente.py, estatico/
-│   ├── agente_viajes/         tools.py, prompts.py, graph.py (o crew.py), server.py
-│   ├── agente_restaurantes/   tools.py, prompts.py, graph.py (o crew.py), server.py
+│   ├── agente_viajes/         tools.py, prompts.py, graph.py, server.py
+│   ├── agente_restaurantes/   tools.py, prompts.py, crew.py, server.py
+│   ├── agente_pato/           tools.py, prompts.py, graph.py, server.py
+│   ├── agente_dani/           tools.py, prompts.py, graph.py, server.py
 │   └── coordinador/           cliente.py, graph.py, server.py
 ├── scripts/                   utilidades para probar los agentes desde la terminal
 └── tests/
@@ -89,6 +97,8 @@ Para salir del entorno: `deactivate`.
 ```bash
 python main.py viajes "vuelo a Lima el 15 de marzo" --saltos
 python main.py restaurantes "¿Dónde comer barato en Providencia?" --saltos
+python main.py pato "Quiero entrenar piernas, ¿qué rutina hago?" --saltos
+python main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué llevo?" --saltos
 python main.py coordinador "Arma un fin de semana gastronómico en Valparaíso" --diagrama
 ```
 
@@ -130,15 +140,16 @@ Lo único obligatorio son los skills: `crear_tarjeta` falla con un error de una
 línea si se le pasa la lista vacía, porque la spec A2A los exige.
 
 Las direcciones salen de `.env` (`URL_VIAJES`, `URL_RESTAURANTES`,
-`URL_COORDINADOR`). `URL_PUBLICA` permite publicar la URL de un túnel en la Agent
-Card y `URLS_AGENTES` agrega túneles de compañeros al catálogo del supervisor.
-Los servidores base de viajes, restaurantes y coordinador conservan sus URLs
-locales aunque `URL_PUBLICA` esté configurada; los agentes personales nuevos usan
-el override por defecto.
-Cada conversación conserva su `context_id`, que el agente usa
+`URL_COORDINADOR`, `URL_PATO`, `URL_DANI`). `URL_PUBLICA` permite publicar la URL
+de un túnel en la ficha; `URLS_AGENTES` agrega túneles de compañeros al catálogo
+del supervisor. Los servidores base conservan sus URLs locales; los agentes
+personales usan el override por defecto. Cada conversación conserva su `context_id`, que el agente usa
 como memoria; el botón "Nueva conversación" genera uno nuevo. La espera máxima
 por respuesta se ajusta con `TIEMPO_ESPERA_A2A` (120 segundos por defecto) y la
 de la ficha con `TIEMPO_FICHA_A2A` (3 segundos por defecto).
+
+Los servidores base de viajes, restaurantes y coordinador excluyen `URL_PUBLICA`
+para conservar sus propias direcciones; los agentes personales usan el override.
 
 ## Agente de viajes
 
@@ -181,6 +192,39 @@ python main.py restaurantes --diagrama
 uvicorn src.agente_restaurantes.server:app --port 8001
 ```
 
+## Agente de Entrenamiento de Pato
+
+LangGraph con Gemini y herramientas con datos estáticos sobre anatomía muscular y
+rutinas de entrenamiento basadas en referencias científicas. No ofrece dietas ni
+suplementos, no trata lesiones o dolores, y deriva los temas fuera de su ficha.
+
+- `musculo(nombre)`: origen, inserción, función y ejercicios para músculos del catálogo.
+- `rutina(grupo_muscular, objetivo, nivel, dias_por_semana)`: ejercicios, series,
+  repeticiones, descansos y referencias.
+
+```powershell
+python main.py pato "Quiero entrenar piernas, ¿qué rutina hago?" --saltos
+python main.py pato --diagrama
+uvicorn src.agente_pato.server:app --port 8005 --reload
+```
+
+## Agente de Maleta de Dani
+
+LangGraph con Gemini y una herramienta local que arma listas desde guías estáticas
+para Punta Arenas (invierno y verano), Pucón (invierno y verano) e Iquique
+(verano). Acepta temporadas o meses del calendario chileno; no consulta ni afirma
+conocer el clima real. Destinos y combinaciones no incluidos devuelven un mensaje
+de una línea sin inventar una lista.
+
+```powershell
+python main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué llevo?" --saltos
+python main.py dani --diagrama
+uvicorn src.agente_dani.server:app --port 8003 --reload
+```
+
+El Agente de Maleta se puede probar directamente en el puerto 8003 o desde la
+consola web. Un coordinador remoto puede incluirlo mediante `URLS_AGENTES`.
+
 ## Coordinador
 
 El supervisor de LangGraph descubre al arrancar las fichas de viajes,
@@ -217,33 +261,27 @@ Para revisar las seis decisiones del supervisor:
 python scripts/probar_supervisor.py
 ```
 
+## Generar `compañeros.md`
+
+La Agent Card no incluye el nombre de quien creó el agente, así que `companeros.json` relaciona cada autor con su URL pública. Parte de la plantilla:
+
+```powershell
+Copy-Item companeros.json.example companeros.json
+# Completa autor y URL por cada compañero y luego ejecuta:
+.\.venv\Scripts\python.exe scripts\generar_companeros.py
+```
+
+El script descarga cada ficha A2A con timeout y genera `compañeros.md` con autor, nombre, skills, URL y JSON completo. Si una ficha no responde, registra el error en una línea y continúa con las demás.
+
 ## Probar entre computadores
 
-1. Levanta el agente que quieras compartir en su puerto local. Por ejemplo,
-   viajes escucha en el 8000 y los agentes personales suelen usar el 8003:
+1. Levanta el agente personal que quieres compartir. Dani usa el puerto 8003 y Pato el 8005; al integrar a Cristian se asignará otro puerto disponible.
+2. En otra terminal, abre el túnel de Cloudflare al mismo puerto. En Mac/Linux ejecuta `bash scripts/tunel.sh PUERTO`; en Windows usa `.\scripts/tunel.ps1 -Puerto PUERTO`. Mantén la terminal abierta.
+3. Copia la URL HTTPS a `URL_PUBLICA` del `.env` del dueño y reinicia ese agente. Comprueba su ficha con `curl.exe -sS https://TU-URL.trycloudflare.com/.well-known/agent-card.json`.
+4. Agrega las URLs públicas a `URLS_AGENTES` en el `.env` del coordinador, separadas por comas. Incluye el agente propio para que participe en la ronda y reinicia el coordinador.
+5. Prueba el enrutamiento con `python scripts/probar_supervisor.py`.
 
-   ```powershell
-   .\.venv\Scripts\python.exe -m uvicorn src.agente_viajes.server:app --port 8000 --reload
-   ```
-
-2. En otra terminal, crea el túnel para ese puerto. En Mac/Linux:
-   `bash scripts/tunel.sh 8000`; en Windows: `.\scripts\tunel.ps1 -Puerto 8000`.
-   Si falta Cloudflare Tunnel, el script indica cómo instalarlo. Mantén esta
-   terminal abierta.
-
-3. Copia la URL HTTPS del túnel a `URL_PUBLICA` en `.env` y reinicia el servidor
-   del agente para que su Agent Card publique esa URL. Verifícala con
-   `curl.exe -sS https://TU-URL.trycloudflare.com/.well-known/agent-card.json`.
-
-4. Pasa la URL a tus compañeros para que la agreguen a `URLS_AGENTES` en su
-   `.env`; separen varias URLs con comas. Deben reiniciar el coordinador para
-   que vuelva a leer las fichas al arrancar.
-
-5. Prueben la selección con `python scripts/probar_supervisor.py`.
-
-La URL temporal cambia al reiniciar el túnel. Ciérralo con Ctrl+C al terminar y
-compártelo solo con personas de confianza: cualquiera con la URL puede enviar
-consultas mientras el túnel esté activo.
+Las tarjetas de viajes, restaurantes y coordinador conservan sus URLs locales; `URL_PUBLICA` se usa por defecto en los agentes personales. Las URLs rápidas cambian al reiniciar el túnel. Ciérralo con Ctrl+C y comparte la URL solo con personas de confianza: cualquiera que la conozca podrá consultar el agente mientras esté activo.
 
 ## Pruebas
 
