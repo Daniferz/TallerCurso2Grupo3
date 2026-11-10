@@ -1,0 +1,45 @@
+{
+  "name": "Agente de cristian",
+  "description": "Recomienda lugares para visitar con descripción, ubicación, horarios, precios referenciales e imágenes. No responde sobre vuelos, hoteles, reservas, clima, visas, equipaje ni restricciones de los sitios.",
+  "supportedInterfaces": [
+    {
+      "url": "http://127.0.0.1:8004",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": false
+  },
+  "defaultInputModes": [
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "text/plain"
+  ],
+  "skills": [
+    {
+      "id": "listado_sitios_turisticos",
+      "name": "Recomendar lugares",
+      "description": "Devuelve lugares para visitar en una ciudad con descripción, ubicación, precio e imagen referenciales.",
+      "tags": [
+        "listado_sitios_turisticos"
+      ],
+      "examples": [
+        "Voy a Lima el sábado, ¿qué lugares turísticos me recomiendas?"
+      ]
+    },
+    {
+      "id": "horario_atencion",
+      "name": "Consultar horarios",
+      "description": "Indica el horario registrado de un lugar turístico para el día consultado.",
+      "tags": [
+        "horario_atencion"
+      ],
+      "examples": [
+        "¿A qué hora puedo visitar el Cerro San Cristóbal el domingo?"
+      ]
+    }
+  ]
+}
