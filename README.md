@@ -7,6 +7,7 @@ supervisor que puede descubrir agentes remotos mediante sus Agent Cards.
 - `agente_restaurantes`: recomendaciones de restaurantes (CrewAI).
 - `agente_pato`: anatomía muscular y rutinas de entrenamiento (LangGraph).
 - `agente_dani`: listas de equipaje (LangGraph).
+- `agente_cristian`: recomendaciones de sitios turísticos (LangGraph).
 - `coordinador`: elige entre viajes, restaurantes y las URLs remotas configuradas.
 
 ## Identificación del grupo
@@ -87,6 +88,7 @@ Para salir del entorno: `deactivate`.
 │   ├── agente_restaurantes/   tools.py, prompts.py, crew.py, server.py
 │   ├── agente_pato/           tools.py, prompts.py, graph.py, server.py
 │   ├── agente_dani/           tools.py, prompts.py, graph.py, server.py
+│   ├── agente_cristian/       tools.py, prompts.py, graph.py, server.py
 │   └── coordinador/           cliente.py, graph.py, server.py
 ├── scripts/                   utilidades para probar los agentes desde la terminal
 └── tests/
@@ -99,6 +101,7 @@ python main.py viajes "vuelo a Lima el 15 de marzo" --saltos
 python main.py restaurantes "¿Dónde comer barato en Providencia?" --saltos
 python main.py pato "Quiero entrenar piernas, ¿qué rutina hago?" --saltos
 python main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué llevo?" --saltos
+python main.py cristian "¿Qué sitios turísticos puedo visitar en Lima el sábado?" --saltos
 python main.py coordinador "Arma un fin de semana gastronómico en Valparaíso" --diagrama
 ```
 
@@ -140,10 +143,10 @@ Lo único obligatorio son los skills: `crear_tarjeta` falla con un error de una
 línea si se le pasa la lista vacía, porque la spec A2A los exige.
 
 Las direcciones salen de `.env` (`URL_VIAJES`, `URL_RESTAURANTES`,
-`URL_COORDINADOR`, `URL_PATO`, `URL_DANI`). `URL_PUBLICA` permite publicar la URL
+`URL_COORDINADOR`, `URL_PATO`, `URL_DANI`, `URL_CRISTIAN`). `URL_PUBLICA` permite publicar la URL
 de un túnel en la ficha; `URLS_AGENTES` agrega túneles de compañeros al catálogo
 del supervisor. Los servidores base conservan sus URLs locales; los agentes
-personales usan el override por defecto. Cada conversación conserva su `context_id`, que el agente usa
+personales (`pato`, `dani` y `cristian`) usan el override por defecto. Cada conversación conserva su `context_id`, que el agente usa
 como memoria; el botón "Nueva conversación" genera uno nuevo. La espera máxima
 por respuesta se ajusta con `TIEMPO_ESPERA_A2A` (120 segundos por defecto) y la
 de la ficha con `TIEMPO_FICHA_A2A` (3 segundos por defecto).
@@ -225,6 +228,26 @@ uvicorn src.agente_dani.server:app --port 8003 --reload
 El Agente de Maleta se puede probar directamente en el puerto 8003 o desde la
 consola web. Un coordinador remoto puede incluirlo mediante `URLS_AGENTES`.
 
+## Agente de sitios turísticos de Cristian
+
+LangGraph con Gemini y herramientas con información estática de ejemplo para
+Santiago, Lima, Bogotá y Cusco. No consulta datos en tiempo real ni confirma
+horarios o restricciones con los recintos.
+
+- `listado_sitios_turisticos(ciudad, fecha)`: entrega sitios, descripción,
+  ubicación, horario, precio referencial e imagen.
+- `horario_atencion(nombre_sitio, dia)`: devuelve el horario registrado o indica
+  en una línea cuando no hay dato para el día.
+
+```powershell
+python main.py cristian "¿Qué sitios turísticos puedo visitar en Lima el sábado?" --saltos
+python main.py cristian --diagrama
+uvicorn src.agente_cristian.server:app --port 8004 --reload
+```
+
+El servidor publica `URL_PUBLICA` en la Agent Card cuando se configura un túnel;
+`URL_CRISTIAN` conserva la dirección local del servidor.
+
 ## Coordinador
 
 El supervisor de LangGraph descubre al arrancar las fichas de viajes,
@@ -275,7 +298,7 @@ El script descarga cada ficha A2A con timeout y genera `compañeros.md` con auto
 
 ## Probar entre computadores
 
-1. Levanta el agente personal que quieres compartir. Dani usa el puerto 8003 y Pato el 8005; al integrar a Cristian se asignará otro puerto disponible.
+1. Levanta el agente personal que quieres compartir: Dani usa el puerto 8003, Cristian el 8004 y Pato el 8005.
 2. En otra terminal, abre el túnel de Cloudflare al mismo puerto. En Mac/Linux ejecuta `bash scripts/tunel.sh PUERTO`; en Windows usa `.\scripts/tunel.ps1 -Puerto PUERTO`. Mantén la terminal abierta.
 3. Copia la URL HTTPS a `URL_PUBLICA` del `.env` del dueño y reinicia ese agente. Comprueba su ficha con `curl.exe -sS https://TU-URL.trycloudflare.com/.well-known/agent-card.json`.
 4. Agrega las URLs públicas a `URLS_AGENTES` en el `.env` del coordinador, separadas por comas. Incluye el agente propio para que participe en la ronda y reinicia el coordinador.

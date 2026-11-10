@@ -98,6 +98,16 @@ CATALOGO: dict[str, Agente] = {
         paquete="src.coordinador",
         url=_url("URL_COORDINADOR", "http://127.0.0.1:8002"),
     ),
+    "cristian": Agente(
+        clave="cristian",
+        nombre="Agente de cristian",
+        descripcion=(
+            "Recomienda lugares para visitar con descripción, ubicación, horarios, precios referenciales e imágenes. "
+            "No responde sobre vuelos, hoteles, reservas, clima, visas, equipaje ni restricciones de los sitios."
+        ),
+        paquete="src.agente_cristian",
+        url=_url("URL_CRISTIAN", "http://127.0.0.1:8004"),
+    ),
 }
 
 # Nombre corto -> paquete donde vive el agente (es lo que consume main.py).

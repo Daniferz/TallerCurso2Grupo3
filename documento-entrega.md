@@ -1,20 +1,20 @@
 # Documento de entrega · Taller A2A
 
-**Grupo 3 · integración de Pato y Dani**
-Esta versión integra los agentes personales de Patricio y Daniella, sus blueprints y las evidencias de las rondas disponibles. Cristian se incorporará en una etapa posterior. Este Markdown es la fuente editable; `documento-entrega.pdf` debe mantenerse sincronizado con esta versión.
+**Grupo 3 · integración de Pato, Dani y Cristian**
+Esta versión integra los agentes personales de Patricio, Daniella y Cristian, sus blueprints y las evidencias disponibles. Este Markdown es la fuente editable; `documento-entrega.pdf` debe mantenerse sincronizado con esta versión.
 
 ## Integrantes
 
 | Integrante | Agente / especialidad | Estado |
 |---|---|---|
 | Daniella Fernández | Agente de Maleta · listas de equipaje | Integrado; blueprint y evidencias individuales disponibles |
-| Patricio Vergara | Agente de Entrenamiento · anatomía y rutinas | Integrado; blueprint, ronda y evidencias disponibles |
-| Cristian Meza | Agente de lugares turísticos | Pendiente para la siguiente integración; hay una ficha externa documentada en `evidencias/Daniella_Fernandez/compañeros.md` |
+| Patricio Vergara | Agente de Entrenamiento · anatomía y rutinas | Integrado; blueprint, ronda y evidencias individuales disponibles |
+| Cristian Meza | Agente de sitios turísticos | Integrado; blueprint, herramientas y evidencias disponibles |
 
 ## Grupo
 
 **Grupo:** 3
-**Entrega:** un ZIP grupal con el proyecto completo, este documento exportado a PDF, los blueprints individuales, `compañeros.md` y la carpeta `evidencias/`.
+**Entrega:** un ZIP grupal con el proyecto completo, este documento exportado a PDF, los blueprints individuales, los manifiestos `compañeros.md` de cada integrante y la carpeta `evidencias/`.
 
 ## Blueprints
 
@@ -58,7 +58,7 @@ Descripción anterior al prompt 2: “Prepara listas de objetos para empacar seg
 
 Descripción final: “Prepara listas de equipaje con ropa, documentos, tecnología y botiquín para Punta Arenas, Pucón e Iquique, según los días y la temporada. No busca ni compara vuelos, hoteles o precios, ni informa clima, visas o políticas de equipaje de aerolíneas.”
 
-Se concretó la descripción para que un supervisor pueda distinguir las listas de equipaje de las consultas de reservas y servicios de viaje. La ficha final descargada está en `evidencias/02-ficha.json`.
+Se concretó la descripción para que un supervisor pueda distinguir las listas de equipaje de las consultas de reservas y servicios de viaje. La ficha final está en `evidencias/Daniella_Fernandez/02-ficha.json`.
 
 ### Patricio Vergara · Agente de Entrenamiento
 
@@ -76,35 +76,42 @@ Archivo individual: `blueprint-PATO.md`.
 | Dónde se ejecuta | `http://127.0.0.1:8005` · `src/agente_pato/` · `python main.py pato "pregunta"`. |
 | Dirección pública | `https://greatly-available-hide-mud.trycloudflare.com` (URL temporal registrada el 9 de noviembre de 2026; puede cambiar). |
 
-### Cristian Meza · siguiente integración
+### Cristian Meza · Agente de sitios turísticos
 
-El manifiesto de Dani contiene una Agent Card externa de Cristian para lugares turísticos. En esta rama todavía no se incorporan su código, blueprint ni ronda; se agregarán en la siguiente integración.
+Archivo individual: `blueprint-cristian.md`.
 
-| Qué definir | Completar |
+| Qué definir | Mi agente |
 |---|---|
-| Quién soy | Cristian · agente de lugares turísticos, según la ficha externa registrada. |
-| Hace / No hace | Recomienda lugares, horarios, precios referenciales e imágenes; no responde sobre vuelos, hoteles, reservas, clima, visas, equipaje ni restricciones de sitios. |
-| Herramientas y datos | Skills externas `listado_sitios_turisticos` y `consultar_horarios`; consultar `evidencias/Daniella_Fernandez/compañeros.md`. |
-| Decide solo / Nunca sin persona | Pendiente de validar con el blueprint y la implementación de Cristian. |
-| Deriva a otro | Temas de viaje y equipaje quedan fuera de su ficha. |
-| Dónde se ejecuta / Dirección pública | La ficha registrada apunta a `http://127.0.0.1:8004`; la URL pública del manifiesto es temporal. Aún no está integrado como código en esta rama. |
+| Quién soy | Cristian · especialista en sitios turísticos; recomienda lugares según la ciudad indicada. |
+| Hace | Entrega sitios con descripción, ubicación, horario, precio e imagen referenciales. |
+| No hace | No busca vuelos ni hoteles, no reserva, no informa el clima ni las restricciones de los sitios. |
+| Herramientas | `listado_sitios_turisticos(ciudad, fecha)` y `horario_atencion(nombre_sitio, dia)`, con datos estáticos en `src/agente_cristian/tools.py`. |
+| Decide solo | Selecciona lugares e imágenes según la ciudad y fecha consultadas. |
+| Nunca sin persona | No supone el clima, prioriza sitios ni inventa restricciones; si falta información, lo indica. |
+| Deriva a otro | Vuelos, hoteles, equipaje, clima o visas: delimita el tema y no responde esa parte. |
+| Dónde se ejecuta | `http://127.0.0.1:8004` · `src/agente_cristian/` · `python main.py cristian "pregunta"`. |
+| Dirección pública | `https://managing-gcc-upload-precious.trycloudflare.com` (URL temporal del blueprint; puede cambiar). `URL_PUBLICA` reemplaza la URL local en la Agent Card. |
+
+La ficha guardada en `evidencias/02-ficha.json` se capturó desde `http://127.0.0.1:8004`. El servidor integrado ahora publica `URL_PUBLICA` al usar el túnel; confirmar la ficha HTTPS cuando se levante con la URL vigente.
 
 ## Evidencias
 
-La raíz de `evidencias/` conserva los nombres canónicos de Pato. Las evidencias individuales de Dani están en `evidencias/Daniella_Fernandez/`; no se sustituyen entre integrantes.
+Las evidencias de cada integrante se mantienen separadas: Pato en `evidencias/Patricio_Vergara/`, Dani en `evidencias/Daniella_Fernandez/` y las evidencias de Cristian en la raíz de `evidencias/` junto a `evidencias_cristian.md`.
 
 | Archivo | Estado / descripción |
 |---|---|
-| `01-saltos.png` | Salidas CLI del agente de Pato. Dani tiene su propia captura en `evidencias/Daniella_Fernandez/01-saltos.png`. |
-| `02-ficha.json` | Agent Card pública de Pato; la ficha de Dani está en `evidencias/Daniella_Fernandez/02-ficha.json`. |
-| `mensaje-a2a.json` / `respuesta-a2a.json` | Respuesta A2A de Pato y respuesta A2A de Dani, respectivamente; el SDK devuelve `result.kind=message` y el texto en `result.parts[0].text`. |
-| `03-tunel-terminal.png`, `03-tunel-celular.png` | Evidencia del túnel de Pato desde terminal y celular. Dani conserva su verificación HTTPS en `evidencias/Daniella_Fernandez/03-tunel.png`. |
-| `04-catalogo.png` | Captura del coordinador de Pato. La copia de Dani está en `evidencias/Daniella_Fernandez/04-catalogo.png`; ambas deben leerse junto a las notas de disponibilidad de cada prueba. |
-| `05-ronda.png` | Captura de la ronda de Pato; la de Dani está en `evidencias/Daniella_Fernandez/05-ronda.png`. El detalle escrito de Pato está en `evidencias/ronda-pato.md`. |
+| `Patricio_Vergara/01-saltos.png`, `Patricio_Vergara/02-ficha.json` | Salidas CLI y Agent Card de Pato. |
+| `Patricio_Vergara/mensaje-a2a.json` | Respuesta A2A de Pato; el SDK devuelve `result.kind=message` y el texto en `result.parts[0].text`. |
+| `Patricio_Vergara/03-tunel-terminal.png`, `Patricio_Vergara/03-tunel-celular.png` | Evidencia del túnel de Pato desde terminal y celular. |
+| `Patricio_Vergara/04-catalogo.png`, `Patricio_Vergara/05-ronda.png` | Catálogo y ronda de Pato; el detalle está en `Patricio_Vergara/ronda-pato.md`. |
+| `Daniella_Fernandez/01-saltos.png`, `Daniella_Fernandez/02-ficha.json`, `Daniella_Fernandez/respuesta-a2a.json` | Ejecución CLI, ficha y respuesta A2A de Dani. |
+| `Daniella_Fernandez/03-tunel.png`, `Daniella_Fernandez/04-catalogo.png`, `Daniella_Fernandez/05-ronda.png` | Verificación de túnel, catálogo y ronda de Dani; las limitaciones de disponibilidad se describen más adelante. |
+| `01-saltos.png`, `02-diagrama.png`, `02-ficha.json`, `05-ronda.png` | Evidencias de Cristian; el resumen y análisis están en `evidencias_cristian.md`. |
+| `artifacts/respuesta-a2a-cristian.md` | Solicitud y respuesta A2A de Cristian en `http://127.0.0.1:8004`. |
 
-Subcarpetas individuales previstas: `Daniella_Fernandez/`, `Cristian_Meza/` y `Patricio_Vergara/`. En esta integración las evidencias canónicas de Pato permanecen en la raíz para conservar los nombres pedidos por la pauta; las de Dani se guardan en su subcarpeta. Cristian añadirá las suyas al integrarse.
+Los manifiestos individuales de compañeros están en las carpetas de Dani y Patricio. Los archivos raíz `01-saltos.png`, `02-ficha.json` y `05-ronda.png` corresponden a Cristian; los nombres de las capturas de Pato están dentro de su carpeta individual.
 
-Para generar `compañeros.md`, copia `companeros.json.example` a `companeros.json`, completa autor y URL por cada agente ajeno y ejecuta `python scripts/generar_companeros.py`.
+Para generar un manifiesto `compañeros.md`, copia `companeros.json.example` a `companeros.json`, completa autor y URL por cada agente ajeno y ejecuta `python scripts/generar_companeros.py`.
 
 **Nota de codificación:** PowerShell mostró algunos acentos como `Ã…`; se verificó que la respuesta A2A guardada como JSON UTF-8 contiene los acentos correctos. El problema era de visualización de la consola.
 
@@ -120,11 +127,17 @@ La pauta pide tres preguntas por integrante: una de la propia skill, una de la s
 | 2 | Voy a Lima el sábado, ¿qué lugares turísticos me recomiendas? | Agente de Cristian, según la ficha externa. | La captura registra la selección, pero anota que no se pudo conectar al agente; es un límite de disponibilidad, no una respuesta exitosa. |
 | 3 | ¿Cuál es la capital de Tokio? | Ninguno. | El coordinador eligió `ninguno` y explicó que el tema no corresponde a las skills del catálogo. |
 
-**Evidencia de la skill propia:** la consulta “Voy cinco días a Punta Arenas en julio, ¿qué debería llevar?” aparece en `01-saltos.png` y `respuesta-a2a.json`; recorrió `model → tools → model`. La captura `05-ronda.png` documenta el enrutamiento desde el coordinador hacia Pato, Cristian y `ninguno`, no una segunda ejecución de la skill propia desde el coordinador. Una respuesta a una pregunta sobre VPN rechazó el tema, pero lo atribuyó al agente de viajes; la prueba de derivación incluida en `01-saltos.png` usa una pregunta de vuelos, que sí pertenece al agente de viajes.
+**Evidencia de la skill propia:** la consulta “Voy cinco días a Punta Arenas en julio, ¿qué debería llevar?” aparece en `evidencias/Daniella_Fernandez/01-saltos.png` y `evidencias/Daniella_Fernandez/respuesta-a2a.json`; recorrió `model → tools → model`. La captura `evidencias/Daniella_Fernandez/05-ronda.png` documenta el enrutamiento desde el coordinador hacia Pato, Cristian y `ninguno`, no una segunda ejecución de la skill propia desde el coordinador. Una respuesta a una pregunta sobre VPN rechazó el tema, pero lo atribuyó al agente de viajes; la prueba de derivación incluida en `evidencias/Daniella_Fernandez/01-saltos.png` usa una pregunta de vuelos, que sí pertenece al agente de viajes.
 
 ### Cristian Meza
 
-Su ronda y evidencias se incorporan junto con el código en la siguiente integración.
+| # | Pregunta | A quién debería ir | Resultado |
+|---|---|---|---|
+| 1 | ¿Qué lugares puedo visitar en Bogotá un miércoles y cuáles son sus precios? | Agente de sitios turísticos de Cristian. | Respondió con Museo del Oro, Monserrate y Museo Botero y sus precios referenciales. Usó `listado_sitios_turisticos`. |
+| 2 | Voy cinco días a Punta Arenas en julio, ¿qué debería llevar? | Agente de Maleta de Dani. | El supervisor eligió a Dani; usó `lista_equipaje`. |
+| 3 | ¿Cómo tramito una visa para viajar? | Ninguno. | El supervisor indicó que no había un agente para visas. |
+
+La captura del coordinador y el análisis están en `evidencias/05-ronda.png` y `evidencias_cristian.md`. La respuesta A2A local está en `artifacts/respuesta-a2a-cristian.md`.
 
 ### Patricio Vergara
 
@@ -134,8 +147,8 @@ Su ronda y evidencias se incorporan junto con el código en la siguiente integra
 | 2 | Organizo una feria infantil de 3 horas desde las 15:00, ¿cómo armo el horario? | Agente de Matías, por túnel. | Respondió con un programa de 15:00 a 17:25; quedaron 35 minutos sin actividades. |
 | 3 | ¿Quién ganó el mundial de 1962? | Ninguno. | El supervisor indicó que el catálogo no cubre historia del fútbol. |
 
-Análisis y motivos completos: `evidencias/ronda-pato.md`. La ronda detectó como posible solapamiento equipaje para entrenar; las fichas delimitan explícitamente ambos dominios.
+Análisis y motivos completos: `evidencias/Patricio_Vergara/ronda-pato.md`. La ronda detectó como posible solapamiento equipaje para entrenar; las fichas delimitan explícitamente ambos dominios.
 
 ---
 
-**Estado del documento:** integración Pato + Dani lista para revisión; Cristian queda expresamente fuera de esta etapa. Antes de la entrega final del grupo, integrar su código y blueprint, completar su ronda, verificar la disponibilidad de su URL y validar el ZIP limpio sin `.env`, `.venv` ni claves.
+**Estado del documento:** integración de Pato, Dani y Cristian lista para revisión. Las URLs de Cloudflare son temporales; verificar las Agent Cards y la disponibilidad de los túneles antes de repetir la ronda o preparar el ZIP limpio sin `.env`, `.venv` ni claves.
