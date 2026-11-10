@@ -63,7 +63,7 @@ Agentes de otros computadores agregados a `URLS_AGENTES` (paso 7, 9 de noviembre
   "description": "Prepara listas de equipaje con ropa, documentos, tecnología y botiquín para Punta Arenas, Pucón e Iquique, según los días y la temporada. No busca ni compara vuelos, hoteles o precios, ni informa clima, visas o políticas de equipaje de aerolíneas.",
   "supportedInterfaces": [
     {
-      "url": "https://starting-pics-infrastructure-persian.trycloudflare.com",
+      "url": "https://absent-offerings-realized-envelope.trycloudflare.com",
       "protocolBinding": "JSONRPC",
       "protocolVersion": "1.0"
     }
