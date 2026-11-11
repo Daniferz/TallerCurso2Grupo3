@@ -18,25 +18,30 @@ Ver `blueprint-PATO.md` en la raíz del proyecto.
 | Dónde se ejecuta | `http://127.0.0.1:8005` · `src/agente_pato/` |
 | Dirección pública | `https://greatly-available-hide-mud.trycloudflare.com` (túnel temporal del 9 de noviembre) |
 
-## Paso 3 · Prompt 1 usado
+## Paso 3 · Cómo construí el agente (prompts reales)
 
-Como punto de partida hice la clase A2A paso a paso completa en OpenCode (agentes de viajes, restaurantes, coordinador/supervisor y túneles). Para el taller, el grupo trabajó sobre la base común del repositorio y mi agente personal lo implementé con Claude Code, siguiendo el molde del agente de viajes y la plantilla del prompt 1 de la pauta:
+Como punto de partida hice la clase A2A paso a paso completa en OpenCode (agentes de viajes, restaurantes, coordinador/supervisor y túneles). Para el taller, el grupo trabajó sobre la base común del repositorio y mi agente personal lo implementé con Claude Code. No usé un único prompt cerrado: fue una conversación en la que yo definí el contexto, elegí, validé y pedí cambios. Estos fueron los pasos, con mis mensajes clave:
+
+1. **Contexto.** Le pedí revisar el repositorio del grupo y la pauta del taller en la plataforma del curso, y le di el puerto que me asignaron: *"me dijeron que el 8005"*. También le mostré lo que ya había avanzado del taller en OpenCode.
+2. **Revisar al resto del grupo.** Pregunté *"¿de qué son los agentes del resto?"* y *"¿hay algún lineamiento para elegir?"*, para no repetir tema con Dani (maletas) ni con los agentes base (viajes y restaurantes).
+3. **Elegir la especialidad.** Pedí ideas (*"dame ideas"*) y elegí *"la de rutina de gym"*. Con eso se armó la primera versión, copiando el molde de viajes: `tools.py` con la herramienta `rutina(grupo_muscular, nivel)`, `prompts.py`, `graph.py`, `server.py`, el registro en `main.py` y `URL_PATO` en `.env.example`. Los commits y el pull request los hice yo desde GitHub Desktop.
+4. **Darle un enfoque científico.** Este fue el prompt que definió el agente:
 
 ```text
-Quiero crear un agente nuevo que represente lo que yo sé hacer. Mi nombre es Pato y mi especialidad es armar rutinas de gimnasio. Hazlo copiando el molde del agente de viajes, en src/agente_pato/ con los mismos cuatro archivos y siguiendo AGENTS.md:
-
-1) tools.py. Una herramienta con @tool, rutina(grupo_muscular, nivel), con datos inventados pero creíbles dentro del archivo: ejercicios con series × repeticiones, descanso y un consejo para pecho, espalda, piernas, hombros, brazos, core y cuerpo completo, en nivel principiante o intermedio. Si piden algo que no está en los datos, la herramienta lo dice en una línea, nunca lanza un error.
-
-2) prompts.py. Un SYSTEM_PROMPT que diga: eres Pato, entrenador de gimnasio. Responde solo sobre rutinas, en español y corto, usando la herramienta antes de contestar y sin inventar datos. Si mencionan dolor o una lesión, deriva a un profesional de la salud. Si te preguntan algo que no es de tu tema (dietas, suplementos, viajes, restaurantes, maletas), dilo en una frase y no intentes responderlo. Si te preguntan quién eres, di tu nombre y tu especialidad.
-
-3) graph.py. Igual que el de viajes: create_agent con el modelo de Gemini, mi herramienta, el SYSTEM_PROMPT y MemorySaver, con las tres funciones responder, saltos y diagrama. Conéctalo a main.py para que funcionen python main.py pato "pregunta", --saltos y --diagrama.
-
-4) server.py. La ficha con crear_tarjeta: nombre "Agente de Gimnasio de Pato", una descripción de dos frases (qué sé y qué no hago) y una skill por herramienta con una pregunta de ejemplo. Lee URL_PATO del .env (agrégala al .env y al .env.example apuntando a http://127.0.0.1:8005) y arma app = crear_app(tarjeta, responder).
-
-No lo levantes tú. Dime cómo probarlo sin servidor y después el comando: uvicorn src.agente_pato.server:app --port 8005 --reload.
+este agente del gym quiero que tenga un enfoque cientifico ¿se puede? es decir, que conozca la anatomia y fisiologica del cuerpo, cada musculo, y que pueda preparar rutinas que la ciencia ha demostrado funcionar, por grupos musculares, etc. por supuesto según lo que el usuario desee
 ```
 
-**Qué cambié después de verlo funcionar:** le di un enfoque científico. Agregué una segunda herramienta, `musculo(nombre)`, con la anatomía de 15 músculos, y amplié `rutina` con objetivo y días por semana, volumen semanal repartido en sesiones (mínimo 2 series por ejercicio) y referencias (Schoenfeld, Refalo, Maeo, ACSM). También quité `temperature=0` porque el modelo la ignoraba y mostraba un aviso en la terminal, hice que `--saltos` muestre la respuesta final, y di frases explícitas para rechazar temas ajenos y derivar casos con dolor, porque en una prueba el agente repetía una regla de su propio prompt.
+   Claude Code propuso dos herramientas (`musculo` para la anatomía y `rutina` con objetivo, nivel y días) y una tabla de evidencia (volumen, frecuencia, repeticiones, cercanía al fallo, descanso y rango de movimiento, con autores y año). Validé la propuesta (*"está bien"*) y se implementó.
+5. **Probar y validar.** Lo probamos en la terminal con `--saltos`, por A2A en el puerto 8005 y por el túnel. Me guió con las capturas de cada paso, y validamos el avance contra la pauta más de una vez.
+6. **Conectar con el grupo.** Sumamos los agentes de Dani y Matías, diagnosticamos por qué algunas fichas publicaban una URL vieja o local, e hicimos la ronda.
+7. **Control de calidad.** Pedí una validación completa contra la pauta, considerando los comentarios del profesor en la evaluación anterior (blindar el prompt y protegerlo de instrucciones escondidas). De ahí salieron la sección de seguridad del prompt, la regla "prevención sí, tratamiento no" y la batería de pruebas de blindaje (`blindaje.md`).
+
+**Qué cambié después de verlo funcionar:**
+- Pasé de una herramienta de rutinas simples a dos herramientas con base científica y referencias.
+- Quité `temperature=0`, que el modelo ignoraba y mostraba un aviso.
+- `--saltos` ahora muestra la respuesta final.
+- Di frases explícitas para rechazar temas y derivar casos con dolor, porque en una prueba el agente repetía una regla de su propio prompt.
+- Blindé el prompt contra inyección.
 
 ## Paso 4 · Diagrama
 
