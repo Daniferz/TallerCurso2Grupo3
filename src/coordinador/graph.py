@@ -23,7 +23,7 @@ if not os.getenv("GOOGLE_API_KEY"):
     raise RuntimeError("Falta GOOGLE_API_KEY: cópiala en el archivo .env.")
 
 MODELO = os.getenv("MODELO", "gemini-3.5-flash-lite")
-modelo = ChatGoogleGenerativeAI(model=MODELO, temperature=0)
+modelo = ChatGoogleGenerativeAI(model=MODELO)
 
 
 class Decision(BaseModel):
