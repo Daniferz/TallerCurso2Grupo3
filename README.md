@@ -1,5 +1,11 @@
 # Agentes A2A de viajes, restaurantes y agentes personales
 
+## Integrantes · Grupo 3
+
+- Daniella Fernández
+- Cristian Meza
+- Patricio Vergara
+
 Proyecto con dos agentes base, agentes personales de integrantes y un coordinador
 supervisor que puede descubrir agentes remotos mediante sus Agent Cards.
 
@@ -9,12 +15,6 @@ supervisor que puede descubrir agentes remotos mediante sus Agent Cards.
 - `agente_dani`: listas de equipaje (LangGraph).
 - `agente_cristian`: recomendaciones de sitios turísticos (LangGraph).
 - `coordinador`: elige entre viajes, restaurantes y las URLs remotas configuradas.
-
-## Identificación del grupo
-
-**Grupo:** 3
-
-**Integrantes:** Daniella Fernández, Cristian Meza y Patricio Vergara.
 
 ## Versión instalada de a2a-sdk
 

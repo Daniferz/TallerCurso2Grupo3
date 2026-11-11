@@ -57,6 +57,8 @@ async def saltos(texto: str) -> None:
     """Muestra nodos y herramientas usados por una consulta nueva."""
     config = {"configurable": {"thread_id": str(uuid.uuid4())}}
     total = 0
+    herramientas = []
+    respuesta = ""
     async for actualizacion in graph.astream(
         {"messages": [{"role": "user", "content": texto}]},
         config=config,
@@ -67,9 +69,14 @@ async def saltos(texto: str) -> None:
             print(f"nodo: {nodo}")
             mensajes = datos.get("messages", []) if isinstance(datos, dict) else []
             for mensaje in mensajes:
-                for llamada in getattr(mensaje, "tool_calls", None) or []:
+                llamadas = getattr(mensaje, "tool_calls", None) or []
+                for llamada in llamadas:
+                    herramientas.append(llamada["name"])
                     print(f"  herramienta: {llamada['name']}({llamada['args']})")
-    print(f"Saltos: {total}")
+                if nodo == "model" and not llamadas:
+                    respuesta = _texto(mensaje)
+    print(f"Saltos: {total} · Herramientas: {', '.join(herramientas) or 'ninguna'}")
+    print(f"Respuesta: {respuesta}")
 
 
 def diagrama() -> None:

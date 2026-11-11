@@ -144,6 +144,13 @@ MUSCULOS = {
         "ejercicios": ["elevación de talones sentado"],
         "nota": "Con la rodilla doblada el gastrocnemio se acorta y el sóleo hace la mayor parte del trabajo.",
     },
+    "erectores de la columna": {
+        "origen": "sacro, cresta ilíaca y apófisis de las vértebras lumbares y torácicas",
+        "insercion": "costillas, apófisis de las vértebras superiores y hueso occipital",
+        "funcion": "extienden la columna y la mantienen estable al levantar peso o estar de pie",
+        "ejercicios": ["peso muerto rumano", "hiperextensiones en banco", "bird dog", "puente de glúteos"],
+        "nota": "Es la musculatura de la zona lumbar; se fortalece de forma progresiva y con la espalda neutra.",
+    },
     "recto abdominal": {
         "origen": "cresta y sínfisis del pubis",
         "insercion": "cartílagos costales 5 a 7 y apófisis xifoides",
@@ -173,7 +180,14 @@ SINONIMOS_MUSCULO = {
     "pantorrillas": "gastrocnemio",
     "abdominal": "recto abdominal", "abdominales": "recto abdominal", "abdomen": "recto abdominal",
     "oblicuo": "oblicuos",
+    "lumbar": "erectores de la columna", "lumbares": "erectores de la columna",
+    "zona lumbar": "erectores de la columna", "espalda baja": "erectores de la columna",
+    "erectores": "erectores de la columna", "erector de la columna": "erectores de la columna",
 }
+
+# Lo que escribe la persona nunca se repite en la salida de las herramientas:
+# así un texto con instrucciones escondidas no vuelve al modelo como si fuera un dato.
+LARGO_MAXIMO_ENTRADA = 40
 
 
 # ---------------------------------------------------------------------------
@@ -324,6 +338,19 @@ def _normalizar(texto: str) -> str:
     return " ".join(sin_tildes.lower().split())
 
 
+def _citar(texto: str) -> str:
+    """Devuelve el texto entre comillas solo si es corto y simple; si no, uno genérico.
+
+    Evita que una entrada larga o con símbolos (por ejemplo, instrucciones
+    escondidas) se copie en la salida de la herramienta.
+    """
+    limpio = " ".join(str(texto or "").split())
+    simple = all(c.isalnum() or c in " -" for c in limpio)
+    if limpio and simple and len(limpio) <= LARGO_MAXIMO_ENTRADA:
+        return f"'{limpio}'"
+    return "ese dato"
+
+
 @tool
 def musculo(nombre: str) -> str:
     """Explica la anatomía y la función de un músculo y qué ejercicios lo trabajan.
@@ -331,7 +358,7 @@ def musculo(nombre: str) -> str:
     Args:
         nombre: el músculo, por ejemplo pectoral mayor, dorsal ancho, trapecio,
             deltoides, bíceps, braquial, tríceps, cuádriceps, isquiotibiales,
-            glúteo mayor, glúteo medio, gemelos, sóleo, recto abdominal u oblicuos.
+            glúteo mayor, glúteo medio, gemelos, sóleo, erectores de la columna (zona lumbar), recto abdominal u oblicuos.
 
     Devuelve origen, inserción, función, ejercicios recomendados y una nota
     práctica. Si el músculo no está en los datos, lo dice en una línea.
@@ -340,7 +367,7 @@ def musculo(nombre: str) -> str:
     clave = clave if clave in MUSCULOS else SINONIMOS_MUSCULO.get(clave)
     if clave is None:
         disponibles = ", ".join(sorted(MUSCULOS))
-        return f"No tengo datos del músculo '{nombre}'. Músculos disponibles: {disponibles}."
+        return f"No tengo datos del músculo {_citar(nombre)}. Músculos disponibles: {disponibles}."
 
     datos = MUSCULOS[clave]
     return "\n".join([
@@ -377,20 +404,20 @@ def rutina(
     grupo = SINONIMOS_GRUPO.get(_normalizar(grupo_muscular))
     if grupo is None:
         return (
-            f"No tengo rutina para '{grupo_muscular}'. Grupos disponibles: "
+            f"No tengo rutina para {_citar(grupo_muscular)}. Grupos disponibles: "
             "pecho, espalda, piernas, glúteos, hombros, brazos, core y cuerpo completo."
         )
 
     clave_objetivo = SINONIMOS_OBJETIVO.get(_normalizar(objetivo) or "hipertrofia")
     if clave_objetivo is None:
         return (
-            f"No tengo rutinas con el objetivo '{objetivo}'. "
+            f"No tengo rutinas con el objetivo {_citar(objetivo)}. "
             "Objetivos disponibles: hipertrofia, fuerza y resistencia."
         )
 
     clave_nivel = SINONIMOS_NIVEL.get(_normalizar(nivel) or "principiante")
     if clave_nivel is None:
-        return f"No tengo rutinas de nivel '{nivel}'. Niveles disponibles: principiante e intermedio."
+        return f"No tengo rutinas de nivel {_citar(nivel)}. Niveles disponibles: principiante e intermedio."
 
     try:
         dias = int(dias_por_semana)
