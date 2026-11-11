@@ -73,7 +73,8 @@ CATALOGO: dict[str, Agente] = {
             "Explica la anatomía y función de los músculos y arma rutinas de gimnasio con base científica "
             "por grupo muscular (pecho, espalda, piernas, glúteos, hombros, brazos, core o cuerpo completo), "
             "según objetivo (hipertrofia, fuerza o resistencia), nivel y días por semana. "
-            "No da dietas, alimentación ni suplementos, no trata lesiones o dolores, y no responde sobre viajes, restaurantes ni maletas."
+            "No da dietas, alimentación ni suplementos, no diagnostica ni trata lesiones o dolores existentes (sí orienta ejercicios de prevención), "
+            "y no responde sobre otros deportes, viajes, restaurantes ni maletas."
         ),
         paquete="src.agente_pato",
         url=_url("URL_PATO", "http://127.0.0.1:8005"),
