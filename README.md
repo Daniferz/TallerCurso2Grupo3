@@ -1,5 +1,11 @@
 # Agentes de viajes, restaurantes y coordinación A2A
 
+## Integrantes · Grupo 3
+
+- Daniella Fernández
+- Cristian Meza
+- Patricio Vergara
+
 Proyecto con dos agentes de dominio, un coordinador y soporte para agentes A2A de compañeros.
 
 - `agente_viajes`: responde consultas de viajes.
