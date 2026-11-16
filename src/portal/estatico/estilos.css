@@ -683,3 +683,27 @@ code {
     display: none;
   }
 }
+
+/* Clave de acceso: la valida el servidor de la consola contra CLAVE_API. */
+.acciones-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.campo-clave {
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--tinta);
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  padding: 6px 13px;
+  width: 180px;
+}
+
+.campo-clave:focus {
+  outline: 2px solid var(--acento-suave);
+  border-color: var(--acento);
+}

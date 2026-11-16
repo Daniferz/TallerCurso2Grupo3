@@ -68,8 +68,46 @@ Para salir del entorno: `deactivate`.
 
 1. Copia `.env.example` a `.env`.
 2. Pega tu clave de Gemini en `GOOGLE_API_KEY`.
+3. Cambia `CLAVE_API` por una clave propia (ver "Control de acceso").
 
-`.env` está en `.gitignore`: la clave nunca se sube al repositorio.
+`.env` está en `.gitignore`: las claves nunca se suben al repositorio.
+
+## Control de acceso (taller de implementación)
+
+Todos los servidores A2A (viajes, restaurantes, Pato, coordinador y los agentes
+personales) se crean con `crear_app` en `src/comun/servidor.py`, que exige el
+encabezado `X-API-Key` con el valor de `CLAVE_API` del `.env`:
+
+| Ruta | Acceso |
+|---|---|
+| `GET /salud` | Pública |
+| `GET /.well-known/agent-card.json` | Pública (la spec A2A pide fichas descubribles) |
+| `POST /` (mensajes A2A) y el resto | Requiere `X-API-Key` válida |
+
+- Sin encabezado o con clave incorrecta: **HTTP 401** con un mensaje claro.
+- Si el servidor no tiene `CLAVE_API` configurada: **HTTP 503**, no acepta nada.
+- La consola web pide la clave en el campo **"Clave de acceso"** y su servidor la
+  valida antes de reenviar el mensaje. La clave **no** está en el HTML ni en el JS.
+- El coordinador y la consola agregan la clave del `.env` al llamar a los agentes.
+- Cada intento queda en la terminal del servidor, sin mostrar la clave:
+  `[acceso 2026-11-16 20:41:03] Agente de viajes POST / desde 127.0.0.1: RECHAZADO (Clave de acceso inválida.)`
+
+Para conectar agentes entre computadores, todos deben usar la misma `CLAVE_API`
+(compártanla por un canal privado, nunca en el repo ni en capturas).
+
+Probar desde la terminal (con viajes levantado en el 8000):
+
+```bash
+# Rechazado: sin clave -> 401
+curl -i -X POST http://127.0.0.1:8000/ -H "Content-Type: application/json" -d "{}"
+
+# Permitido: con clave -> 200
+python scripts/probar_acceso.py
+```
+
+```bash
+pytest tests/test_acceso.py -v
+```
 
 ## Estructura
 

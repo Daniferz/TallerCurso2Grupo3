@@ -14,6 +14,8 @@ import httpx
 
 from dotenv import load_dotenv
 
+from src.comun.acceso import encabezados_acceso
+
 from a2a.client import A2ACardResolver, Client, ClientConfig, ClientCallContext, create_client
 from a2a.client.errors import A2AClientError, AgentCardResolutionError
 from a2a.types import (
@@ -42,7 +44,8 @@ _clientes: dict[str, Client] = {}
 _tarjetas: dict[str, AgentCard] = {}
 
 # Un solo HTTP para ficha y mensajes; con timeout explícito desde el inicio.
-_http = httpx.AsyncClient(timeout=TIEMPO_ESPERA)
+# Lleva la X-API-Key del .env: los demás agentes la exigen para aceptar mensajes.
+_http = httpx.AsyncClient(timeout=TIEMPO_ESPERA, headers=encabezados_acceso())
 
 
 def _traducir_ficha(url: str, error: Exception) -> str:
@@ -62,7 +65,10 @@ def _traducir(error: Exception) -> str:
     if isinstance(causa, httpx.TimeoutException):
         return f"El agente no respondió en {TIEMPO_ESPERA:.0f} segundos."
     if isinstance(causa, httpx.HTTPStatusError):
-        return f"El agente respondió HTTP {causa.response.status_code}."
+        codigo = causa.response.status_code
+        if codigo in (401, 503):
+            return f"El agente rechazó el acceso (HTTP {codigo}): revisa CLAVE_API en .env."
+        return f"El agente respondió HTTP {codigo}."
     if isinstance(causa, httpx.RequestError):
         return "No se pudo conectar con el agente."
     return str(error)

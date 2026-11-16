@@ -6,6 +6,7 @@ import uuid
 
 import httpx
 
+from src.comun.acceso import encabezados_acceso
 from src.comun.registro import Agente
 
 
@@ -177,7 +178,10 @@ async def enviar_mensaje(
     inicio = time.perf_counter()
     try:
         async with httpx.AsyncClient(timeout=TIEMPO_ESPERA) as cliente:
-            respuesta = await cliente.post(agente.url, json=peticion)
+            # La clave sale del .env del servidor de la consola, nunca del navegador.
+            respuesta = await cliente.post(
+                agente.url, json=peticion, headers=encabezados_acceso()
+            )
     except httpx.TimeoutException:
         raise ErrorAgente(
             f"{agente.nombre} no respondió en {TIEMPO_ESPERA:.0f} segundos."
@@ -190,6 +194,11 @@ async def enviar_mensaje(
 
     latencia = int((time.perf_counter() - inicio) * 1000)
 
+    if respuesta.status_code in (401, 503):
+        raise ErrorAgente(
+            f"{agente.nombre} rechazó el acceso (HTTP {respuesta.status_code}). "
+            "Revisa que CLAVE_API sea la misma en el .env de la consola y del agente."
+        )
     if respuesta.status_code >= 400:
         raise ErrorAgente(
             f"{agente.nombre} respondió con HTTP {respuesta.status_code}."

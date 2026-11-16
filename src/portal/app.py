@@ -3,11 +3,12 @@
 import asyncio
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 
+from src.comun.acceso import ENCABEZADO, motivo_rechazo, registrar_acceso
 from src.comun.registro import CATALOGO, Agente
 
 from .cliente import (
@@ -98,8 +99,20 @@ async def listar_agentes() -> list[dict]:
 
 
 @app.post("/api/mensajes")
-async def mandar_mensaje(datos: MensajeEntrante) -> dict:
-    """Reenvía el texto al agente elegido usando JSON-RPC message/send."""
+async def mandar_mensaje(
+    datos: MensajeEntrante,
+    request: Request,
+    clave: str | None = Header(default=None, alias=ENCABEZADO),
+) -> dict:
+    """Valida la clave del usuario y reenvía el texto al agente elegido con message/send."""
+    cliente = request.client.host if request.client else "desconocido"
+    rechazo = motivo_rechazo(clave)
+    if rechazo:
+        codigo, mensaje = rechazo
+        registrar_acceso("Consola web", f"POST /api/mensajes -> {datos.agente}", cliente, False, mensaje)
+        raise HTTPException(status_code=codigo, detail=mensaje)
+    registrar_acceso("Consola web", f"POST /api/mensajes -> {datos.agente}", cliente, True)
+
     agente = CATALOGO.get(datos.agente)
     if agente is None:
         raise HTTPException(status_code=404, detail="Ese agente no está registrado.")
