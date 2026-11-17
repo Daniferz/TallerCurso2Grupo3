@@ -82,3 +82,23 @@ def test_consola_exige_clave(monkeypatch):
         consola.post("/api/mensajes", json=cuerpo, headers={"X-API-Key": "mala"}).status_code
         == 401
     )
+
+
+def test_falla_del_agente_sale_como_error_y_no_como_respuesta(monkeypatch):
+    """Si el agente falla (modelo, clave, red), el cliente recibe un error JSON-RPC."""
+    monkeypatch.setenv("CLAVE_API", CLAVE)
+    monkeypatch.setenv("URL_PUBLICA", "")
+
+    async def roto(texto, context_id):
+        raise RuntimeError("API key not valid")
+
+    tarjeta = crear_tarjeta(
+        "Agente roto", "Prueba", "http://127.0.0.1:9999",
+        [("eco", "Eco", "Repite el mensaje.", "hola")],
+    )
+    servidor = TestClient(crear_app(tarjeta, roto))
+    datos = servidor.post("/", json=_mensaje(), headers={"X-API-Key": CLAVE}).json()
+
+    assert "result" not in datos
+    assert "No se pudo responder" in datos["error"]["message"]
+    assert "clave de Gemini" in datos["error"]["message"]
