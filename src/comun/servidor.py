@@ -1,6 +1,7 @@
 """Servidor A2A común: monta el agente sobre FastAPI una sola vez para los tres agentes."""
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from a2a.server.request_handlers import DefaultRequestHandler
 from a2a.server.routes import (
@@ -11,11 +12,17 @@ from a2a.server.routes import (
 from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import AgentCard
 
+from .acceso import ENCABEZADO, motivo_rechazo, registrar_acceso
 from .executor import Executor, FuncionResponder
 
 
 RUTA_MENSAJES = "/"
 RUTA_SALUD = "/salud"
+RUTA_FICHA = "/.well-known/agent-card.json"
+
+# Rutas públicas: la salud y la ficha A2A (la spec pide que la ficha sea descubrible).
+# Todo lo demás, en especial los mensajes JSON-RPC en "/", exige X-API-Key.
+RUTAS_PUBLICAS = {RUTA_SALUD, RUTA_FICHA}
 
 
 def crear_app(tarjeta: AgentCard, responder: FuncionResponder) -> FastAPI:
@@ -47,6 +54,23 @@ def crear_app(tarjeta: AgentCard, responder: FuncionResponder) -> FastAPI:
             enable_v0_3_compat=True,
         ),
     )
+
+    @app.middleware("http")
+    async def exigir_clave(request: Request, siguiente):
+        """Rechaza con 401 cualquier llamada no pública sin una X-API-Key válida."""
+        ruta = request.url.path
+        if request.method == "GET" and ruta in RUTAS_PUBLICAS:
+            return await siguiente(request)
+
+        cliente = request.client.host if request.client else "desconocido"
+        rechazo = motivo_rechazo(request.headers.get(ENCABEZADO))
+        if rechazo:
+            codigo, mensaje = rechazo
+            registrar_acceso(tarjeta.name, f"{request.method} {ruta}", cliente, False, mensaje)
+            return JSONResponse(status_code=codigo, content={"detail": mensaje})
+
+        registrar_acceso(tarjeta.name, f"{request.method} {ruta}", cliente, True)
+        return await siguiente(request)
 
     @app.get(RUTA_SALUD)
     async def salud() -> dict[str, bool]:

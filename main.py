@@ -1,9 +1,10 @@
-"""Entrada única por terminal para los tres agentes.
+"""Entrada única por terminal para los agentes del proyecto.
 
 Uso:
     python main.py viajes "pregunta"
     python main.py restaurantes "pregunta" --saltos
     python main.py pato "pregunta" --saltos
+    python main.py dani "pregunta" --saltos
     python main.py coordinador "pregunta" --diagrama
 """
 
