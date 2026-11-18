@@ -63,8 +63,9 @@ los logs ni las capturas. `.env.example` lleva todas las variables con valores f
 8. +1: despliegue que funciona con los computadores de los integrantes apagados, sin túnel.
 
 ## Cómo trabajamos
-1. Cada integrante toma **una tarea a la vez** de `plan.json`, de las que tienen su nombre o
-   "por asignar" (al tomarla, pone su nombre).
+1. Las tareas no tienen dueño fijo: todas parten "por asignar". Cada integrante toma **una tarea
+   a la vez** de `plan.json` entre las desbloqueadas; al tomarla pone su nombre, la marca
+   `en_curso` y sube ese cambio antes de programar (el primero que lo sube se la queda).
 2. Crea una rama desde `taller-sistema-agentes` (ej.: `t05-prompt-supervisor`), la marca
    `en_curso`, la implementa con `@implementador` y abre un PR hacia `taller-sistema-agentes`.
 3. Antes de empezar: `git pull`. Las tareas que tocan el mismo archivo están encadenadas en
