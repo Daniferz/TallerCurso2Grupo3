@@ -52,6 +52,10 @@ if _aviso:
     print(_aviso, flush=True)
 
 
+class AgenteNoDisponible(A2AClientError):
+    """El agente no contestó: está apagado, dormido o no se pudo conectar con él."""
+
+
 def _http_para(destino: str) -> httpx.AsyncClient:
     """Cliente HTTP con la clave del agente de `destino`, creado una sola vez."""
     if destino not in _https:
@@ -72,19 +76,25 @@ def _traducir_ficha(url: str, error: Exception) -> str:
     return f"No se pudo leer la ficha del agente en {url}."
 
 
-def _traducir(error: Exception) -> str:
-    """Pasa el error del cliente A2A a una frase corta en español."""
+def _traducir(error: Exception) -> A2AClientError:
+    """Pasa el error del cliente A2A a una frase corta en español.
+
+    Si el agente no contestó (sin conexión o sin respuesta a tiempo) devuelve
+    AgenteNoDisponible, para que el coordinador dé el aviso claro a la persona.
+    """
     causa = error.__cause__
     if isinstance(causa, httpx.TimeoutException):
-        return f"El agente no respondió en {TIEMPO_ESPERA:.0f} segundos."
+        return AgenteNoDisponible(f"El agente no respondió en {TIEMPO_ESPERA:.0f} segundos.")
     if isinstance(causa, httpx.HTTPStatusError):
         codigo = causa.response.status_code
         if codigo in (401, 503):
-            return f"El agente rechazó el acceso (HTTP {codigo}): revisa CLAVES_AGENTES en .env."
-        return f"El agente respondió HTTP {codigo}."
+            return A2AClientError(
+                f"El agente rechazó el acceso (HTTP {codigo}): revisa CLAVES_AGENTES en .env."
+            )
+        return A2AClientError(f"El agente respondió HTTP {codigo}.")
     if isinstance(causa, httpx.RequestError):
-        return "No se pudo conectar con el agente."
-    return str(error)
+        return AgenteNoDisponible("No se pudo conectar con el agente.")
+    return A2AClientError(str(error))
 
 
 def _texto_de_partes(partes) -> str:
@@ -148,7 +158,7 @@ async def _esperar_tarea(cliente: Client, tarea: Task, contexto: ClientCallConte
     limite = time.monotonic() + TIEMPO_ESPERA
     while _estado_de(tarea) in (TaskState.TASK_STATE_SUBMITTED, TaskState.TASK_STATE_WORKING):
         if time.monotonic() > limite:
-            raise A2AClientError(
+            raise AgenteNoDisponible(
                 f"La tarea {tarea.id} no terminó en {TIEMPO_ESPERA:.0f} segundos."
             )
         await asyncio.sleep(0.5)
@@ -193,6 +203,6 @@ async def preguntar(cliente: Client, texto: str, context_id: str) -> str:
         # Sin causa conocida (errores que lanzamos nosotros) se dejan como están.
         if error.__cause__ is None:
             raise
-        raise A2AClientError(_traducir(error)) from None
+        raise _traducir(error) from None
 
     raise A2AClientError("El agente no devolvió ni mensaje ni tarea.")
