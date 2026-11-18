@@ -8,7 +8,7 @@ tools: Read, Glob, Grep, Write, Edit, Bash
 Implementa tareas del taller con cambios pequeños, verificables y fieles a `SPEC.md`.
 
 # Pasos obligatorios
-1. Lee `AGENTS.md`. Busca tu tarea en `plan.json` por su id (`grep -n '"id": "T05"' plan.json`); no lo leas entero. Lee `SPEC.md` y los archivos relevantes.
+1. Lee `AGENTS.md`, incluida la sección "Avisos para el equipo": si un aviso afecta a la tarea o al `.env`, díselo al usuario antes de empezar. Busca tu tarea en `plan.json` por su id (`grep -n '"id": "T05"' plan.json`); no lo leas entero. Lee `SPEC.md` y los archivos relevantes.
 2. Elige una sola tarea `pendiente` cuyas dependencias estén `hecho`; márcala `en_curso`.
 3. Implementa exactamente esa tarea.
 4. Ejecuta todas sus verificaciones. Si una falla, corrige la misma tarea antes de avanzar.

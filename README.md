@@ -69,7 +69,7 @@ Para salir del entorno: `deactivate`.
 
 1. Copia `.env.example` a `.env`.
 2. Pega tu clave de Gemini en `GOOGLE_API_KEY`.
-3. Cambia `CLAVE_API` por una clave propia (ver "Control de acceso").
+3. Pon una clave distinta en `CLAVE_PATO`, `CLAVE_DANI`, `CLAVE_CRISTIAN` y `CLAVE_COORDINADOR`, y las de los agentes en `CLAVES_AGENTES` (ver "Control de acceso").
 
 `.env` está en `.gitignore`: las claves nunca se suben al repositorio.
 
@@ -77,7 +77,8 @@ Para salir del entorno: `deactivate`.
 
 Todos los servidores A2A (viajes, restaurantes, Pato, coordinador y los agentes
 personales) se crean con `crear_app` en `src/comun/servidor.py`, que exige el
-encabezado `X-API-Key` con el valor de `CLAVE_API` del `.env`:
+encabezado `X-API-Key` con **la clave propia de ese agente** (`CLAVE_PATO`, `CLAVE_DANI`,
+`CLAVE_CRISTIAN`, `CLAVE_COORDINADOR`…). Cada agente rechaza la clave de los otros:
 
 | Ruta | Acceso |
 |---|---|
@@ -86,15 +87,16 @@ encabezado `X-API-Key` con el valor de `CLAVE_API` del `.env`:
 | `POST /` (mensajes A2A) y el resto | Requiere `X-API-Key` válida |
 
 - Sin encabezado o con clave incorrecta: **HTTP 401** con un mensaje claro.
-- Si el servidor no tiene `CLAVE_API` configurada: **HTTP 503**, no acepta nada.
+- Si el servidor no tiene su clave configurada: **HTTP 503**, no acepta nada.
 - La consola web pide la clave en el campo **"Clave de acceso"** y su servidor la
   valida antes de reenviar el mensaje. La clave **no** está en el HTML ni en el JS.
 - El coordinador y la consola agregan la clave del `.env` al llamar a los agentes.
 - Cada intento queda en la terminal del servidor, sin mostrar la clave:
   `[acceso 2026-11-16 20:41:03] Agente de viajes POST / desde 127.0.0.1: RECHAZADO (Clave de acceso inválida.)`
 
-Para conectar agentes entre computadores, todos deben usar la misma `CLAVE_API`
-(compártanla por un canal privado, nunca en el repo ni en capturas).
+El coordinador envía a cada agente su clave: lee `URLS_AGENTES` y `CLAVES_AGENTES` (mismo orden,
+separadas por comas). Si las listas no tienen el mismo largo, lo avisa en una línea al arrancar.
+Las claves se comparten por un canal privado, nunca en el repo ni en capturas.
 
 Probar desde la terminal (con viajes levantado en el 8000):
 

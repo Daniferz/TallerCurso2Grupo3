@@ -106,7 +106,8 @@ async def mandar_mensaje(
 ) -> dict:
     """Valida la clave del usuario y reenvía el texto al agente elegido con message/send."""
     cliente = request.client.host if request.client else "desconocido"
-    rechazo = motivo_rechazo(clave)
+    # La persona que usa la consola escribe la clave del coordinador.
+    rechazo = motivo_rechazo(clave, CATALOGO["coordinador"].variable_clave)
     if rechazo:
         codigo, mensaje = rechazo
         registrar_acceso("Consola web", f"POST /api/mensajes -> {datos.agente}", cliente, False, mensaje)

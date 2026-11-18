@@ -74,7 +74,7 @@
       "etapa": "seguridad",
       "nombre": "Una clave por agente",
       "responsable": "Patricio Vergara",
-      "estado": "pendiente",
+      "estado": "hecho",
       "depende_de": [
         "T01"
       ],
@@ -102,10 +102,17 @@
         "Si URLS_AGENTES y CLAVES_AGENTES no tienen el mismo largo, el coordinador lo dice en una línea al arrancar.",
         "pytest pasa."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-17 22:04 LOCAL: probar_acceso.py pato -> sin clave 401, clave incorrecta 401, CLAVE_PATO 200 con rutina real de Gemini, clave de otro agente (CLAVE_DANI) 401.",
+        "2026-11-17 22:06 LOCAL: CLAVE_PATO enviada a Dani (8003) y a Cristian (8004) -> 401 'Clave de acceso inválida' en ambos.",
+        "2026-11-17 22:06 LOCAL: coordinador arranca con 'Supervisor con 3 agentes' y, usando CLAVES_AGENTES, obtiene 200 de Maleta (Pucón 3 días), Entrenamiento (rutina de espalda) y Sitios (Cerro San Cristóbal); el log de cada agente muestra PERMITIDO.",
+        "2026-11-17 LOCAL: URLS_AGENTES con 2 URL y CLAVES_AGENTES con 1 -> 'Aviso: URLS_AGENTES tiene 2 URL y CLAVES_AGENTES 1 claves…'.",
+        "2026-11-17: pytest 42 passed (3 tests nuevos: clave cruzada, clave_para por posición y por registro)."
+      ],
       "reemplaza": [
         "T04"
-      ]
+      ],
+      "observaciones": "La pregunta 'sitios en Valparaíso' fue enrutada a 'ninguno' por el supervisor: es un tema de enrutamiento/ficha (T03, T05 o ficha de Cristian), no de claves. viajes y restaurantes siguen en el catálogo hasta T03."
     },
     {
       "id": "T03",

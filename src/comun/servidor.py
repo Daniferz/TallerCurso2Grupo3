@@ -25,11 +25,14 @@ RUTA_FICHA = "/.well-known/agent-card.json"
 RUTAS_PUBLICAS = {RUTA_SALUD, RUTA_FICHA}
 
 
-def crear_app(tarjeta: AgentCard, responder: FuncionResponder) -> FastAPI:
+def crear_app(
+    tarjeta: AgentCard, responder: FuncionResponder, variable_clave: str
+) -> FastAPI:
     """Devuelve la app FastAPI lista para `uvicorn src.agente_x.server:app`.
 
     Queda escuchando mensajes A2A en "/" y publicando la ficha en
-    "/.well-known/agent-card.json".
+    "/.well-known/agent-card.json". Los mensajes exigen X-API-Key igual a la
+    variable `variable_clave` del .env (ej.: CLAVE_PATO): cada agente tiene la suya.
     """
     manejador = DefaultRequestHandler(
         agent_executor=Executor(responder),
@@ -63,7 +66,7 @@ def crear_app(tarjeta: AgentCard, responder: FuncionResponder) -> FastAPI:
             return await siguiente(request)
 
         cliente = request.client.host if request.client else "desconocido"
-        rechazo = motivo_rechazo(request.headers.get(ENCABEZADO))
+        rechazo = motivo_rechazo(request.headers.get(ENCABEZADO), variable_clave)
         if rechazo:
             codigo, mensaje = rechazo
             registrar_acceso(tarjeta.name, f"{request.method} {ruta}", cliente, False, mensaje)

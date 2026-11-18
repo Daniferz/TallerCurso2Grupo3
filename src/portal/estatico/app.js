@@ -16,7 +16,7 @@ const contenedorMensajes = document.getElementById("mensajes");
 const campoClave = document.getElementById("clave-acceso");
 
 // La clave la escribe la persona; solo se recuerda en esta pestaña (sessionStorage).
-// El servidor de la consola la valida contra CLAVE_API: el código no trae ninguna clave.
+// El servidor de la consola la valida contra CLAVE_COORDINADOR: el código no trae ninguna clave.
 try {
   campoClave.value = sessionStorage.getItem("clave-acceso") || "";
 } catch (error) {
