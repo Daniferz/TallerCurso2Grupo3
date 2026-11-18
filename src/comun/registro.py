@@ -25,6 +25,8 @@ class Agente:
     descripcion: str
     paquete: str
     url: str
+    # Variable del .env con la clave que este agente exige en X-API-Key.
+    variable_clave: str
 
     @property
     def carpeta(self) -> Path:
@@ -55,6 +57,7 @@ CATALOGO: dict[str, Agente] = {
         ),
         paquete="src.agente_viajes",
         url=_url("URL_VIAJES", "http://127.0.0.1:8000"),
+        variable_clave="CLAVE_VIAJES",
     ),
     "restaurantes": Agente(
         clave="restaurantes",
@@ -65,6 +68,7 @@ CATALOGO: dict[str, Agente] = {
         ),
         paquete="src.agente_restaurantes",
         url=_url("URL_RESTAURANTES", "http://127.0.0.1:8001"),
+        variable_clave="CLAVE_RESTAURANTES",
     ),
     "pato": Agente(
         clave="pato",
@@ -78,6 +82,7 @@ CATALOGO: dict[str, Agente] = {
         ),
         paquete="src.agente_pato",
         url=_url("URL_PATO", "http://127.0.0.1:8005"),
+        variable_clave="CLAVE_PATO",
     ),
     "dani": Agente(
         clave="dani",
@@ -88,6 +93,7 @@ CATALOGO: dict[str, Agente] = {
         ),
         paquete="src.agente_dani",
         url=_url("URL_DANI", "http://127.0.0.1:8003"),
+        variable_clave="CLAVE_DANI",
     ),
     "coordinador": Agente(
         clave="coordinador",
@@ -98,6 +104,7 @@ CATALOGO: dict[str, Agente] = {
         ),
         paquete="src.coordinador",
         url=_url("URL_COORDINADOR", "http://127.0.0.1:8002"),
+        variable_clave="CLAVE_COORDINADOR",
     ),
     "cristian": Agente(
         clave="cristian",
@@ -108,6 +115,7 @@ CATALOGO: dict[str, Agente] = {
         ),
         paquete="src.agente_cristian",
         url=_url("URL_CRISTIAN", "http://127.0.0.1:8004"),
+        variable_clave="CLAVE_CRISTIAN",
     ),
 }
 

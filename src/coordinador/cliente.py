@@ -14,7 +14,7 @@ import httpx
 
 from dotenv import load_dotenv
 
-from src.comun.acceso import encabezados_acceso
+from src.comun.acceso import aviso_listas_desparejas, encabezados_para
 
 from a2a.client import A2ACardResolver, Client, ClientConfig, ClientCallContext, create_client
 from a2a.client.errors import A2AClientError, AgentCardResolutionError
@@ -43,9 +43,22 @@ TIEMPO_FICHA = float(os.getenv("TIEMPO_FICHA_A2A", "3"))
 _clientes: dict[str, Client] = {}
 _tarjetas: dict[str, AgentCard] = {}
 
-# Un solo HTTP para ficha y mensajes; con timeout explícito desde el inicio.
-# Lleva la X-API-Key del .env: los demás agentes la exigen para aceptar mensajes.
-_http = httpx.AsyncClient(timeout=TIEMPO_ESPERA, headers=encabezados_acceso())
+# Un HTTP por agente (url -> cliente), con timeout explícito y la X-API-Key de ESE
+# agente: cada uno exige su propia clave (CLAVES_AGENTES o su variable del registro).
+_https: dict[str, httpx.AsyncClient] = {}
+
+_aviso = aviso_listas_desparejas()
+if _aviso:
+    print(_aviso, flush=True)
+
+
+def _http_para(destino: str) -> httpx.AsyncClient:
+    """Cliente HTTP con la clave del agente de `destino`, creado una sola vez."""
+    if destino not in _https:
+        _https[destino] = httpx.AsyncClient(
+            timeout=TIEMPO_ESPERA, headers=encabezados_para(destino)
+        )
+    return _https[destino]
 
 
 def _traducir_ficha(url: str, error: Exception) -> str:
@@ -67,7 +80,7 @@ def _traducir(error: Exception) -> str:
     if isinstance(causa, httpx.HTTPStatusError):
         codigo = causa.response.status_code
         if codigo in (401, 503):
-            return f"El agente rechazó el acceso (HTTP {codigo}): revisa CLAVE_API en .env."
+            return f"El agente rechazó el acceso (HTTP {codigo}): revisa CLAVES_AGENTES en .env."
         return f"El agente respondió HTTP {codigo}."
     if isinstance(causa, httpx.RequestError):
         return "No se pudo conectar con el agente."
@@ -94,12 +107,13 @@ async def obtener_cliente(url: str) -> Client:
         return _clientes[destino]
 
     try:
-        ficha = await A2ACardResolver(_http, destino).get_agent_card(
+        http = _http_para(destino)
+        ficha = await A2ACardResolver(http, destino).get_agent_card(
             http_kwargs={"timeout": TIEMPO_FICHA}
         )
         cliente = await create_client(
             ficha,
-            ClientConfig(streaming=False, httpx_client=_http),
+            ClientConfig(streaming=False, httpx_client=http),
         )
     except AgentCardResolutionError as error:
         raise A2AClientError(_traducir_ficha(destino, error)) from None

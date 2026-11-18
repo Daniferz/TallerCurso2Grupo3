@@ -31,7 +31,7 @@ tarjeta = crear_tarjeta(
     usar_url_publica=False,
 )
 
-app = crear_app(tarjeta, responder)
+app = crear_app(tarjeta, responder, agente.variable_clave)
 
 
 @app.on_event("startup")
