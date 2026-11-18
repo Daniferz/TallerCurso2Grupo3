@@ -243,8 +243,8 @@
       "id": "T07",
       "etapa": "a2a",
       "nombre": "Datos faltantes y respuesta sin alterar",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara (Entrenamiento); Maleta y Sitios por asignar",
+      "estado": "en_curso",
       "depende_de": [
         "T03"
       ],
@@ -265,7 +265,11 @@
         "Sitios: pregunta sin ciudad -> pide la ciudad o declara lo supuesto.",
         "La misma pregunta, directo al agente y vía coordinador: cifras, unidades y condiciones idénticas."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-18 20:38 LOCAL (Entrenamiento): antes, 2 de 5 respuestas a 'rutina de pecho para fuerza, 5 días' traían solo la introducción; con completar_respuesta en graph.py y el prompt reforzado, 8 de 8 traen cada ejercicio con series y repeticiones.",
+        "2026-11-18 20:38 LOCAL (Entrenamiento): 'arma una rutina' -> pregunta el grupo muscular y muestra las opciones; 'lo mismo que te dije' sin conversación previa -> declara que usó los valores por defecto, sin inventar memoria. Salida en evidencias/taller-implementacion/local/T07-pato-respuesta-completa.txt.",
+        "Pendiente: Maleta (Dani) y Sitios (Cristian), y la comparación agente directo vs coordinador."
+      ],
       "reemplaza": [
         "T28"
       ]
