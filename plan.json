@@ -160,8 +160,8 @@
       "id": "T04",
       "etapa": "heroku",
       "nombre": "Procfile y variables de Heroku",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara",
+      "estado": "hecho",
       "depende_de": [],
       "archivos": [
         "Procfile",
@@ -176,7 +176,10 @@
       "verificacion": [
         "En local, APP_MODULO=src.agente_pato.server PORT=8100 con el comando del Procfile levanta el agente y /salud responde."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-18 20:44 LOCAL: con APP_MODULO=src.agente_pato.server y PORT=8100, el comando del Procfile ('uvicorn $APP_MODULO:app --host 0.0.0.0 --port $PORT') levanta el agente: GET /salud -> 200 {\"ok\":true}; la ficha responde 'Agente de Entrenamiento de Pato'; POST / sin clave -> 401.",
+        "Python local 3.12.10, coincide con .python-version (3.12)."
+      ],
       "reemplaza": [
         "T06"
       ]
