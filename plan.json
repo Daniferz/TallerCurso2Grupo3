@@ -118,8 +118,8 @@
       "id": "T03",
       "etapa": "coordinador",
       "nombre": "Catálogo con los 3 agentes y agentes caídos",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara",
+      "estado": "en_curso",
       "depende_de": [
         "T01"
       ],
