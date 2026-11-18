@@ -274,8 +274,8 @@
       "id": "T08",
       "etapa": "canal",
       "nombre": "Telegram en local: /chat y bot por polling",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara",
+      "estado": "hecho",
       "depende_de": [
         "T02",
         "T03"
@@ -303,7 +303,15 @@
         "Usuario no permitido ve su propio ID de Telegram en el aviso.",
         "Con el coordinador apagado, el bot responde un mensaje claro en el chat."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-18 20:16 LOCAL: POST /chat sin clave -> 401 'Falta el encabezado X-API-Key.'; clave incorrecta -> 401; texto vacío -> 422 'El texto está vacío: escribe una pregunta.'; con CLAVE_COORDINADOR -> 200 con respuesta real (Maleta Pucón, rutina de espalda) y el agente elegido.",
+        "2026-11-18 20:17 LOCAL: memoria con el mismo conversacion_id: 'rutina de pecho para fuerza, 5 días, avanzado' y luego 'la rutina de espalda con el mismo objetivo, días y nivel' -> fuerza, intermedio, 5 días; la misma frase en otra conversación -> valores por defecto.",
+        "2026-11-18 20:24 LOCAL: Telegram (@ag3nticUai_bot, polling) con usuario permitido: /start da bienvenida; Maleta, Entrenamiento y Sitios responden en el mismo chat; una foto/sticker recibe 'No puedo leer ese tipo de mensaje'. El log muestra chat_id y agente elegido, sin el token.",
+        "2026-11-18 20:32 LOCAL: con el coordinador apagado el chat recibe 'No pude responder en este momento: el asistente no está disponible...'; el detalle queda solo en el log.",
+        "2026-11-18 20:33 LOCAL: usuario fuera de TELEGRAM_USUARIOS_PERMITIDOS recibe 'No tienes acceso a este bot. Tu ID es ...' y el coordinador no se llama.",
+        "Salida completa (ID de Telegram reemplazado) en evidencias/taller-implementacion/local/T08-chat-y-telegram.txt.",
+        "2026-11-18: pytest 59 passed."
+      ],
       "reemplaza": [
         "T11",
         "T12"

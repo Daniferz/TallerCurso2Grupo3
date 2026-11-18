@@ -51,6 +51,14 @@ Cada aviso lleva fecha y autor. Quien resuelva un aviso lo borra en su PR.
   sus claves en el mismo orden. `REINTENTO_AGENTES_SEG` es opcional (60 por defecto).
 - Ya desbloqueadas: T04, T05, T07, T08 y T13.
 
+### 2026-11-18 · Patricio Vergara · T08: bot de Telegram en local (afecta a todos)
+- El coordinador tiene `POST /chat` (exige `CLAVE_COORDINADOR`) y hay un bot por polling:
+  `python -m src.canal.telegram`, con el coordinador y los agentes levantados. Se detiene con Ctrl+C.
+- **Qué hacer para probarlo:** crea **tu propio bot de prueba** con @BotFather y agrega a tu `.env`
+  `TELEGRAM_TOKEN` y `TELEGRAM_USUARIOS_PERMITIDOS` (tu ID numérico, te lo da @userinfobot).
+  El token nunca va al repo ni a capturas. En las evidencias, reemplaza tu ID por `<ID-de-nombre>`.
+- Ya desbloqueada: T09 (webhook para Heroku).
+
 ### 2026-11-18 · Patricio Vergara · Sitios turísticos no tiene Valparaíso (para Cristian)
 - Con T03 el coordinador ya envía "Qué sitios turísticos puedo visitar en Valparaíso" al agente de
   Cristian, pero el agente responde "No tengo sitios turísticos registrados para Valparaíso".
