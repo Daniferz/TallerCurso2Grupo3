@@ -1,0 +1,59 @@
+T08 · LOCAL · 2026-11-18 · POST /chat del coordinador y bot de Telegram por polling (@ag3nticUai_bot)
+
+### 1. POST /chat (httpx contra el coordinador con los 3 agentes levantados)
+
+[2026-11-18 20:16:05] 1. Sin clave
+  POST /chat {'texto': 'hola', 'conversacion_id': 't08'} (clave: ninguna)
+  -> HTTP 401: {"detail":"Falta el encabezado X-API-Key."}
+
+[2026-11-18 20:16:05] 2. Clave incorrecta
+  POST /chat {'texto': 'hola', 'conversacion_id': 't08'} (clave: incorrecta)
+  -> HTTP 401: {"detail":"Clave de acceso inválida."}
+
+[2026-11-18 20:16:05] 3. Texto vacío
+  POST /chat {'texto': '  ', 'conversacion_id': 't08'} (clave: CLAVE_COORDINADOR)
+  -> HTTP 422: {"detail":"El texto está vacío: escribe una pregunta."}
+
+[2026-11-18 20:16:08] 4. Con clave: pregunta real
+  POST /chat {'texto': 'Qué llevo en la maleta para Pucón 3 días en invierno', 'conversacion_id': 't08-memoria'} (clave: CLAVE_COORDINADOR)
+  -> HTTP 200: {"respuesta":"[Agente de Maleta de Dani] Hola, soy Dani, especialista en equipaje y preparación de maletas. \n\nPara tu viaje de 3 días a Pucón en invierno, esto es lo que debes llevar:\n\n**Ropa:**\n- 4 × ropa interior\n- 4 × calcetines\n- 3 × primera capa térmica\n- Polar o suéter abrigado\n- Chaqueta impermeable\n- Pantalones cómodos\n- Gorro\n- Guantes\n\n**Documentos:**\n- Documento de identidad\n- Reservas y pasajes descargados\n\n**Tecnología:**\n- Teléfono y cargador\n- Batería externa\n\n**Botiquín:**\n- Medicamentos personales\n- Artículos básicos de primeros auxilios\n\n**No te olvides:**\n- Bolsa para ropa húmeda\n- Revisar documentos antes de salir\nMotivo de selección: El agent
+
+[2026-11-18 20:16:13] 5. Mismo conversacion_id: seguimiento
+  POST /chat {'texto': '¿Y si son 5 días en vez de 3?', 'conversacion_id': 't08-memoria'} (clave: CLAVE_COORDINADOR)
+  -> HTTP 200: {"respuesta":"[Agente de Entrenamiento de Pato] Para una frecuencia de 5 días por semana con objetivo de hipertrofia y nivel principiante, aquí tienes la rutina de cuerpo completo estructurada según la evidencia científica:\n\nRutina de cuerpo completo · objetivo hipertrofia · nivel principiante · 5 día(s) disponibles\nMúsculos trabajados: todos los grupos principales en una sesión.\nVolumen: 2 sesión(es) de cuerpo completo por semana; cada ejercicio con 3 series.\nEjercicios por sesión:\n1. Sentadilla: 3 × 8-12\n2. Press de banca: 3 × 8-12\n3. Remo con barra o en máquina: 3 × 8-12\n4. Peso muerto rumano: 3 × 8-12\n5. Press militar: 3 × 8-12\n6. Jalón al pecho: 3 × 8-12\nIntensidad: terminar
+
+[2026-11-18 20:16:17] 6. Con clave: Entrenamiento
+  POST /chat {'texto': 'Rutina de espalda para fuerza 3 días', 'conversacion_id': 't08-b'} (clave: CLAVE_COORDINADOR)
+  -> HTTP 200: {"respuesta":"[Agente de Entrenamiento de Pato] Aquí tienes tu rutina de espalda orientada a fuerza, diseñada para 3 días por semana a nivel principiante.\n\n### Estructura de la sesión (3 veces por semana)\n1. **Jalón al pecho o dominadas:** 2 series × 5-8 repeticiones\n2. **Remo con barra o en máquina con apoyo de pecho:** 2 series × 5-8 repeticiones\n\n* **Intensidad:** Deja 2-3 repeticiones en reserva (RIR) y prioriza la técnica.\n* **Descanso entre series:** 2-3 minutos.\n* **Progresión:** Cuando completes todas las series en el tope del rango, sube un poco el peso.\n\n### Por qué funciona:\n* Cargas altas y bajas dan hipertrofia similar si las series terminan cerca del fallo; las carga
+
+
+### 2. Memoria: mismo conversacion_id vs. otra conversación
+
+[2026-11-18 20:17:15] 7. Memoria (1/2): rutina con objetivo y días
+  POST /chat {'texto': 'Arma una rutina de pecho para fuerza, 5 días por semana, nivel avanzado', 'conversacion_id': 't08-memoria-2'} (clave: CLAVE_COORDINADOR)
+  -> HTTP 200: {"respuesta":"[Agente de Entrenamiento de Pato] Como me pediste nivel avanzado, te aclaro que la herramienta trabaja con nivel intermedio y 5 días por semana para fuerza. Aquí tienes la rutina:\n\nRutina de pecho · objetivo fuerza · nivel intermedio · 5 día(s) disponibles\nMúsculos trabajados: pectoral mayor, deltoides anterior y tríceps.\nVolumen: 12 series semanales para pecho, repartidas en 2 sesiones por semana (6 series por sesión).\n\nEjerc
+
+[2026-11-18 20:17:19] 7. Memoria (2/2): seguimiento sin repetir objetivo ni días
+  POST /chat {'texto': 'Ahora arma la rutina de espalda con el mismo objetivo, días y nivel que te dije', 'conversacion_id': 't08-memoria-2'} (clave: CLAVE_COORDINADOR)
+  -> HTTP 200: {"respuesta":"[Agente de Entrenamiento de Pato] Aquí tienes la rutina de espalda con los mismos parámetros (objetivo de fuerza, nivel intermedio y 5 días por semana):\n\nRutina de espalda · objetivo fuerza · nivel intermedio · 5 día(s) disponibles\nMúsculos trabajados: dorsal ancho, trapecio, romboides y deltoides posterior.\nVolumen: 12 series semanales para espalda, repartidas en 2 sesiones por semana (6 series por sesión).\n\nEjercicios por se
+
+[2026-11-18 20:17:23] 8. Otra conversación con la misma frase (sin memoria previa)
+  POST /chat {'texto': 'Ahora arma la rutina de espalda con el mismo objetivo, días y nivel que te dije', 'conversacion_id': 't08-otra'} (clave: CLAVE_COORDINADOR)
+  -> HTTP 200: {"respuesta":"[Agente de Entrenamiento de Pato] Aquí tienes la rutina de espalda para hipertrofia, nivel principiante y 3 días por semana (manteniendo los valores por defecto que usamos antes):\n\nRutina de espalda · objetivo hipertrofia · nivel principiante · 3 día(s) disponibles\nMúsculos trabajados: dorsal ancho, trapecio, romboides y deltoides posterior.\nVolumen: 10 series semanales para espalda, repartidas en 2 sesión(es) por semana (5 seri
+
+
+### 3. Bot en Telegram, usuario permitido (registro del bot)
+Bot @ag3nticUai_bot escuchando por polling (coordinador en http://127.0.0.1:8002). Ctrl+C para detener.
+[telegram 2026-11-18 20:24:42] chat <ID-de-Patricio> · usuario <ID-de-Patricio> · /start
+[telegram 2026-11-18 20:25:08] chat <ID-de-Patricio> · usuario <ID-de-Patricio> · agente: Agente de Maleta de Dani
+[telegram 2026-11-18 20:25:32] chat <ID-de-Patricio> · usuario <ID-de-Patricio> · agente: Agente de Entrenamiento de Pato
+[telegram 2026-11-18 20:25:55] chat <ID-de-Patricio> · usuario <ID-de-Patricio> · agente: Agente de cristian
+[telegram 2026-11-18 20:25:57] chat <ID-de-Patricio> · usuario <ID-de-Patricio> · mensaje sin texto
+
+### 4. Bot con el coordinador apagado (registro del bot; en el chat llegó el mensaje claro)
+Bot @ag3nticUai_bot escuchando por polling (coordinador en http://127.0.0.1:8002). Ctrl+C para detener.
+[telegram 2026-11-18 20:32:41] chat <ID-de-Patricio> · usuario <ID-de-Patricio> · ERROR: no se pudo conectar con el coordinador en http://127.0.0.1:8002/chat
+
+### 5. Bot con el usuario fuera de TELEGRAM_USUARIOS_PERMITIDOS (registro del bot)
+Bot @ag3nticUai_bot escuchando por polling (coordinador en http://127.0.0.1:8002). Ctrl+C para detener.
+[telegram 2026-11-18 20:33:38] chat <ID-de-Patricio> · usuario <ID-de-Patricio> · RECHAZADO (no está en TELEGRAM_USUARIOS_PERMITIDOS)
