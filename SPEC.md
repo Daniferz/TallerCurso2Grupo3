@@ -25,7 +25,7 @@ Los agentes de ejemplo de viajes y restaurantes salen del catálogo del coordina
   (`Procfile` con `$APP_MODULO`).
   Heroku ya está pagado por el grupo, probablemente con el plan **Eco** (confirmar en *Resources*
   de cada app). Eco duerme las apps tras 30 min sin uso y tardan 10-20 s en despertar: por eso en
-  Heroku se usa `TIEMPO_FICHA_A2A=30` y antes de capturar evidencias se despiertan las apps (T08, T25).
+  Heroku se usa `TIEMPO_FICHA_A2A=30` y antes de capturar evidencias se despiertan las apps (T03, T15).
 - **Extra:** cuando ningún agente puede responder, el coordinador avisa a un chat del grupo
   (`TELEGRAM_CHAT_AVISO`). Si el aviso falla, la persona igual recibe su respuesta.
 - **Rama de trabajo:** `taller-sistema-agentes`. `main` solo recibe trabajo revisado por PR.
