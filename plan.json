@@ -118,7 +118,7 @@
       "id": "T03",
       "etapa": "coordinador",
       "nombre": "Catálogo con los 3 agentes y agentes caídos",
-      "responsable": "Daniella Fernández",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T01"
@@ -152,7 +152,7 @@
       "id": "T04",
       "etapa": "heroku",
       "nombre": "Procfile y variables de Heroku",
-      "responsable": "Cristian Meza",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [],
       "archivos": [
@@ -177,7 +177,7 @@
       "id": "T05",
       "etapa": "coordinador",
       "nombre": "Prompt del supervisor blindado",
-      "responsable": "Cristian Meza",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T03"
@@ -204,7 +204,7 @@
       "id": "T06",
       "etapa": "coordinador",
       "nombre": "Saludo y memoria al elegir agente",
-      "responsable": "Cristian Meza",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T03",
@@ -235,7 +235,7 @@
       "id": "T07",
       "etapa": "a2a",
       "nombre": "Datos faltantes y respuesta sin alterar",
-      "responsable": "cada dueño de agente (Dani: Maleta · Patricio: Entrenamiento · Cristian: Sitios)",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T03"
@@ -266,7 +266,7 @@
       "id": "T08",
       "etapa": "canal",
       "nombre": "Telegram en local: /chat y bot por polling",
-      "responsable": "Patricio Vergara",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T02",
@@ -305,7 +305,7 @@
       "id": "T09",
       "etapa": "canal",
       "nombre": "Webhook para Heroku: /telegram y script de registro",
-      "responsable": "Patricio Vergara",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T08"
@@ -336,7 +336,7 @@
       "id": "T10",
       "etapa": "extra",
       "nombre": "Extra: aviso a una persona cuando nadie sabe",
-      "responsable": "Daniella Fernández",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T03",
@@ -365,7 +365,7 @@
       "id": "T11",
       "etapa": "despliegue",
       "nombre": "Desplegar tu agente en Heroku",
-      "responsable": "cada dueño de agente (Dani: Maleta · Patricio: Entrenamiento · Cristian: Sitios)",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [
         "T02",
@@ -425,7 +425,7 @@
       "id": "T13",
       "etapa": "entrega",
       "nombre": "Documentos de integracion-grupo3 y los 12 resultados",
-      "responsable": "Daniella Fernández",
+      "responsable": "por asignar",
       "estado": "pendiente",
       "depende_de": [],
       "archivos": [
