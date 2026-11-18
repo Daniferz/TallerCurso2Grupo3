@@ -118,8 +118,8 @@
       "id": "T03",
       "etapa": "coordinador",
       "nombre": "Catálogo con los 3 agentes y agentes caídos",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara",
+      "estado": "hecho",
       "depende_de": [
         "T01"
       ],
@@ -142,7 +142,15 @@
         "Se vuelve a levantar: en menos de 60 s el coordinador lo usa de nuevo, sin reiniciarlo.",
         "En Heroku, tras 30 min sin uso, la primera pregunta a un agente dormido igual responde (no da 'no disponible')."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-18 19:56 LOCAL: con URLS_AGENTES de Pato, Dani y Cristian el coordinador arranca con 'Supervisor con 3 agentes' (sin viajes ni restaurantes) y responde rutina de pecho, maleta Pucón 3 días y Cerro San Cristóbal.",
+        "2026-11-18 19:56 LOCAL: se apaga el agente de Pato -> 'La parte de Agente de Entrenamiento de Pato no está disponible en este momento. Puedes seguir preguntando sobre los otros temas.'; Maleta sigue respondiendo (Iquique 5 días). El detalle técnico queda solo en la terminal del coordinador.",
+        "2026-11-18 19:56 LOCAL: se vuelve a levantar Pato sin reiniciar el coordinador -> responde la rutina de piernas 9 s después.",
+        "2026-11-18 19:57 LOCAL: coordinador arranca con Cristian apagado ('Supervisor con 2 agentes', 'se reintenta en 60 s'); se levanta Cristian y el reintento lo suma solo ('Agente sumado al catálogo: Agente de cristian'), sin reiniciar el coordinador.",
+        "2026-11-18: ficha del coordinador sin viajes ni restaurantes (test_ficha_del_coordinador_no_menciona_viajes_ni_restaurantes). Salida completa en evidencias/taller-implementacion/local/T03-agentes-caidos.txt.",
+        "2026-11-18: pytest 46 passed.",
+        "PENDIENTE HEROKU: la verificación con apps dormidas (TIEMPO_FICHA_A2A=30) se hace al desplegar el coordinador en T12."
+      ],
       "reemplaza": [
         "T05",
         "T08"

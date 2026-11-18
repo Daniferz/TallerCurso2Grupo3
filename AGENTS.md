@@ -39,9 +39,8 @@ Cada aviso lleva fecha y autor. Quien resuelva un aviso lo borra en su PR.
 - Las claves reales se comparten por un canal privado, nunca en el repo ni en capturas.
 - Probar: `pytest` y `python scripts/probar_acceso.py pato` (o `dani`, `cristian`).
 
-### 2026-11-17 · Patricio Vergara · Enrutamiento a Sitios (para Cristian y Dani)
-- Preguntando al coordinador "Qué sitios turísticos puedo visitar en Valparaíso", el supervisor
-  respondió que no tenía agente, aunque el agente de Cristian funciona (con "¿A qué hora puedo
-  visitar el Cerro San Cristóbal el domingo?" sí responde).
-- Probable causa: la ficha de Cristian (nombre "Agente de cristian", ciudades que cubre) o el
-  prompt del supervisor. Revisarlo en T03 (Dani), T05 (Cristian) o en la ficha de Cristian.
+### 2026-11-18 · Patricio Vergara · Sitios turísticos no tiene Valparaíso (para Cristian)
+- Con T03 el coordinador ya envía "Qué sitios turísticos puedo visitar en Valparaíso" al agente de
+  Cristian, pero el agente responde "No tengo sitios turísticos registrados para Valparaíso".
+- **Qué hacer (Cristian):** sumar las ciudades que faltan a los datos de `src/agente_cristian` y
+  decir en su ficha qué ciudades cubre, para que el supervisor no lo elija para ciudades sin datos.

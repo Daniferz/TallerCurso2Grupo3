@@ -18,8 +18,8 @@ tarjeta = crear_tarjeta(
         (
             "elegir_agente",
             "Elegir un agente por tema",
-            "Lee las fichas de viajes, restaurantes y compañeros configurados, elige el agente adecuado y explica brevemente el motivo.",
-            "¿Cuánto cuesta volar de Santiago a Lima?",
+            "Lee las fichas de los agentes de Maleta, Entrenamiento y Sitios turísticos, elige el adecuado y explica brevemente el motivo.",
+            "¿Qué llevo en la maleta para Pucón 3 días en invierno?",
         ),
         (
             "sin_agente",
@@ -36,6 +36,6 @@ app = crear_app(tarjeta, responder, agente.variable_clave)
 
 @app.on_event("startup")
 async def iniciar_supervisor() -> None:
-    """Descubre las fichas una vez al arrancar el servidor."""
+    """Lee las fichas al arrancar; las que fallen se reintentan después (ver catalogo.py)."""
     agentes = await descubrir()
     print(f"Supervisor con {len(agentes)} agentes")

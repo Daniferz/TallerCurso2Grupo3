@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 from src.comun.errores import en_una_linea
 
 from .catalogo import AgenteDescubierto, descubrir
-from .cliente import preguntar
+from .cliente import AgenteNoDisponible, preguntar
 
 
 load_dotenv()
@@ -109,6 +109,14 @@ async def supervisor(estado: EstadoSupervisor) -> dict:
     return {"agente": decision.agente, "motivo": decision.motivo}
 
 
+def aviso_no_disponible(nombre: str) -> str:
+    """Mensaje para la persona cuando el agente elegido no contesta (sin detalles técnicos)."""
+    return (
+        f"La parte de {nombre} no está disponible en este momento. "
+        "Puedes seguir preguntando sobre los otros temas."
+    )
+
+
 def siguiente(estado: EstadoSupervisor) -> str:
     """Enruta la decisión hacia el agente remoto o la respuesta sin agente."""
     return "sin_agente" if estado.get("agente") == "ninguno" else "agente_remoto"
@@ -129,6 +137,10 @@ async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
     context_id = thread_id or str(uuid.uuid4())
     try:
         respuesta = await preguntar(elegido.cliente, pregunta, context_id)
+    except AgenteNoDisponible as error:
+        # Agente apagado o dormido: aviso claro a la persona y el detalle solo en la terminal.
+        print(f"Aviso: {elegido.nombre} ({elegido.url}) no respondió: {en_una_linea(error)}", flush=True)
+        return {"messages": [AIMessage(content=aviso_no_disponible(elegido.nombre))]}
     except Exception as error:
         # La falla del agente remoto se propaga como error, no como respuesta.
         raise RuntimeError(
