@@ -39,6 +39,18 @@ Cada aviso lleva fecha y autor. Quien resuelva un aviso lo borra en su PR.
 - Las claves reales se comparten por un canal privado, nunca en el repo ni en capturas.
 - Probar: `pytest` y `python scripts/probar_acceso.py pato` (o `dani`, `cristian`).
 
+### 2026-11-18 · Patricio Vergara · Tareas sin dueño fijo y T03 lista (afecta a todos)
+- **Todas las tareas pendientes de `plan.json` están "por asignar".** Para tomar una: pon tu
+  nombre en `responsable`, márcala `en_curso` y **sube ese cambio antes de programar** (el primero
+  que lo sube se la queda). Detalle en `SPEC.md`, "Cómo trabajamos".
+- **T02 y T03 ya están en `taller-sistema-agentes`.** Antes de trabajar: `git pull` en esa rama.
+- Con T03 el coordinador usa **solo** `URLS_AGENTES` (Maleta, Entrenamiento y Sitios turísticos).
+  Si un agente está apagado, responde "La parte de [agente] no está disponible en este momento..."
+  y lo vuelve a intentar cada 60 s, sin reiniciar el coordinador.
+- **Qué hacer:** en tu `.env`, pon en `URLS_AGENTES` las URLs de los 3 agentes y en `CLAVES_AGENTES`
+  sus claves en el mismo orden. `REINTENTO_AGENTES_SEG` es opcional (60 por defecto).
+- Ya desbloqueadas: T04, T05, T07, T08 y T13.
+
 ### 2026-11-18 · Patricio Vergara · Sitios turísticos no tiene Valparaíso (para Cristian)
 - Con T03 el coordinador ya envía "Qué sitios turísticos puedo visitar en Valparaíso" al agente de
   Cristian, pero el agente responde "No tengo sitios turísticos registrados para Valparaíso".
