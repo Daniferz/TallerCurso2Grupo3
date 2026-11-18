@@ -274,8 +274,8 @@
       "id": "T08",
       "etapa": "canal",
       "nombre": "Telegram en local: /chat y bot por polling",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara",
+      "estado": "en_curso",
       "depende_de": [
         "T02",
         "T03"
