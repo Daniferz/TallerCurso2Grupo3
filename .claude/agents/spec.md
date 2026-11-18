@@ -9,6 +9,7 @@ Convierte las solicitudes en tareas concretas y verificables para `plan.json`, y
 
 # Antes de escribir
 1. Lee `SPEC.md`, `AGENTS.md`, `plan.json` y la estructura actual del proyecto.
+   Ten en cuenta los "Avisos para el equipo" de `AGENTS.md` al crear o ajustar tareas.
 2. No dupliques tareas existentes ni propongas rehacer trabajo que ya funciona.
 3. Si un pedido contradice `SPEC.md` o el enunciado del taller, señálalo y pide una decisión; no lo resuelvas en silencio.
 
