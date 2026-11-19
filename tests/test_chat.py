@@ -83,3 +83,32 @@ def test_chat_falla_del_coordinador_no_es_200(servidor, monkeypatch):
     detalle = respuesta.json()["detail"]
     assert detalle.startswith("El coordinador no pudo responder:")
     assert "\n" not in detalle
+
+
+def test_webhook_sin_secreto_es_401(servidor, monkeypatch):
+    cliente, _, _ = servidor
+    monkeypatch.setenv("TELEGRAM_SECRETO_WEBHOOK", "secreto-webhook-de-prueba")
+    respuesta = cliente.post("/telegram", json={"update_id": 1})
+    assert respuesta.status_code == 401
+    assert respuesta.json()["detail"] == "Secreto de webhook inválido."
+
+
+def test_webhook_con_secreto_procesa_update(servidor, monkeypatch):
+    cliente, _, server = servidor
+    secreto = "secreto-webhook-de-prueba"
+    monkeypatch.setenv("TELEGRAM_SECRETO_WEBHOOK", secreto)
+    recibidos = []
+
+    async def atender_prueba(http, actualizacion):
+        recibidos.append(actualizacion)
+
+    monkeypatch.setattr(server, "atender", atender_prueba)
+    actualizacion = {"update_id": 7, "message": {"text": "hola"}}
+    respuesta = cliente.post(
+        "/telegram",
+        json=actualizacion,
+        headers={"X-Telegram-Bot-Api-Secret-Token": secreto},
+    )
+    assert respuesta.status_code == 200
+    assert respuesta.json() == {"ok": True}
+    assert recibidos == [actualizacion]
