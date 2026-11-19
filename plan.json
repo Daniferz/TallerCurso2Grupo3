@@ -393,8 +393,8 @@
       "id": "T11",
       "etapa": "despliegue",
       "nombre": "Desplegar tu agente en Heroku",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara (Entrenamiento); Maleta y Sitios por asignar",
+      "estado": "en_curso",
       "depende_de": [
         "T02",
         "T04"
@@ -414,7 +414,11 @@
         "Con el computador apagado, la ficha y /salud responden.",
         "Sin clave -> 401; con clave -> respuesta real."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-18 21:26 HEROKU (Entrenamiento): app agente-pato-grupo3 desplegada desde taller-sistema-agentes (commit 2341bdf) con APP_MODULO=src.agente_pato.server. URL: https://agente-pato-grupo3-8c9b06247efd.herokuapp.com",
+        "2026-11-18 21:26 HEROKU: GET /salud -> 200; la ficha publica la URL de Heroku (URL_PUBLICA) con skills musculo y rutina; POST / sin clave -> 401, clave incorrecta -> 401, CLAVE_DANI -> 401; con CLAVE_PATO -> 200 con rutina real completa (espalda, hipertrofia, 4 días). Salida en evidencias/taller-implementacion/heroku/T11-pato-heroku.txt.",
+        "PARTE DE ENTRENAMIENTO TERMINADA. Pendiente: Maleta (Dani) y Sitios (Cristian), y probar el agente de otro compañero con su clave."
+      ],
       "reemplaza": [
         "T16",
         "T17",
