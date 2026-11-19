@@ -112,7 +112,7 @@
       "reemplaza": [
         "T04"
       ],
-      "observaciones": "La pregunta 'sitios en Valparaíso' fue enrutada a 'ninguno' por el supervisor: es un tema de enrutamiento/ficha (T03, T05 o ficha de Cristian), no de claves. viajes y restaurantes siguen en el catálogo hasta T03."
+      "observaciones": "Corregido: se agregaron sitios turísticos de Valparaíso a la herramienta de Cristian y se actualizaron su ficha y Agent Card para declarar las ciudades cubiertas. La pregunta 'sitios en Valparaíso' debe enrutarse a Cristian; no era un problema de claves."
     },
     {
       "id": "T03",
@@ -219,8 +219,8 @@
       "id": "T06",
       "etapa": "coordinador",
       "nombre": "Saludo y memoria al elegir agente",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Cristian Meza",
+      "estado": "hecho",
       "depende_de": [
         "T03",
         "T05"
@@ -240,7 +240,11 @@
         "Mismo conversacion_id: 'maleta para Pucón 3 días en invierno' y luego '¿y si son 5 días?' -> ambas van a Maleta.",
         "Con otro conversacion_id, la segunda pregunta no hereda el contexto."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-19: se agregó el nodo saludo; 'hola' lista los agentes disponibles y la descripción de cada uno.",
+        "2026-11-19: el supervisor recibe el historial completo del hilo para enrutar seguimientos al mismo agente.",
+        "2026-11-19: el diagrama muestra saludo, supervisor, agente_remoto y sin_agente; pytest completo: 69 passed."
+      ],
       "reemplaza": [
         "T09",
         "T10"
@@ -250,7 +254,7 @@
       "id": "T07",
       "etapa": "a2a",
       "nombre": "Datos faltantes y respuesta sin alterar",
-      "responsable": "Patricio Vergara (Entrenamiento); Maleta y Sitios por asignar",
+      "responsable": "Patricio Vergara (Entrenamiento); Maleta por asignar; Cristian Meza (Sitios)",
       "estado": "en_curso",
       "depende_de": [
         "T03"
@@ -276,7 +280,8 @@
         "2026-11-18 20:38 LOCAL (Entrenamiento): antes, 2 de 5 respuestas a 'rutina de pecho para fuerza, 5 días' traían solo la introducción; con completar_respuesta en graph.py y el prompt reforzado, 8 de 8 traen cada ejercicio con series y repeticiones.",
         "2026-11-18 20:38 LOCAL (Entrenamiento): 'arma una rutina' -> pregunta el grupo muscular y muestra las opciones; 'lo mismo que te dije' sin conversación previa -> declara que usó los valores por defecto, sin inventar memoria. Salida en evidencias/taller-implementacion/local/T07-pato-respuesta-completa.txt.",
         "2026-11-18 20:57 LOCAL (Entrenamiento): misma pregunta directo al agente y vía coordinador, dos casos (rutina de pecho fuerza 5 días intermedio; piernas resistencia 2 días): cifras idénticas, el coordinador solo agrega [Agente de Entrenamiento de Pato] y el motivo. Script reutilizable: scripts/comparar_directo_coordinador.py; salida en evidencias/taller-implementacion/local/T07-pato-directo-vs-coordinador.md.",
-        "PARTE DE ENTRENAMIENTO TERMINADA. Pendiente: Maleta (Dani) y Sitios (Cristian), cada uno con su prompts.py y la comparación usando scripts/comparar_directo_coordinador.py dani|cristian \"pregunta\"."
+        "2026-11-19 LOCAL (Sitios, Cristian): prompt reforzado para pedir la ciudad cuando falta y conservar sin alterar nombres, horarios, precios, fechas y condiciones de las herramientas. Pendiente la comparación en vivo con scripts/comparar_directo_coordinador.py cristian \"pregunta\".",
+        "PARTE DE ENTRENAMIENTO Y SITIOS TERMINADA. Pendiente: Maleta (Dani) y la comparación en vivo de Sitios con scripts/comparar_directo_coordinador.py."
       ],
       "reemplaza": [
         "T28"
@@ -333,8 +338,8 @@
       "id": "T09",
       "etapa": "canal",
       "nombre": "Webhook para Heroku: /telegram y script de registro",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Cristian Meza",
+      "estado": "en_curso",
       "depende_de": [
         "T08"
       ],
@@ -354,7 +359,11 @@
         "getWebhookInfo muestra la URL registrada.",
         "Tras borrar el webhook, el bot local por polling vuelve a funcionar."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-19: implementado POST /telegram con X-Telegram-Bot-Api-Secret-Token y reutilización de la lógica de atención del bot.",
+        "2026-11-19: creado scripts/registrar_webhook.py con acciones registrar, info y borrar; todas las llamadas tienen timeout y no muestran token ni secreto.",
+        "2026-11-19: pytest completo: 72 passed. Pendiente probar setWebhook/getWebhookInfo/deleteWebhook contra el bot y una URL pública de Heroku."
+      ],
       "reemplaza": [
         "T13",
         "T15"
@@ -393,7 +402,7 @@
       "id": "T11",
       "etapa": "despliegue",
       "nombre": "Desplegar tu agente en Heroku",
-      "responsable": "Patricio Vergara (Entrenamiento); Maleta y Sitios por asignar",
+      "responsable": "Patricio Vergara (Entrenamiento); Dani por asignar; Cristian Meza (Sitios)",
       "estado": "en_curso",
       "depende_de": [
         "T02",
@@ -417,7 +426,8 @@
       "evidencia": [
         "2026-11-18 21:26 HEROKU (Entrenamiento): app agente-pato-grupo3 desplegada desde taller-sistema-agentes (commit 2341bdf) con APP_MODULO=src.agente_pato.server. URL: https://agente-pato-grupo3-8c9b06247efd.herokuapp.com",
         "2026-11-18 21:26 HEROKU: GET /salud -> 200; la ficha publica la URL de Heroku (URL_PUBLICA) con skills musculo y rutina; POST / sin clave -> 401, clave incorrecta -> 401, CLAVE_DANI -> 401; con CLAVE_PATO -> 200 con rutina real completa (espalda, hipertrofia, 4 días). Salida en evidencias/taller-implementacion/heroku/T11-pato-heroku.txt.",
-        "PARTE DE ENTRENAMIENTO TERMINADA. Pendiente: Maleta (Dani) y Sitios (Cristian), y probar el agente de otro compañero con su clave."
+        "2026-11-19 HEROKU (Sitios turísticos): app agente-cristian-grupo3-60262a116c18 desplegada con APP_MODULO=src.agente_cristian.server. GET /salud -> 200; la ficha publica la URL de Heroku y las skills listado_sitios_turisticos y horario_atencion; POST / sin clave -> 401, clave incorrecta -> 401, CLAVE_COORDINADOR -> 401; con CLAVE_CRISTIAN -> 200 y responde los 3 sitios de Valparaíso. Salida en evidencias/taller-implementacion/heroku/T11-cristian-heroku.txt.",
+        "PARTE DE ENTRENAMIENTO Y SITIOS TURÍSTICOS TERMINADA. Pendiente: Maleta (Dani) y probar el agente de otro compañero con su clave."
       ],
       "reemplaza": [
         "T16",

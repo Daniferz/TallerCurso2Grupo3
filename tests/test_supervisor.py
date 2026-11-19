@@ -78,7 +78,65 @@ def test_grafo_supervisor_tiene_rama_para_sin_agente(monkeypatch):
 
     assert Decision(agente="ninguno", motivo="Fuera de tema.").agente == "ninguno"
     assert Decision(agente="Agente de compañero", motivo="Pregunta de la persona.").agente == "Agente de compañero"
-    assert {"supervisor", "agente_remoto", "sin_agente"}.issubset(graph.get_graph().nodes)
+    assert {"saludo", "supervisor", "agente_remoto", "sin_agente"}.issubset(graph.get_graph().nodes)
+
+
+def test_saludo_lista_agentes_disponibles(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    agentes = [
+        _agente("Maleta", "Prepara equipaje."),
+        _agente("Entrenamiento", "Arma rutinas."),
+        _agente("Sitios turísticos", "Recomienda lugares."),
+    ]
+
+    async def descubrir():
+        return agentes
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    resultado = asyncio.run(
+        supervisor.saludo({"messages": [HumanMessage(content="¡Buenos días!")]})
+    )
+
+    texto = resultado["messages"][0].content
+    assert "Hola. Estos son los agentes disponibles:" in texto
+    assert "Maleta: Prepara equipaje." in texto
+    assert "Entrenamiento: Arma rutinas." in texto
+    assert "Sitios turísticos: Recomienda lugares." in texto
+
+
+def test_supervisor_recibe_historial_del_hilo(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    agente = _agente("Maleta")
+    recibidos = []
+
+    async def descubrir():
+        return [agente]
+
+    class ModeloDePrueba:
+        async def ainvoke(self, mensajes):
+            recibidos.extend(mensajes)
+            return supervisor.Decision(agente="Maleta", motivo="Seguimiento de equipaje.")
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "modelo_decision", ModeloDePrueba())
+    estado = {
+        "messages": [
+            HumanMessage(content="maleta para Pucón 3 días en invierno"),
+            HumanMessage(content="¿y si son 5 días?"),
+        ]
+    }
+
+    resultado = asyncio.run(supervisor.supervisor(estado))
+
+    assert resultado["agente"] == "Maleta"
+    assert [mensaje.content for mensaje in recibidos[1:]] == [
+        "maleta para Pucón 3 días en invierno",
+        "¿y si son 5 días?",
+    ]
 
 
 def test_agente_elegido_que_no_responde_da_aviso_claro(monkeypatch, capsys):

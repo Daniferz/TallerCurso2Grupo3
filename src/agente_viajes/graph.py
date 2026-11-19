@@ -21,7 +21,7 @@ if not os.getenv("GOOGLE_API_KEY"):
     # Error entendible en vez del texto largo que devuelve pydantic.
     raise RuntimeError("Falta GOOGLE_API_KEY: cópiala en el archivo .env.")
 
-modelo = ChatGoogleGenerativeAI(model=MODELO, temperature=0)
+modelo = ChatGoogleGenerativeAI(model=MODELO)
 
 # MemorySaver guarda el historial por thread_id: mismo context_id, misma conversación.
 graph = create_agent(

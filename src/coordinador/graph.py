@@ -1,11 +1,13 @@
 """Supervisor LangGraph: elige un agente del catálogo y delega por A2A."""
 
 import os
+import re
+import unicodedata
 import uuid
 from html import escape
 
 from dotenv import load_dotenv
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, BaseMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
@@ -65,6 +67,36 @@ def _texto(mensaje: BaseMessage) -> str:
     return str(contenido)
 
 
+def _normalizar_para_saludo(texto: str) -> str:
+    """Normaliza acentos y signos para reconocer saludos simples."""
+    descompuesto = unicodedata.normalize("NFD", texto or "")
+    sin_tildes = "".join(
+        letra for letra in descompuesto if unicodedata.category(letra) != "Mn"
+    )
+    return re.sub(r"[^a-z0-9 ]", "", sin_tildes.lower()).strip()
+
+
+def _es_saludo(texto: str) -> bool:
+    """Indica si el mensaje es un saludo sin una consulta adicional."""
+    return _normalizar_para_saludo(texto) in {
+        "hola",
+        "holi",
+        "hello",
+        "hey",
+        "buen dia",
+        "buenos dias",
+        "buenas tardes",
+        "buenas noches",
+        "saludos",
+    }
+
+
+def ruta_inicial(estado: EstadoSupervisor) -> str:
+    """Envía los saludos al nodo informativo y el resto al supervisor."""
+    ultimo = _texto(estado["messages"][-1])
+    return "saludo" if _es_saludo(ultimo) else "supervisor"
+
+
 def _prompt_catalogo(agentes: list[AgenteDescubierto]) -> str:
     """Incluye las fichas como datos delimitados, nunca como instrucciones."""
     fichas = "\n".join(
@@ -100,15 +132,15 @@ def motivo_seguro(motivo: str, agentes: list[AgenteDescubierto]) -> str:
 async def supervisor(estado: EstadoSupervisor) -> dict:
     """Elige con salida estructurada a partir de las fichas descubiertas."""
     agentes = await descubrir()
-    pregunta = _texto(estado["messages"][-1])
     if not agentes:
         return {"agente": "ninguno", "motivo": "No hay agentes disponibles."}
 
     try:
+        historial = list(estado["messages"])
         decision = await modelo_decision.ainvoke(
             [
                 SystemMessage(content=_prompt_catalogo(agentes)),
-                HumanMessage(content=pregunta),
+                *historial,
             ]
         )
     except Exception as error:
@@ -124,6 +156,19 @@ async def supervisor(estado: EstadoSupervisor) -> dict:
             "motivo": "El agente elegido no está disponible en el catálogo actual.",
         }
     return {"agente": decision.agente, "motivo": motivo_seguro(decision.motivo, agentes)}
+
+
+async def saludo(estado: EstadoSupervisor) -> dict:
+    """Lista los agentes disponibles y el tema que cubre cada uno."""
+    agentes = await descubrir()
+    if not agentes:
+        respuesta = "Hola. En este momento no hay agentes disponibles."
+    else:
+        temas = "\n".join(
+            f"- {agente.nombre}: {agente.descripcion}" for agente in agentes
+        )
+        respuesta = f"Hola. Estos son los agentes disponibles:\n{temas}"
+    return {"messages": [AIMessage(content=respuesta)]}
 
 
 def aviso_no_disponible(nombre: str) -> str:
@@ -184,10 +229,16 @@ async def sin_agente(estado: EstadoSupervisor) -> dict:
 
 
 grafo = StateGraph(EstadoSupervisor)
+grafo.add_node("saludo", saludo)
 grafo.add_node("supervisor", supervisor)
 grafo.add_node("agente_remoto", agente_remoto)
 grafo.add_node("sin_agente", sin_agente)
-grafo.add_edge(START, "supervisor")
+grafo.add_conditional_edges(
+    START,
+    ruta_inicial,
+    {"saludo": "saludo", "supervisor": "supervisor"},
+)
+grafo.add_edge("saludo", END)
 grafo.add_conditional_edges(
     "supervisor",
     siguiente,
