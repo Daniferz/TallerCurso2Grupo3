@@ -1,8 +1,12 @@
 """Servidor A2A del coordinador, más la ruta POST /chat para los canales (Telegram)."""
 
+import hashlib
+import hmac
+import os
 import uuid
 
-from fastapi import HTTPException
+import httpx
+from fastapi import Header, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -13,6 +17,7 @@ from src.comun.tarjeta import crear_tarjeta
 
 from .catalogo import descubrir
 from .graph import graph, responder
+from src.canal.telegram import atender
 
 
 agente = CATALOGO["coordinador"]
@@ -83,3 +88,36 @@ async def chat(datos: MensajeChat):
     agente = await _agente_elegido(conversacion_id)
     print(f"[chat] conversación {conversacion_id} -> agente: {agente}", flush=True)
     return {"respuesta": respuesta, "conversacion_id": conversacion_id, "agente": agente}
+
+
+@app.post("/telegram")
+async def telegram_webhook(
+    actualizacion: dict,
+    secreto: str | None = Header(
+        default=None, alias="X-Telegram-Bot-Api-Secret-Token"
+    ),
+):
+    """Recibe un update de Telegram y lo procesa con la lógica del bot local."""
+    esperado = os.getenv("TELEGRAM_SECRETO_WEBHOOK", "").strip()
+    if not esperado:
+        raise HTTPException(
+            status_code=503,
+            detail="TELEGRAM_SECRETO_WEBHOOK no está configurado.",
+        )
+    if not secreto or not hmac.compare_digest(
+        hashlib.sha256(secreto.encode()).digest(),
+        hashlib.sha256(esperado.encode()).digest(),
+    ):
+        raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
+
+    try:
+        async with httpx.AsyncClient() as http:
+            await atender(http, actualizacion)
+    except Exception as error:
+        motivo = en_una_linea(error)
+        print(f"[telegram webhook] {motivo}", flush=True)
+        raise HTTPException(
+            status_code=502,
+            detail=f"No se pudo procesar el update de Telegram: {motivo}",
+        ) from None
+    return {"ok": True}
