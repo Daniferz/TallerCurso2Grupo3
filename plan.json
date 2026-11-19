@@ -275,7 +275,8 @@
       "evidencia": [
         "2026-11-18 20:38 LOCAL (Entrenamiento): antes, 2 de 5 respuestas a 'rutina de pecho para fuerza, 5 días' traían solo la introducción; con completar_respuesta en graph.py y el prompt reforzado, 8 de 8 traen cada ejercicio con series y repeticiones.",
         "2026-11-18 20:38 LOCAL (Entrenamiento): 'arma una rutina' -> pregunta el grupo muscular y muestra las opciones; 'lo mismo que te dije' sin conversación previa -> declara que usó los valores por defecto, sin inventar memoria. Salida en evidencias/taller-implementacion/local/T07-pato-respuesta-completa.txt.",
-        "Pendiente: Maleta (Dani) y Sitios (Cristian), y la comparación agente directo vs coordinador."
+        "2026-11-18 20:57 LOCAL (Entrenamiento): misma pregunta directo al agente y vía coordinador, dos casos (rutina de pecho fuerza 5 días intermedio; piernas resistencia 2 días): cifras idénticas, el coordinador solo agrega [Agente de Entrenamiento de Pato] y el motivo. Script reutilizable: scripts/comparar_directo_coordinador.py; salida en evidencias/taller-implementacion/local/T07-pato-directo-vs-coordinador.md.",
+        "PARTE DE ENTRENAMIENTO TERMINADA. Pendiente: Maleta (Dani) y Sitios (Cristian), cada uno con su prompts.py y la comparación usando scripts/comparar_directo_coordinador.py dani|cristian \"pregunta\"."
       ],
       "reemplaza": [
         "T28"
