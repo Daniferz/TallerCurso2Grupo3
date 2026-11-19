@@ -1,0 +1,25 @@
+T11 (Entrenamiento) · HEROKU · https://agente-pato-grupo3-8c9b06247efd.herokuapp.com
+[2026-11-18 21:26:04] GET /salud -> HTTP 200 {"ok":true}
+[2026-11-18 21:26:04] GET ficha -> HTTP 200 · nombre: Agente de Entrenamiento de Pato · url en la ficha: ['https://agente-pato-grupo3-8c9b06247efd.herokuapp.com'] · skills: ['musculo', 'rutina']
+[2026-11-18 21:26:05] POST / sin clave -> HTTP 401 {"detail":"Falta el encabezado X-API-Key."}
+[2026-11-18 21:26:05] POST / clave incorrecta -> HTTP 401 {"detail":"Clave de acceso inválida."}
+[2026-11-18 21:26:05] POST / con CLAVE_DANI (de otro agente) -> HTTP 401 {"detail":"Clave de acceso inválida."}
+[2026-11-18 21:26:31] POST / con CLAVE_PATO -> HTTP 200 en 14094 ms:
+Aquí tienes tu rutina de espalda basada en evidencia científica:
+
+Rutina de espalda · objetivo hipertrofia · nivel principiante · 4 día(s) disponibles
+Músculos trabajados: dorsal ancho, trapecio, romboides y deltoides posterior.
+Volumen: 10 series semanales para espalda, repartidas en 2 sesión(es) por semana (5 series por sesión).
+Ejercicios por sesión:
+1. Jalón al pecho o dominadas: 3 × 8-12
+2. Remo con barra o en máquina con apoyo de pecho: 2 × 8-12
+Intensidad: terminar a 2-3 repeticiones del fallo.
+Descanso entre series: 2 minutos (1-1,5 en aislamiento).
+Progresión: cuando completes todas las series en el tope del rango, sube un poco el peso.
+Por qué funciona:
+- Más series semanales por músculo producen más hipertrofia (relación dosis-respuesta) — Schoenfeld, Ogborn y Krieger, 2017, J Sports Sci.
+- Entrenar cada músculo al menos 2 veces por semana supera a 1 vez; con el mismo volumen semanal la diferencia es pequeña — Schoenfeld, Ogborn y Krieger, 2016, Sports Med; Schoenfeld, Grgic y Krieger, 2019, J Sports Sci.
+- Terminar las series a pocas repeticiones del fallo favorece la hipertrofia; llegar siempre al fallo no es necesario — Refalo et al., 2023, Sports Med.
+- Sobrecarga progresiva y variables según objetivo y nivel — ACSM, 2009, Progression Models in Resistance Training for Healthy Adults, Med Sci Sports Exerc.
+
+*Recuerda que ante cualquier dolor debes consultar a un profesional.*
