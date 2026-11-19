@@ -17,7 +17,7 @@ tarjeta = crear_tarjeta(
         (
             "listado_sitios_turisticos",
             "Recomendar lugares",
-            "Devuelve lugares para visitar en una ciudad con descripción, ubicación, precio e imagen referenciales.",
+            "Devuelve lugares para visitar en Santiago, Lima, Bogotá, Cusco y Valparaíso, con descripción, ubicación, precio e imagen referenciales.",
             "Voy a Lima el sábado, ¿qué lugares turísticos me recomiendas?",
         ),
         (

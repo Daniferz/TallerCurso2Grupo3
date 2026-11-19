@@ -108,6 +108,34 @@ SITIOS = {
             "imagen": "https://ejemplo.com/imagenes/san-blas-cusco.jpg",
         },
     ],
+    "valparaiso": [
+        {
+            "nombre": "Ascensor Artillería",
+            "descripcion": "Ascensor patrimonial que conecta el plan de Valparaíso con el cerro Artillería y sus miradores.",
+            "ubicacion": "Cerro Artillería, Valparaíso",
+            "horario": "Todos los días, 08:00 a 20:00",
+            "dias_cerrados": [],
+            "precio_referencial": "Desde $500 CLP por trayecto",
+            "imagen": "https://ejemplo.com/imagenes/ascensor-artilleria-valparaiso.jpg",
+        },
+        {
+            "nombre": "La Sebastiana",
+            "descripcion": "Casa museo de Pablo Neruda con colecciones, objetos personales y vistas panorámicas de la bahía.",
+            "ubicacion": "Ferrari 692, Cerro Bellavista, Valparaíso",
+            "horario": "Martes a domingo, 10:00 a 18:00",
+            "dias_cerrados": ["lunes"],
+            "precio_referencial": "Desde $9.500 CLP entrada general",
+            "imagen": "https://ejemplo.com/imagenes/la-sebastiana-valparaiso.jpg",
+        },
+        {
+            "nombre": "Paseo 21 de Mayo",
+            "descripcion": "Paseo del cerro Artillería con miradores hacia el puerto, la bahía y los cerros de Valparaíso.",
+            "ubicacion": "Cerro Artillería, Valparaíso",
+            "horario": "Recorrido exterior disponible todo el día",
+            "precio_referencial": "Acceso gratuito",
+            "imagen": "https://ejemplo.com/imagenes/paseo-21-de-mayo-valparaiso.jpg",
+        },
+    ],
 }
 
 
