@@ -339,7 +339,7 @@
       "etapa": "canal",
       "nombre": "Webhook para Heroku: /telegram y script de registro",
       "responsable": "Cristian Meza",
-      "estado": "en_curso",
+      "estado": "hecho",
       "depende_de": [
         "T08"
       ],
@@ -362,7 +362,8 @@
       "evidencia": [
         "2026-11-19: implementado POST /telegram con X-Telegram-Bot-Api-Secret-Token y reutilización de la lógica de atención del bot.",
         "2026-11-19: creado scripts/registrar_webhook.py con acciones registrar, info y borrar; todas las llamadas tienen timeout y no muestran token ni secreto.",
-        "2026-11-19: pytest completo: 72 passed. Pendiente probar setWebhook/getWebhookInfo/deleteWebhook contra el bot y una URL pública de Heroku."
+        "2026-11-19: pytest completo: 72 passed.",
+        "2026-11-19 LOCAL: con el coordinador y los agentes en local, el túnel HTTPS researchers-teacher-fwd-radius.trycloudflare.com registró el webhook; getWebhookInfo mostró 0 pendientes; /start respondió correctamente; después deleteWebhook y polling local volvieron a responder. Salida en evidencias/taller-implementacion/local/T09-webhook-telegram.txt."
       ],
       "reemplaza": [
         "T13",
@@ -373,8 +374,8 @@
       "id": "T10",
       "etapa": "extra",
       "nombre": "Extra: aviso a una persona cuando nadie sabe",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Cristian Meza",
+      "estado": "hecho",
       "depende_de": [
         "T03",
         "T06",
@@ -393,7 +394,12 @@
         "Con TELEGRAM_CHAT_AVISO inválido, la persona igual recibe su respuesta.",
         "Tres preguntas fuera de tema seguidas en la misma conversación generan un solo aviso."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-19: sin_agente conserva la respuesta normal y avisa a TELEGRAM_CHAT_AVISO con la pregunta y el conversacion_id.",
+        "2026-11-19: el aviso tiene límite de uno por conversación cada AVISO_MINUTOS (10 por defecto); si Telegram falla, la respuesta normal no se interrumpe.",
+        "2026-11-19: pruebas automatizadas de T10 y suite completa: 74 passed.",
+        "2026-11-19 LOCAL: tres preguntas fuera de tema en la misma conversación generaron un solo aviso; con TELEGRAM_CHAT_AVISO inválido la persona recibió su respuesta normal y el coordinador siguió funcionando."
+      ],
       "reemplaza": [
         "T14"
       ]

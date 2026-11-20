@@ -71,7 +71,12 @@ def ejecutar(argumentos: argparse.Namespace) -> None:
             "setWebhook",
             {"url": f"{url}/telegram", "secret_token": secreto},
         )
-        print(f"Webhook registrado: {resultado.get('url', f'{url}/telegram')}")
+        url_registrada = (
+            resultado.get("url", f"{url}/telegram")
+            if isinstance(resultado, dict)
+            else f"{url}/telegram"
+        )
+        print(f"Webhook registrado: {url_registrada}")
     elif argumentos.accion == "info":
         resultado = llamar("getWebhookInfo")
         print(

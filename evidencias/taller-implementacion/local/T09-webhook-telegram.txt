@@ -1,0 +1,14 @@
+T09 · WEBHOOK LOCAL CON TÚNEL HTTPS · 2026-11-19
+
+Coordinador local: http://127.0.0.1:8002
+URL pública temporal: https://researchers-teacher-fwd-radius.trycloudflare.com
+Webhook: https://researchers-teacher-fwd-radius.trycloudflare.com/telegram
+
+- `scripts/registrar_webhook.py registrar ...` -> webhook registrado.
+- `scripts/registrar_webhook.py info` -> URL registrada y 0 actualizaciones pendientes.
+- `/start` desde Telegram -> respuesta de bienvenida recibida correctamente.
+- `scripts/registrar_webhook.py borrar` -> webhook eliminado.
+- `python -m src.canal.telegram` -> polling local reanudado y `/start` respondió correctamente.
+
+Los agentes usados por el coordinador permanecieron en local; el túnel expuso
+únicamente al coordinador para que Telegram pudiera invocar `/telegram`.
