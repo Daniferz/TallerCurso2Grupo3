@@ -457,8 +457,8 @@
       "id": "T13",
       "etapa": "entrega",
       "nombre": "Documentos de integracion-grupo3 y los 12 resultados",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara (lista de resultados); documentos de integracion-grupo3 por asignar",
+      "estado": "en_curso",
       "depende_de": [],
       "archivos": [
         "documento-entrega.md",
@@ -475,7 +475,10 @@
         "git merge sin conflictos y pytest pasa.",
         "Cada resultado tiene al menos una tarea del plan que lo cubre."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-21: parte (2) lista: 'Checklist de evaluación (los 12 resultados)' en SPEC.md, sacada de taller_implementacion_agentes.pdf (págs. 2-4): 12 resultados + el +1, cada uno con las tareas que lo cubren, la evidencia que ya existe y lo que falta. Revisado que cada resultado tiene al menos una tarea del plan y que las rutas de evidencia citadas existen. Pregunta abierta 1 resuelta.",
+        "Pendiente: parte (1), traer los documentos de integracion-grupo3 y decidir el ZIP viejo."
+      ],
       "reemplaza": [
         "T21",
         "T22"
