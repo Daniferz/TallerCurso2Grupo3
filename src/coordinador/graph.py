@@ -1,5 +1,6 @@
 """Supervisor LangGraph: elige un agente del catálogo y delega por A2A."""
 
+import asyncio
 import os
 import re
 import unicodedata
@@ -35,13 +36,38 @@ MODELO = os.getenv("MODELO", "gemini-3.5-flash-lite")
 modelo = ChatGoogleGenerativeAI(model=MODELO)
 
 
-class Decision(BaseModel):
-    """Selección estructurada del supervisor entre las fichas disponibles."""
+# Una pregunta puede tocar varios temas; como máximo se consulta a este número de agentes.
+MAXIMO_AGENTES = 3
 
-    agente: str = Field(
-        description="Nombre exacto de un agente del catálogo disponible o 'ninguno'."
+
+class Consulta(BaseModel):
+    """Un agente elegido y la parte de la pregunta que le corresponde."""
+
+    agente: str = Field(description="Nombre exacto de un agente del catálogo.")
+    pregunta: str = Field(
+        description=(
+            "La parte de la pregunta de la persona que responde ese agente, copiando "
+            "textualmente sus datos (días, ciudad, temporada, objetivo...)."
+        )
+    )
+
+
+class Decision(BaseModel):
+    """Selección estructurada del supervisor: ninguno, uno o varios agentes."""
+
+    consultas: list[Consulta] = Field(
+        default_factory=list,
+        description=(
+            "Un elemento por cada agente que debe responder una parte de la pregunta; "
+            "lista vacía si ningún agente del catálogo aplica."
+        ),
     )
     motivo: str = Field(description="Motivo breve de la selección, en una frase.")
+
+    @property
+    def agente(self) -> str:
+        """Nombres elegidos separados por coma, o 'ninguno' (lo usan /chat y --saltos)."""
+        return ", ".join(c.agente for c in self.consultas) or "ninguno"
 
 
 modelo_decision = modelo.with_structured_output(Decision)
@@ -52,6 +78,8 @@ class EstadoSupervisor(MessagesState, total=False):
 
     agente: str
     motivo: str
+    # [{"agente": nombre, "pregunta": parte de la pregunta}]; vacía si no aplica ninguno.
+    consultas: list[dict]
 
 
 def _texto(mensaje: BaseMessage) -> str:
@@ -134,7 +162,7 @@ async def supervisor(estado: EstadoSupervisor) -> dict:
     """Elige con salida estructurada a partir de las fichas descubiertas."""
     agentes = await descubrir()
     if not agentes:
-        return {"agente": "ninguno", "motivo": "No hay agentes disponibles."}
+        return {"agente": "ninguno", "consultas": [], "motivo": "No hay agentes disponibles."}
 
     try:
         historial = list(estado["messages"])
@@ -150,13 +178,39 @@ async def supervisor(estado: EstadoSupervisor) -> dict:
             f"el coordinador no pudo evaluar la pregunta: {en_una_linea(error)}"
         ) from None
 
-    disponibles = {agente.nombre for agente in agentes}
-    if decision.agente != "ninguno" and decision.agente not in disponibles:
+    consultas = consultas_validas(decision, agentes, _texto(estado["messages"][-1]))
+    if decision.consultas and not consultas:
         return {
             "agente": "ninguno",
+            "consultas": [],
             "motivo": "El agente elegido no está disponible en el catálogo actual.",
         }
-    return {"agente": decision.agente, "motivo": motivo_seguro(decision.motivo, agentes)}
+    return {
+        "agente": ", ".join(c["agente"] for c in consultas) or "ninguno",
+        "consultas": consultas,
+        "motivo": motivo_seguro(decision.motivo, agentes),
+    }
+
+
+def consultas_validas(
+    decision: Decision, agentes: list[AgenteDescubierto], pregunta_original: str
+) -> list[dict]:
+    """Deja solo agentes del catálogo, sin repetir y como máximo MAXIMO_AGENTES.
+
+    Si queda un solo agente, recibe la pregunta original tal cual (así su respuesta es
+    la misma que si se le pregunta directo). Con varios, cada uno recibe su parte.
+    """
+    disponibles = {agente.nombre for agente in agentes}
+    consultas: list[dict] = []
+    for consulta in decision.consultas:
+        nombre = consulta.agente
+        if nombre in disponibles and nombre not in {c["agente"] for c in consultas}:
+            parte = " ".join((consulta.pregunta or "").split()) or pregunta_original
+            consultas.append({"agente": nombre, "pregunta": parte})
+    consultas = consultas[:MAXIMO_AGENTES]
+    if len(consultas) == 1:
+        consultas[0]["pregunta"] = pregunta_original
+    return consultas
 
 
 async def saludo(estado: EstadoSupervisor) -> dict:
@@ -182,37 +236,55 @@ def aviso_no_disponible(nombre: str) -> str:
 
 def siguiente(estado: EstadoSupervisor) -> str:
     """Enruta la decisión hacia el agente remoto o la respuesta sin agente."""
-    return "sin_agente" if estado.get("agente") == "ninguno" else "agente_remoto"
+    return "agente_remoto" if estado.get("consultas") else "sin_agente"
 
 
-async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
-    """Pregunta al agente elegido y etiqueta la respuesta con nombre y motivo."""
-    agentes = await descubrir()
-    elegido = next(
-        (agente for agente in agentes if agente.nombre == estado.get("agente")),
-        None,
-    )
-    if elegido is None:
-        return await sin_agente(estado, config)
+async def _respuesta_de(
+    elegido: AgenteDescubierto, pregunta: str, context_id: str, varios: bool
+) -> tuple[str, bool]:
+    """(texto, respondió): respuesta etiquetada de un agente, o su aviso claro si no contesta.
 
-    pregunta = _texto(estado["messages"][-1])
-    thread_id = (config.get("configurable") or {}).get("thread_id")
-    context_id = thread_id or str(uuid.uuid4())
+    Con un solo agente, una falla distinta de "no disponible" se propaga como error (nunca
+    éxito falso). Con varios, esa parte dice claramente que falló y las demás se entregan.
+    """
     try:
         respuesta = await preguntar(elegido.cliente, pregunta, context_id)
     except AgenteNoDisponible as error:
         # Agente apagado o dormido: aviso claro a la persona y el detalle solo en la terminal.
         print(f"Aviso: {elegido.nombre} ({elegido.url}) no respondió: {en_una_linea(error)}", flush=True)
-        return {"messages": [AIMessage(content=aviso_no_disponible(elegido.nombre))]}
+        return aviso_no_disponible(elegido.nombre), False
     except Exception as error:
-        # La falla del agente remoto se propaga como error, no como respuesta.
-        raise RuntimeError(
-            f"{elegido.nombre} no pudo responder: {en_una_linea(error)}"
-        ) from None
+        detalle = f"{elegido.nombre} no pudo responder: {en_una_linea(error)}"
+        if not varios:
+            raise RuntimeError(detalle) from None
+        print(f"Aviso: {detalle}", flush=True)
+        return f"La parte de {elegido.nombre} tuvo un error y no se pudo responder.", False
+    # La respuesta del agente va tal cual: solo se agrega la etiqueta [Nombre].
+    return f"[{elegido.nombre}] {respuesta}", True
 
+
+async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
+    """Pregunta en paralelo a los agentes elegidos y junta sus respuestas sin alterarlas."""
+    agentes = {agente.nombre: agente for agente in await descubrir()}
+    consultas = [c for c in estado.get("consultas") or [] if c["agente"] in agentes]
+    if not consultas:
+        return await sin_agente(estado, config)
+
+    thread_id = (config.get("configurable") or {}).get("thread_id")
+    context_id = thread_id or str(uuid.uuid4())
+    varios = len(consultas) > 1
+    partes = await asyncio.gather(
+        *(
+            _respuesta_de(agentes[c["agente"]], c["pregunta"], context_id, varios)
+            for c in consultas
+        )
+    )
+    if not varios and not partes[0][1]:
+        # Un solo agente y no contestó: solo el aviso claro, igual que antes.
+        return {"messages": [AIMessage(content=partes[0][0])]}
     contenido = (
-        f"[{elegido.nombre}] {respuesta}\n"
-        f"Motivo de selección: {estado.get('motivo', 'Sin motivo informado.')}"
+        "\n\n".join(texto for texto, _ in partes)
+        + f"\nMotivo de selección: {estado.get('motivo', 'Sin motivo informado.')}"
     )
     return {"messages": [AIMessage(content=contenido)]}
 
