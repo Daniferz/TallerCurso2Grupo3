@@ -1,353 +1,306 @@
-# Agentes A2A de viajes, restaurantes y agentes personales
+# Asistente de viaje por Chile en Telegram · Grupo 3
 
-## Integrantes · Grupo 3
+Taller de implementación (Agentic AI, Curso 2). Un bot de Telegram recibe la pregunta, un
+**coordinador** elige al agente especialista y le pregunta por **A2A**; la respuesta vuelve al
+mismo chat con la etiqueta `[Nombre del agente]`.
 
-- Daniella Fernández
-- Cristian Meza
-- Patricio Vergara
+> **Estado de este README (2026-11-21):** la parte **local** está completa y probada. Las secciones
+> de Heroku para el coordinador y el bot (webhook) se completan en T12. El plan está en `plan.json`
+> y el checklist de evaluación en `SPEC.md`.
 
-Proyecto con dos agentes base, agentes personales de integrantes y un coordinador
-supervisor que puede descubrir agentes remotos mediante sus Agent Cards.
+## Opción elegida y qué resuelve
 
-- `agente_viajes`: vuelos y hoteles (LangGraph).
-- `agente_restaurantes`: recomendaciones de restaurantes (CrewAI).
-- `agente_pato`: anatomía muscular y rutinas de entrenamiento (LangGraph).
-- `agente_dani`: listas de equipaje (LangGraph).
-- `agente_cristian`: recomendaciones de sitios turísticos (LangGraph).
-- `coordinador`: elige entre viajes, restaurantes y las URLs remotas configuradas.
+- **Opción 2 de la pauta: un canal de atención → Telegram.**
+- **Problema:** preparar un viaje por Chile en un solo chat: qué llevar en la maleta, cómo seguir
+  entrenando en el viaje y qué sitios visitar, cada tema respondido por su especialista.
+- **Qué reutilizamos del taller A2A:** los tres agentes LangGraph de cada integrante, sus servidores
+  A2A (`a2a-sdk`) y el coordinador supervisor con descubrimiento por Agent Card. Lo nuevo es el
+  canal (Telegram), el control de acceso por agente, el manejo de agentes caídos, el blindaje del
+  supervisor y el despliegue. La documentación del taller anterior está en
+  `docs/README-taller-a2a.md`.
 
-## Versión instalada de a2a-sdk
+## Integrantes y aportes
 
-```
-Name: a2a-sdk
-Version: 1.3.0
-```
-
-La necesitamos más adelante para levantar los servidores A2A de cada agente.
-Se instala con el extra `[fastapi]`, porque el servidor HTTP de la librería
-depende de `sse-starlette` y `starlette`.
-
-## Activar el entorno virtual
-
-Mac / Linux:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Windows (PowerShell):
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-```
-
-Windows (símbolo del sistema / cmd):
-
-```bat
-python -m venv .venv
-.venv\Scripts\activate.bat
-pip install -r requirements.txt
-```
-
-El agente de restaurantes usa CrewAI, que choca con LangChain si se instalan
-juntos. Por eso tiene su propio entorno:
-
-```bash
-python -m venv .venv-crew
-source .venv-crew/bin/activate          # Mac / Linux
-.venv-crew\Scripts\Activate.ps1         # Windows PowerShell
-pip install -r requirements-crew.txt
-```
-
-Para salir del entorno: `deactivate`.
-
-## Configuración
-
-1. Copia `.env.example` a `.env`.
-2. Pega tu clave de Gemini en `GOOGLE_API_KEY`.
-3. Pon una clave distinta en `CLAVE_PATO`, `CLAVE_DANI`, `CLAVE_CRISTIAN` y `CLAVE_COORDINADOR`, y las de los agentes en `CLAVES_AGENTES` (ver "Control de acceso").
-
-`.env` está en `.gitignore`: las claves nunca se suben al repositorio.
-
-## Control de acceso (taller de implementación)
-
-Todos los servidores A2A (viajes, restaurantes, Pato, coordinador y los agentes
-personales) se crean con `crear_app` en `src/comun/servidor.py`, que exige el
-encabezado `X-API-Key` con **la clave propia de ese agente** (`CLAVE_PATO`, `CLAVE_DANI`,
-`CLAVE_CRISTIAN`, `CLAVE_COORDINADOR`…). Cada agente rechaza la clave de los otros:
-
-| Ruta | Acceso |
+| Integrante | Aportes |
 |---|---|
-| `GET /salud` | Pública |
-| `GET /.well-known/agent-card.json` | Pública (la spec A2A pide fichas descubribles) |
-| `POST /` (mensajes A2A) y el resto | Requiere `X-API-Key` válida |
+| Daniella Fernández | Agente de Maleta (`src/agente_dani`); base del supervisor A2A y catálogo dinámico del taller anterior; documentos de entrega de `integracion-grupo3`. |
+| Cristian Meza | Agente de Sitios turísticos (`src/agente_cristian`) y su despliegue en Heroku (T11). En su rama, pendientes de fusionar: saludo y memoria (T06), webhook (T09) y aviso a una persona (T10). |
+| Patricio Vergara | Agente de Entrenamiento (`src/agente_pato`); clave por agente (T01, T02); catálogo con agentes caídos (T03); Procfile (T04); supervisor blindado (T05); `/chat` y bot de Telegram (T08); datos faltantes y comparación de su agente (T07); su agente en Heroku (T11); checklist de evaluación (T13). |
 
-- Sin encabezado o con clave incorrecta: **HTTP 401** con un mensaje claro.
-- Si el servidor no tiene su clave configurada: **HTTP 503**, no acepta nada.
-- La consola web pide la clave en el campo **"Clave de acceso"** y su servidor la
-  valida antes de reenviar el mensaje. La clave **no** está en el HTML ni en el JS.
-- El coordinador y la consola agregan la clave del `.env` al llamar a los agentes.
-- Cada intento queda en la terminal del servidor, sin mostrar la clave:
-  `[acceso 2026-11-16 20:41:03] Agente de viajes POST / desde 127.0.0.1: RECHAZADO (Clave de acceso inválida.)`
+*(Actualizar esta tabla con lo que cada uno fusione antes de entregar.)*
 
-El coordinador envía a cada agente su clave: lee `URLS_AGENTES` y `CLAVES_AGENTES` (mismo orden,
-separadas por comas). Si las listas no tienen el mismo largo, lo avisa en una línea al arrancar.
-Las claves se comparten por un canal privado, nunca en el repo ni en capturas.
+## Cómo funciona
 
-Probar desde la terminal (con viajes levantado en el 8000):
+```
+Telegram ──polling──▶ src/canal/telegram.py ──POST /chat──▶ Coordinador (8002)
+                                                              │ elige agente (Gemini)
+                                     ┌────────────────────────┼────────────────────────┐
+                                     ▼  A2A + X-API-Key       ▼                        ▼
+                              Maleta (8003)          Entrenamiento (8005)     Sitios turísticos (8004)
+```
+
+| Agente | Qué sabe | Dueño | Puerto local | Clave | Heroku |
+|---|---|---|---|---|---|
+| Agente de Maleta de Dani | Listas de equipaje para Punta Arenas, Pucón e Iquique según días y temporada | Daniella | 8003 | `CLAVE_DANI` | pendiente |
+| Agente de Entrenamiento de Pato | Anatomía y rutinas de gimnasio con base científica | Patricio | 8005 | `CLAVE_PATO` | https://agente-pato-grupo3-8c9b06247efd.herokuapp.com |
+| Agente de cristian (Sitios turísticos) | Sitios con ubicación, horarios y precios | Cristian | 8004 | `CLAVE_CRISTIAN` | https://agente-cristian-grupo3-60262a116c18.herokuapp.com |
+| Coordinador | Elige el agente, no altera la respuesta y la etiqueta `[Nombre]` | Grupo | 8002 | `CLAVE_COORDINADOR` | pendiente (T12) |
+
+Cada agente publica su ficha en `/.well-known/agent-card.json` y su estado en `/salud`.
+
+## Versiones probadas
+
+- Python **3.12.10** (`.python-version` fija 3.12).
+- Paquetes principales (todas las versiones exactas en `requirements-lock.txt`): a2a-sdk 1.3.0, fastapi 0.163.1, uvicorn 0.54.0, httpx 0.28.1,
+  langchain 1.5.0, langchain-core 1.8.1, langgraph 1.2.22, langchain-google-genai 4.5.0,
+  pydantic 2.14.3, python-dotenv 1.2.4, pytest 9.2.0.
+
+## Preparación manual (una vez)
+
+1. **Gemini:** crea una API key en Google AI Studio. Va en `GOOGLE_API_KEY`.
+2. **Bot de Telegram de prueba:** en Telegram habla con **@BotFather**, escribe `/newbot` y sigue los
+   pasos. El token que entrega va en `TELEGRAM_TOKEN`. Cada persona usa **su propio bot de prueba**:
+   un mismo bot no puede leer mensajes en dos computadores a la vez.
+3. **Tu ID de Telegram:** escríbele a **@userinfobot**; el número que responde va en
+   `TELEGRAM_USUARIOS_PERMITIDOS` (varios IDs separados por comas). Si un usuario no autorizado le
+   escribe al bot, el bot le responde con su ID para que lo agreguen.
+4. **Claves de acceso:** inventa una clave distinta para cada agente y para el coordinador, por
+   ejemplo con `python -c "import secrets; print(secrets.token_urlsafe(24))"`.
+
+## Para el evaluador
+
+Hay dos formas de probar, según lo que prefieras:
+
+1. **Con tus propias credenciales (recomendado para la entrega local):** sigue "Preparación manual",
+   "Instalación" y "Configuración". Necesitas tu API key de Gemini y un bot de prueba creado con
+   @BotFather; en `TELEGRAM_USUARIOS_PERMITIDOS` pones tu propio ID de Telegram. Las claves de los
+   agentes y del coordinador las inventas tú: no hace falta pedirnos nada.
+2. **Con acceso que te damos nosotros:** si prefieres usar nuestro bot o el despliegue en Heroku,
+   escríbenos por una **vía privada** (correo o mensaje directo, nunca en el repositorio) con tu ID de
+   Telegram. Lo agregamos a `TELEGRAM_USUARIOS_PERMITIDOS` y, si hace falta, te enviamos por la misma
+   vía las claves de prueba. No hay secretos reales en este repositorio.
+
+Si le escribes al bot sin estar autorizado, te responde "No tienes acceso a este bot. Tu ID es ...":
+ese es el número que tienes que mandarnos.
+
+## Instalación
 
 ```bash
-# Rechazado: sin clave -> 401
-curl -i -X POST http://127.0.0.1:8000/ -H "Content-Type: application/json" -d "{}"
+git clone https://github.com/Daniferz/TallerCurso2Grupo3.git
+cd TallerCurso2Grupo3
+git checkout taller-sistema-agentes
+python -m venv .venv
+```
 
-# Permitido: con clave -> 200
-python scripts/probar_acceso.py
+Activa el entorno:
+
+- Windows (PowerShell): `.venv\Scripts\Activate.ps1`
+- Windows (cmd): `.venv\Scripts\activate.bat`
+- Mac / Linux: `source .venv/bin/activate`
+
+Luego instala las **versiones exactas que probamos**:
+
+```bash
+pip install -r requirements-lock.txt
+```
+
+`requirements.txt` tiene la lista base con rangos; `requirements-lock.txt` fija cada versión
+(salida de `pip freeze` con Python 3.12.10) para que una instalación nueva quede igual a la nuestra.
+
+## Configuración (`.env`)
+
+Copia `.env.example` a `.env` y completa:
+
+| Variable | Qué poner |
+|---|---|
+| `GOOGLE_API_KEY` | Tu API key de Gemini |
+| `MODELO` | `gemini-3.5-flash-lite` (ya viene) |
+| `CLAVE_PATO`, `CLAVE_DANI`, `CLAVE_CRISTIAN` | Una clave distinta por agente |
+| `CLAVE_COORDINADOR` | La clave que exige el coordinador en `/chat` |
+| `URLS_AGENTES` | `http://127.0.0.1:8003,http://127.0.0.1:8005,http://127.0.0.1:8004` |
+| `CLAVES_AGENTES` | Las claves de esos agentes, **en el mismo orden**: `CLAVE_DANI,CLAVE_PATO,CLAVE_CRISTIAN` (sus valores) |
+| `TELEGRAM_TOKEN` | El token de tu bot de prueba |
+| `TELEGRAM_USUARIOS_PERMITIDOS` | Tu ID de Telegram |
+
+Opcionales: `TIEMPO_ESPERA_A2A` (120 s), `TIEMPO_FICHA_A2A` (3 s; 30 en Heroku),
+`REINTENTO_AGENTES_SEG` (60 s). `APP_MODULO` y `PORT` solo se usan en Heroku.
+
+`.env` está en `.gitignore`: nunca se sube.
+
+## Iniciar en local
+
+Cada componente en su propia terminal, con el entorno activado y desde la raíz del proyecto:
+
+```bash
+python -m uvicorn src.agente_dani.server:app --port 8003
 ```
 
 ```bash
-pytest tests/test_acceso.py -v
+python -m uvicorn src.agente_pato.server:app --port 8005
 ```
-
-## Estructura
-
-```
-.
-├── main.py                    entrada por terminal para los agentes
-├── AGENTS.md                  reglas del proyecto
-├── requirements.txt
-├── .env.example
-├── .gitignore
-├── src/
-│   ├── comun/                 código compartido: registro.py, executor.py, servidor.py, tarjeta.py
-│   ├── portal/                consola web: app.py, cliente.py, estatico/
-│   ├── agente_viajes/         tools.py, prompts.py, graph.py, server.py
-│   ├── agente_restaurantes/   tools.py, prompts.py, crew.py, server.py
-│   ├── agente_pato/           tools.py, prompts.py, graph.py, server.py
-│   ├── agente_dani/           tools.py, prompts.py, graph.py, server.py
-│   ├── agente_cristian/       tools.py, prompts.py, graph.py, server.py
-│   └── coordinador/           cliente.py, graph.py, server.py
-├── scripts/                   utilidades para probar los agentes desde la terminal
-└── tests/
-```
-
-## Uso por terminal (sin servidor)
 
 ```bash
-python main.py viajes "vuelo a Lima el 15 de marzo" --saltos
-python main.py restaurantes "¿Dónde comer barato en Providencia?" --saltos
-python main.py pato "Quiero entrenar piernas, ¿qué rutina hago?" --saltos
-python main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué llevo?" --saltos
-python main.py cristian "¿Qué sitios turísticos puedo visitar en Lima el sábado?" --saltos
-python main.py coordinador "Arma un fin de semana gastronómico en Valparaíso" --diagrama
+python -m uvicorn src.agente_cristian.server:app --port 8004
 ```
-
-- Sin banderas: responde con `responder(texto, context_id)`.
-- `--saltos`: muestra por qué nodos y herramientas pasó (`saltos(texto)`).
-- `--diagrama`: imprime la estructura en Mermaid sin ejecutar el agente (`diagrama()`).
-
-## Consola web
-
-`src/portal` es una app FastAPI aparte que muestra el registro de agentes y les
-envía mensajes por A2A. No llama a los modelos: solo reenvía el método
-`message/send` al servidor de cada agente.
 
 ```bash
-# 1. levanta el agente con el que quieras conversar (ejemplo: viajes)
-uvicorn src.agente_viajes.server:app --port 8000
-
-# 2. en otra terminal, levanta la consola
-uvicorn src.portal.app:app --port 9000
+python -m uvicorn src.coordinador.server:app --port 8002
 ```
 
-Abre <http://127.0.0.1:9000>. La página lista cada agente del registro con su
-estado:
-
-- **En línea**: el agente existe y su `/salud` responde.
-- **Sin conexión**: el agente está implementado, pero su servidor no está levantado.
-- **Pendiente**: todavía no tiene `graph.py`/`crew.py` o `server.py`.
-
-Al elegir un agente, la consola descarga su **Agent Card** desde
-`/.well-known/agent-card.json` y muestra versión, protocolo, modos de entrada y
-salida y sus skills. Clicar un skill deja su ejemplo de prueba en la caja de
-texto, listo para mandarlo. Si la URL de la ficha no coincide con la del
-registro aparece un aviso, y si el agente está en línea pero no publica ficha,
-también.
-
-Un agente nuevo no tiene que hacer nada extra: si su `server.py` usa
-`crear_app(tarjeta, responder)`, la ficha se publica sola y la consola la lee.
-Lo único obligatorio son los skills: `crear_tarjeta` falla con un error de una
-línea si se le pasa la lista vacía, porque la spec A2A los exige.
-
-Las direcciones salen de `.env` (`URL_VIAJES`, `URL_RESTAURANTES`,
-`URL_COORDINADOR`, `URL_PATO`, `URL_DANI`, `URL_CRISTIAN`). `URL_PUBLICA` permite publicar la URL
-de un túnel en la ficha; `URLS_AGENTES` agrega túneles de compañeros al catálogo
-del supervisor. Los servidores base conservan sus URLs locales; los agentes
-personales (`pato`, `dani` y `cristian`) usan el override por defecto. Cada conversación conserva su `context_id`, que el agente usa
-como memoria; el botón "Nueva conversación" genera uno nuevo. La espera máxima
-por respuesta se ajusta con `TIEMPO_ESPERA_A2A` (120 segundos por defecto) y la
-de la ficha con `TIEMPO_FICHA_A2A` (3 segundos por defecto).
-
-Los servidores base de viajes, restaurantes y coordinador excluyen `URL_PUBLICA`
-para conservar sus propias direcciones; los agentes personales usan el override.
-
-## Agente de viajes
-
-LangGraph con Gemini y dos herramientas con datos inventados:
-
-- `buscar_vuelos(origen, destino, fecha)`: rutas entre SCL, LIM, BOG y EZE, en ambos sentidos, dos vuelos por ruta.
-- `buscar_hoteles(ciudad, noches)`: dos hoteles por ciudad con precio por noche y total de la estadía.
-
-Acepta códigos IATA o nombres de ciudad (con o sin tilde). Si la ruta o la
-ciudad no existe, devuelve una lista vacía. No reserva ni cobra.
+El coordinador debe mostrar `Supervisor con 3 agentes`. Por último, el bot:
 
 ```bash
-python main.py viajes "vuelo a Lima" --saltos
-python main.py viajes --diagrama
-uvicorn src.agente_viajes.server:app --port 8000 --reload
+python -m src.canal.telegram
 ```
 
-El servidor acepta los dos dialectos de JSON-RPC: `SendMessage` (A2A 1.0, con el
-encabezado `A2A-Version: 1.0`) y `message/send` (A2A 0.3, sin encabezado).
+Debe mostrar `Bot @tu_bot escuchando por polling`. Ya puedes escribirle en Telegram.
 
-## Agente de restaurantes
+## Probar
 
-CrewAI, en su propio entorno (`.venv-crew`) para no chocar con LangChain. Usa
-datos inventados de Lima, Bogotá y Buenos Aires:
+**En Telegram** (con todo levantado):
 
-- `buscar_restaurantes(ciudad, tipo)`: 5 restaurantes por ciudad, con zona, tipo de comida, precio medio en CLP y horario.
-- `detalle_restaurante(nombre)`: ficha completa de uno, con plato recomendado.
+| Escribe | Qué debería pasar |
+|---|---|
+| `/start` | Bienvenida |
+| `Qué llevo en la maleta para Pucón 3 días en invierno` | Responde `[Agente de Maleta de Dani] ...` |
+| `Arma una rutina de pecho para fuerza, 5 días por semana` | Responde `[Agente de Entrenamiento de Pato] ...` con la rutina completa |
+| `¿A qué hora puedo visitar el Cerro San Cristóbal el domingo?` | Responde `[Agente de cristian] ...` |
+| Una foto o un sticker | "No puedo leer ese tipo de mensaje" |
+| Desde una cuenta no autorizada | "No tienes acceso a este bot. Tu ID es ..." |
 
-CrewAI no guarda memoria entre mensajes, así que el agente mantiene un historial
-por `context_id` y lo inyecta en cada `Task`.
-
-Este agente corre **solo con `.venv-crew` activo**, no con `.venv`. Si al
-levantar el servidor aparece `ModuleNotFoundError: No module named 'crewai'`,
-estás en el entorno equivocado: sal con `deactivate` y activa `.venv-crew`.
-
-```powershell
-.venv-crew\Scripts\Activate.ps1
-python main.py restaurantes "parrillas en Buenos Aires" --saltos
-python main.py restaurantes --diagrama
-uvicorn src.agente_restaurantes.server:app --port 8001
-```
-
-## Agente de Entrenamiento de Pato
-
-LangGraph con Gemini y herramientas con datos estáticos sobre anatomía muscular y
-rutinas de entrenamiento basadas en referencias científicas. No ofrece dietas ni
-suplementos, no trata lesiones o dolores, y deriva los temas fuera de su ficha.
-
-- `musculo(nombre)`: origen, inserción, función y ejercicios para músculos del catálogo.
-- `rutina(grupo_muscular, objetivo, nivel, dias_por_semana)`: ejercicios, series,
-  repeticiones, descansos y referencias.
-
-```powershell
-python main.py pato "Quiero entrenar piernas, ¿qué rutina hago?" --saltos
-python main.py pato --diagrama
-uvicorn src.agente_pato.server:app --port 8005 --reload
-```
-
-## Agente de Maleta de Dani
-
-LangGraph con Gemini y una herramienta local que arma listas desde guías estáticas
-para Punta Arenas (invierno y verano), Pucón (invierno y verano) e Iquique
-(verano). Acepta temporadas o meses del calendario chileno; no consulta ni afirma
-conocer el clima real. Destinos y combinaciones no incluidos devuelven un mensaje
-de una línea sin inventar una lista.
-
-```powershell
-python main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué llevo?" --saltos
-python main.py dani --diagrama
-uvicorn src.agente_dani.server:app --port 8003 --reload
-```
-
-El Agente de Maleta se puede probar directamente en el puerto 8003 o desde la
-consola web. Un coordinador remoto puede incluirlo mediante `URLS_AGENTES`.
-
-## Agente de sitios turísticos de Cristian
-
-LangGraph con Gemini y herramientas con información estática de ejemplo para
-Santiago, Lima, Bogotá y Cusco. No consulta datos en tiempo real ni confirma
-horarios o restricciones con los recintos.
-
-- `listado_sitios_turisticos(ciudad, fecha)`: entrega sitios, descripción,
-  ubicación, horario, precio referencial e imagen.
-- `horario_atencion(nombre_sitio, dia)`: devuelve el horario registrado o indica
-  en una línea cuando no hay dato para el día.
-
-```powershell
-python main.py cristian "¿Qué sitios turísticos puedo visitar en Lima el sábado?" --saltos
-python main.py cristian --diagrama
-uvicorn src.agente_cristian.server:app --port 8004 --reload
-```
-
-El servidor publica `URL_PUBLICA` en la Agent Card cuando se configura un túnel;
-`URL_CRISTIAN` conserva la dirección local del servidor.
-
-## Coordinador
-
-El supervisor de LangGraph descubre al arrancar las fichas de viajes,
-restaurantes y las URLs incluidas en `URLS_AGENTES`. Con cada pregunta elige una
-usando las descripciones de las fichas como datos; si ninguna aplica, responde
-que no hay un agente para ese tema. Las respuestas delegadas incluyen el nombre
-del agente entre corchetes y el motivo de selección.
-
-- `catalogo.py`: obtiene una vez las fichas y clientes A2A de viajes, restaurantes
-  y URLs de compañeros; si uno no responde, informa en una línea y sigue con los demás.
-- `graph.py`: `START → supervisor → agente_remoto | sin_agente → END`, con
-  `MemorySaver`, `responder`, `saltos` y `diagrama`.
-- `server.py`: al iniciar imprime `Supervisor con N agentes`.
+**Sin Telegram:**
 
 ```bash
-python main.py coordinador "¿Cuánto cuesta volar de Santiago a Lima?" --saltos
-python main.py coordinador --diagrama
-uvicorn src.coordinador.server:app --port 8002
+python main.py pato "Arma una rutina de espalda para hipertrofia"
 ```
-
-Levanta primero viajes en el 8000 y restaurantes en el 8001; luego inicia el
-coordinador en el 8002 para que descubra las fichas y los agentes remotos.
-
-`scripts/probar_coordinador.py` le hace dos preguntas con el mismo
-`context_id` y comprueba que la segunda respuesta recuerda la primera:
 
 ```bash
-python scripts/probar_coordinador.py
+python main.py coordinador "Qué llevo en la maleta para Iquique 5 días en verano" --saltos
 ```
-
-Para revisar las seis decisiones del supervisor:
 
 ```bash
-python scripts/probar_supervisor.py
+curl -X POST http://127.0.0.1:8002/chat -H "Content-Type: application/json" -H "X-API-Key: TU_CLAVE_COORDINADOR" -d "{\"texto\": \"Rutina de piernas\", \"conversacion_id\": \"prueba-1\"}"
 ```
 
-## Generar `compañeros.md`
+`--saltos` muestra por qué nodos y herramientas pasó; `--diagrama` imprime el grafo en Mermaid.
 
-La Agent Card no incluye el nombre de quien creó el agente, así que `companeros.json` relaciona cada autor con su URL pública. Parte de la plantilla:
+**Scripts de prueba** (con los servidores levantados):
 
-```powershell
-Copy-Item companeros.json.example companeros.json
-# Completa autor y URL por cada compañero y luego ejecuta:
-.\.venv\Scripts\python.exe scripts\generar_companeros.py
+```bash
+python scripts/probar_acceso.py pato
 ```
 
-El script descarga cada ficha A2A con timeout y genera `compañeros.md` con autor, nombre, skills, URL y JSON completo. Si una ficha no responde, registra el error en una línea y continúa con las demás.
+```bash
+python scripts/probar_blindaje_supervisor.py
+```
 
-## Probar entre computadores
+```bash
+python scripts/comparar_directo_coordinador.py pato "Arma una rutina de pecho para fuerza, 5 días"
+```
 
-1. Levanta el agente personal que quieres compartir: Dani usa el puerto 8003, Cristian el 8004 y Pato el 8005.
-2. En otra terminal, abre el túnel de Cloudflare al mismo puerto. En Mac/Linux ejecuta `bash scripts/tunel.sh PUERTO`; en Windows usa `.\scripts/tunel.ps1 -Puerto PUERTO`. Mantén la terminal abierta.
-3. Copia la URL HTTPS a `URL_PUBLICA` del `.env` del dueño y reinicia ese agente. Comprueba su ficha con `curl.exe -sS https://TU-URL.trycloudflare.com/.well-known/agent-card.json`.
-4. Agrega las URLs públicas a `URLS_AGENTES` en el `.env` del coordinador, separadas por comas. Incluye el agente propio para que participe en la ronda y reinicia el coordinador.
-5. Prueba el enrutamiento con `python scripts/probar_supervisor.py`.
-
-Las tarjetas de viajes, restaurantes y coordinador conservan sus URLs locales; `URL_PUBLICA` se usa por defecto en los agentes personales. Las URLs rápidas cambian al reiniciar el túnel. Ciérralo con Ctrl+C y comparte la URL solo con personas de confianza: cualquiera que la conozca podrá consultar el agente mientras esté activo.
-
-## Pruebas
+**Tests automáticos** (no necesitan servidores ni Gemini):
 
 ```bash
 pytest
 ```
+
+## Detener y evitar envíos accidentales
+
+- Cada servidor y el bot se detienen con **Ctrl+C** en su terminal.
+- Con el bot detenido no se lee ni se responde ningún mensaje de Telegram.
+- El bot **solo atiende** a los IDs de `TELEGRAM_USUARIOS_PERMITIDOS`; a los demás les responde que
+  no tienen acceso y no llama al coordinador ni a Gemini.
+- Usa solo **bots y chats de prueba**. Para dejar de usar un bot por completo, revoca su token en
+  @BotFather (`/revoke`).
+
+## Control de acceso y secretos
+
+| Dónde | Cómo se protege |
+|---|---|
+| Mensajes A2A a cada agente (`POST /`) | `X-API-Key`; **cada agente exige su propia clave** y rechaza la de los otros (401) |
+| Coordinador → agentes | Envía a cada agente su clave según `URLS_AGENTES` / `CLAVES_AGENTES` |
+| `POST /chat` del coordinador | `X-API-Key` = `CLAVE_COORDINADOR` |
+| Bot de Telegram | Solo responde a `TELEGRAM_USUARIOS_PERMITIDOS` |
+| Ficha y `/salud` | Públicas (la spec A2A pide fichas descubribles) |
+
+Si un agente responde **503**, le falta su clave en `.env`; si responde **401**, la clave no
+coincide. Las claves y tokens viven solo en `.env` o en las variables de Heroku: nunca en el repo,
+en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
+
+## Qué pasa si algo falla
+
+- **Un agente apagado:** el coordinador responde "La parte de [agente] no está disponible en este
+  momento. Puedes seguir preguntando sobre los otros temas." y los otros siguen funcionando. Lo
+  vuelve a intentar cada 60 s, sin reiniciar el coordinador.
+- **Coordinador apagado:** el bot responde en el chat "No pude responder en este momento: el
+  asistente no está disponible. Intenta de nuevo en unos minutos."
+- **Pregunta fuera de tema:** "No tengo un agente para eso. Puedo ayudarte con: ..."
+- **Falla de Gemini** (cuota, clave): error en una línea, nunca una respuesta inventada; `/chat`
+  responde 502 y el bot avisa en el chat. Evidencia: `evidencias/taller-implementacion/local/falla-proveedor-gemini.md`.
+- **Texto vacío en `/chat`:** 422 "El texto está vacío: escribe una pregunta."
+
+## Qué es real y qué es simulado
+
+- **Real:** Gemini, la comunicación A2A entre procesos, el control de acceso y los mensajes de
+  Telegram.
+- **Simulado (datos estáticos en cada `tools.py`):** las guías de equipaje, los músculos y rutinas y
+  los sitios turísticos con sus horarios y precios.
+
+## Dependencias externas y costos
+
+- **Internet:** sí, aunque se ejecute en local (Gemini y Telegram).
+- **Gemini:** cuota gratuita de Google AI Studio; si se acaba, los agentes responden un error claro (429).
+- **Telegram:** gratis.
+- **Heroku (solo para el +1):** plan Eco, unos 5 USD al mes por cuenta; las apps duermen tras 30 min
+  sin uso y tardan 10-20 s en despertar.
+
+## Límites conocidos
+
+- La memoria de las conversaciones (`MemorySaver`) vive en RAM: se pierde al reiniciar.
+- Los datos de cada agente son estáticos: solo cubren las ciudades y casos que tienen cargados.
+- Un bot de Telegram no puede usarse por polling en dos computadores a la vez, ni por polling y
+  webhook al mismo tiempo.
+- El bot atiende los mensajes de a uno: una respuesta lenta retrasa la siguiente.
+
+## Despliegue en Heroku (+1, en curso)
+
+Una app por agente desde este mismo repo; el `Procfile` arranca el módulo de `APP_MODULO`:
+
+```
+web: uvicorn $APP_MODULO:app --host 0.0.0.0 --port $PORT
+```
+
+Variables de cada app de agente: `APP_MODULO` (ej.: `src.agente_pato.server`), `MODELO`,
+`URL_PUBLICA` (la URL de la app, sin `/` final), `GOOGLE_API_KEY` y su clave (`CLAVE_PATO`,
+`CLAVE_DANI` o `CLAVE_CRISTIAN`). Se despliega desde **Deploy → GitHub → Manual deploy** con la rama
+`taller-sistema-agentes` (si el repo no es tuyo, conéctalo desde un fork y usa **Sync fork** antes de
+cada despliegue).
+
+*Pendiente (T12): app del coordinador con `URLS_AGENTES`, `CLAVES_AGENTES`, `CLAVE_COORDINADOR`,
+`TIEMPO_FICHA_A2A=30` y el bot del grupo por webhook.*
+
+## Evidencias
+
+En `evidencias/taller-implementacion/local/` y `evidencias/taller-implementacion/heroku/`. Qué
+evidencia cubre cada resultado de la pauta: `SPEC.md`, "Checklist de evaluación".
+
+## Estructura
+
+```
+src/
+  agente_dani/        Maleta (LangGraph)
+  agente_pato/        Entrenamiento (LangGraph)
+  agente_cristian/    Sitios turísticos (LangGraph)
+  coordinador/        Supervisor, catálogo, cliente A2A, prompts y POST /chat
+  canal/telegram.py   Bot de Telegram por polling
+  comun/              Servidor A2A común, control de acceso, registro de agentes y errores
+scripts/              Pruebas manuales (acceso, blindaje, comparación directo vs. coordinador)
+tests/                pytest
+main.py               python main.py {agente} "pregunta" [--saltos | --diagrama]
+requirements.txt      Lista base de dependencias (rangos)
+requirements-lock.txt Versiones exactas probadas
+Procfile, .python-version   Heroku
+```
+
+Los agentes de ejemplo `agente_viajes` y `agente_restaurantes` quedan del taller anterior y no
+participan en el coordinador.

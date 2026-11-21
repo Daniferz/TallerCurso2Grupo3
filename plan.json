@@ -488,8 +488,8 @@
       "id": "T14",
       "etapa": "entrega",
       "nombre": "README nuevo",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara (parte local); parte Heroku por asignar",
+      "estado": "en_curso",
       "depende_de": [
         "T08",
         "T12"
@@ -506,7 +506,12 @@
         "Cada integrante revisó su sección y su blueprint.",
         "Explica cómo apagar las apps de Heroku y cómo detener el bot local."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-21 LOCAL: README con sección \"Para el evaluador\" (credenciales propias o acceso por vía privada), instalación con requirements-lock.txt (pip freeze, resolución verificada en un entorno nuevo) y referencia a la evidencia de falla del proveedor.",
+        "2026-11-21 LOCAL: README nuevo con opción elegida, qué se reutiliza, integrantes y aportes, tabla de agentes (nombre, qué sabe, dueño, puerto, clave, URL Heroku), versiones exactas, preparación manual (Gemini, BotFather, ID de Telegram, claves), instalación, .env, iniciar/probar/detener, control de acceso, qué pasa si algo falla, real vs. simulado, dependencias y costos, límites y estructura. El README anterior quedó en docs/README-taller-a2a.md.",
+        "2026-11-21 LOCAL: probados los comandos del README: main.py --diagrama (coordinador y pato), main.py pato, main.py coordinador --saltos (elige Maleta), curl a POST /chat con CLAVE_COORDINADOR (200, Entrenamiento), scripts/probar_acceso.py pato (401 con clave ajena) y pytest (67 passed).",
+        "Pendiente: sección de Heroku del coordinador y el bot por webhook (después de T12), actualizar aportes con lo que se fusione, y la prueba desde cero (T16)."
+      ],
       "reemplaza": [
         "T23"
       ]
