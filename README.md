@@ -51,7 +51,7 @@ Cada agente publica su ficha en `/.well-known/agent-card.json` y su estado en `/
 ## Versiones probadas
 
 - Python **3.12.10** (`.python-version` fija 3.12).
-- Paquetes (`requirements.txt`): a2a-sdk 1.3.0, fastapi 0.163.1, uvicorn 0.54.0, httpx 0.28.1,
+- Paquetes principales (todas las versiones exactas en `requirements-lock.txt`): a2a-sdk 1.3.0, fastapi 0.163.1, uvicorn 0.54.0, httpx 0.28.1,
   langchain 1.5.0, langchain-core 1.8.1, langgraph 1.2.22, langchain-google-genai 4.5.0,
   pydantic 2.14.3, python-dotenv 1.2.4, pytest 9.2.0.
 
@@ -66,6 +66,22 @@ Cada agente publica su ficha en `/.well-known/agent-card.json` y su estado en `/
    escribe al bot, el bot le responde con su ID para que lo agreguen.
 4. **Claves de acceso:** inventa una clave distinta para cada agente y para el coordinador, por
    ejemplo con `python -c "import secrets; print(secrets.token_urlsafe(24))"`.
+
+## Para el evaluador
+
+Hay dos formas de probar, según lo que prefieras:
+
+1. **Con tus propias credenciales (recomendado para la entrega local):** sigue "Preparación manual",
+   "Instalación" y "Configuración". Necesitas tu API key de Gemini y un bot de prueba creado con
+   @BotFather; en `TELEGRAM_USUARIOS_PERMITIDOS` pones tu propio ID de Telegram. Las claves de los
+   agentes y del coordinador las inventas tú: no hace falta pedirnos nada.
+2. **Con acceso que te damos nosotros:** si prefieres usar nuestro bot o el despliegue en Heroku,
+   escríbenos por una **vía privada** (correo o mensaje directo, nunca en el repositorio) con tu ID de
+   Telegram. Lo agregamos a `TELEGRAM_USUARIOS_PERMITIDOS` y, si hace falta, te enviamos por la misma
+   vía las claves de prueba. No hay secretos reales en este repositorio.
+
+Si le escribes al bot sin estar autorizado, te responde "No tienes acceso a este bot. Tu ID es ...":
+ese es el número que tienes que mandarnos.
 
 ## Instalación
 
@@ -82,11 +98,14 @@ Activa el entorno:
 - Windows (cmd): `.venv\Scripts\activate.bat`
 - Mac / Linux: `source .venv/bin/activate`
 
-Luego:
+Luego instala las **versiones exactas que probamos**:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-lock.txt
 ```
+
+`requirements.txt` tiene la lista base con rangos; `requirements-lock.txt` fija cada versión
+(salida de `pip freeze` con Python 3.12.10) para que una instalación nueva quede igual a la nuestra.
 
 ## Configuración (`.env`)
 
@@ -216,7 +235,8 @@ en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
 - **Coordinador apagado:** el bot responde en el chat "No pude responder en este momento: el
   asistente no está disponible. Intenta de nuevo en unos minutos."
 - **Pregunta fuera de tema:** "No tengo un agente para eso. Puedo ayudarte con: ..."
-- **Falla de Gemini** (cuota, clave): error en una línea, nunca una respuesta inventada.
+- **Falla de Gemini** (cuota, clave): error en una línea, nunca una respuesta inventada; `/chat`
+  responde 502 y el bot avisa en el chat. Evidencia: `evidencias/taller-implementacion/local/falla-proveedor-gemini.md`.
 - **Texto vacío en `/chat`:** 422 "El texto está vacío: escribe una pregunta."
 
 ## Qué es real y qué es simulado
@@ -277,6 +297,8 @@ src/
 scripts/              Pruebas manuales (acceso, blindaje, comparación directo vs. coordinador)
 tests/                pytest
 main.py               python main.py {agente} "pregunta" [--saltos | --diagrama]
+requirements.txt      Lista base de dependencias (rangos)
+requirements-lock.txt Versiones exactas probadas
 Procfile, .python-version   Heroku
 ```
 
