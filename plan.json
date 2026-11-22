@@ -450,8 +450,8 @@
       "id": "T12",
       "etapa": "canal",
       "nombre": "Bot del grupo y coordinador en Heroku",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Daniella Fernández",
+      "estado": "en_curso",
       "depende_de": [
         "T09",
         "T10",
