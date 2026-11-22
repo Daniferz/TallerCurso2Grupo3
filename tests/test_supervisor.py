@@ -134,6 +134,32 @@ def test_otra_falla_del_agente_sigue_siendo_error(monkeypatch):
         asyncio.run(supervisor.agente_remoto(estado, {"configurable": {}}))
 
 
+def test_sin_agente_avisa_y_conserva_respuesta(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    avisos = []
+
+    async def descubrir():
+        return []
+
+    async def avisar(pregunta, conversacion_id):
+        avisos.append((pregunta, conversacion_id))
+        return True
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "avisar_chat", avisar)
+    resultado = asyncio.run(
+        supervisor.sin_agente(
+            {"messages": [HumanMessage(content="¿Quién ganó el mundial?")]},
+            {"configurable": {"thread_id": "hilo-aviso"}},
+        )
+    )
+
+    assert "No tengo un agente para eso" in resultado["messages"][0].content
+    assert avisos == [("¿Quién ganó el mundial?", "hilo-aviso")]
+
+
 def test_ficha_del_coordinador_no_menciona_viajes_ni_restaurantes():
     from src.comun.registro import CATALOGO
 

@@ -376,8 +376,8 @@
       "id": "T10",
       "etapa": "extra",
       "nombre": "Extra: aviso a una persona cuando nadie sabe",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Cristian Meza",
+      "estado": "hecho",
       "depende_de": [
         "T03",
         "T06",
@@ -385,7 +385,10 @@
       ],
       "archivos": [
         "src/coordinador/graph.py (sin_agente)",
-        "src/canal/telegram.py (función de envío)"
+        "src/canal/telegram.py (función de envío)",
+        ".env.example",
+        "tests/test_supervisor.py",
+        "tests/test_telegram.py"
       ],
       "descripcion": "Cuando ningún agente puede responder, el coordinador avisa a TELEGRAM_CHAT_AVISO con la pregunta y el conversacion_id. Si el aviso falla, la persona igual recibe su respuesta normal. Para controlar envíos: máximo un aviso por conversación cada 10 minutos (configurable con AVISO_MINUTOS).",
       "entregables": [
@@ -396,7 +399,11 @@
         "Con TELEGRAM_CHAT_AVISO inválido, la persona igual recibe su respuesta.",
         "Tres preguntas fuera de tema seguidas en la misma conversación generan un solo aviso."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "La respuesta normal de sin_agente se conserva aunque Telegram falle; el aviso se limita a uno por conversación cada AVISO_MINUTOS.",
+        "Evidencia manual de la rama de Cristian (2026-11-19): tres preguntas fuera de tema generaron un aviso; un chat inválido no interrumpió la respuesta normal.",
+        "pytest tests/test_supervisor.py tests/test_telegram.py: 24 passed; pytest completo: 85 passed (2 avisos deprecados de FastAPI). Evidencia: evidencias/taller-implementacion/local/T10-aviso-telegram.md."
+      ],
       "reemplaza": [
         "T14"
       ]

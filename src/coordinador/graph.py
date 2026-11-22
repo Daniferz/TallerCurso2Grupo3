@@ -14,6 +14,7 @@ from langgraph.graph import END, START, MessagesState, StateGraph
 from pydantic import BaseModel, Field
 
 from src.comun.errores import en_una_linea
+from src.canal.telegram import avisar_chat
 
 from .catalogo import AgenteDescubierto, descubrir
 from .cliente import AgenteNoDisponible, preguntar
@@ -238,7 +239,7 @@ async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
         None,
     )
     if elegido is None:
-        return await sin_agente(estado)
+        return await sin_agente(estado, config)
 
     pregunta = _texto(estado["messages"][-1])
     thread_id = (config.get("configurable") or {}).get("thread_id")
@@ -262,9 +263,13 @@ async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
     return {"messages": [AIMessage(content=contenido)]}
 
 
-async def sin_agente(estado: EstadoSupervisor) -> dict:
+async def sin_agente(estado: EstadoSupervisor, config=None) -> dict:
     """Responde con los temas cubiertos por los agentes disponibles."""
     agentes = await descubrir()
+    configuracion = (config or {}).get("configurable") or {}
+    conversacion_id = configuracion.get("thread_id") or "sin-contexto"
+    pregunta = _texto(estado["messages"][-1])
+    await avisar_chat(pregunta, conversacion_id)
     nombres = ", ".join(agente.nombre for agente in agentes) or "ninguno disponible"
     motivo = estado.get("motivo", "La pregunta no corresponde a los agentes disponibles.")
     respuesta = (
