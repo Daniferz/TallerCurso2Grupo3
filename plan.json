@@ -395,7 +395,7 @@
       "id": "T11",
       "etapa": "despliegue",
       "nombre": "Desplegar tu agente en Heroku",
-      "responsable": "Patricio Vergara (Entrenamiento); Maleta y Sitios por asignar",
+      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Sitios por asignar",
       "estado": "en_curso",
       "depende_de": [
         "T02",
@@ -419,7 +419,8 @@
       "evidencia": [
         "2026-11-18 21:26 HEROKU (Entrenamiento): app agente-pato-grupo3 desplegada desde taller-sistema-agentes (commit 2341bdf) con APP_MODULO=src.agente_pato.server. URL: https://agente-pato-grupo3-8c9b06247efd.herokuapp.com",
         "2026-11-18 21:26 HEROKU: GET /salud -> 200; la ficha publica la URL de Heroku (URL_PUBLICA) con skills musculo y rutina; POST / sin clave -> 401, clave incorrecta -> 401, CLAVE_DANI -> 401; con CLAVE_PATO -> 200 con rutina real completa (espalda, hipertrofia, 4 días). Salida en evidencias/taller-implementacion/heroku/T11-pato-heroku.txt.",
-        "PARTE DE ENTRENAMIENTO TERMINADA. Pendiente: Maleta (Dani) y Sitios (Cristian), y probar el agente de otro compañero con su clave."
+        "2026-11-22 HEROKU (Maleta): app agente-dani-grupo3 desplegada desde faltantes-dani (commit 73e6730), URL https://agente-dani-grupo3-3494821f347d.herokuapp.com. Build OK, release v4, web=up. GET /salud y ficha -> 200; sin clave, clave incorrecta y CLAVE_PATO -> 401; CLAVE_DANI -> 200 con lista real. Evidencia: evidencias/taller-implementacion/heroku/T11-dani-heroku.txt.",
+        "PARTES DE ENTRENAMIENTO (Pato) Y MALETA (Dani) TERMINADAS. Pendiente: despliegue de Sitios turísticos (Cristian) y probar el acceso cruzado de su agente."
       ],
       "reemplaza": [
         "T16",

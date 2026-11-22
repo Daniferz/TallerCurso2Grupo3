@@ -1,0 +1,27 @@
+T11 · Maleta (Dani) · HEROKU · 2026-11-22
+
+App: agente-dani-grupo3
+URL: https://agente-dani-grupo3-3494821f347d.herokuapp.com
+Rama desplegada: faltantes-dani
+Commit desplegado: 73e67309 (T07 Dani)
+
+Configuración:
+- Se configuraron GOOGLE_API_KEY, MODELO, CLAVE_DANI, URL_PUBLICA y APP_MODULO.
+- APP_MODULO=src.agente_dani.server.
+- Los valores de claves y tokens no se imprimieron ni se incluyeron en Git.
+
+Despliegue:
+- Comando: git push heroku faltantes-dani:main
+- Heroku detectó Python, procesó requirements.txt y el Procfile declaró web.
+- Build correcto; Heroku reportó release v4 y “Verifying deploy... done”.
+- Estado del dyno: web=up.
+
+Verificaciones:
+- GET /salud -> HTTP 200, {"ok":true}.
+- GET /.well-known/agent-card.json -> HTTP 200; nombre “Agente de Maleta de Dani” y URL pública correcta.
+- POST / sin X-API-Key -> HTTP 401.
+- POST / con clave incorrecta -> HTTP 401.
+- POST / con CLAVE_PATO -> HTTP 401.
+- POST / con CLAVE_DANI -> HTTP 200 y respuesta real con categorías de equipaje.
+
+Nota: antes del primer despliegue, /salud devolvió HTTP 502 y Heroku mostró la página de app vacía porque todavía no había release de código. Después del push, el release v4 quedó activo y todas las verificaciones respondieron correctamente.
