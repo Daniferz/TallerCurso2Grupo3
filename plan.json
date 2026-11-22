@@ -219,15 +219,16 @@
       "id": "T06",
       "etapa": "coordinador",
       "nombre": "Saludo y memoria al elegir agente",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Daniella Fernández",
+      "estado": "hecho",
       "depende_de": [
         "T03",
         "T05"
       ],
       "archivos": [
         "src/coordinador/graph.py",
-        "src/coordinador/graph.py (supervisor)"
+        "src/coordinador/prompts.py",
+        "tests/test_supervisor.py"
       ],
       "descripcion": "(1) Nodo de saludo: 'hola' (y saludos parecidos) responde listando los agentes disponibles y qué sabe cada uno, en vez de 'No tengo un agente para eso'. (2) Historial al elegir agente: El supervisor recibe los mensajes anteriores del hilo, no solo el último, para que un seguimiento como '¿y si son 5 días?' vaya al mismo agente.",
       "entregables": [
@@ -240,7 +241,11 @@
         "Mismo conversacion_id: 'maleta para Pucón 3 días en invierno' y luego '¿y si son 5 días?' -> ambas van a Maleta.",
         "Con otro conversacion_id, la segunda pregunta no hereda el contexto."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-22 LOCAL: tests/test_supervisor.py verifica que '¡Hola!' recorre el nodo saludo, lista Maleta, Entrenamiento y Sitios turísticos con una frase por agente y no invoca al modelo supervisor. `python main.py coordinador --diagrama` muestra el nodo nuevo.",
+        "2026-11-22 LOCAL: test_memoria_de_seguimiento_se_aísla_por_conversacion_id comprueba con supervisor y A2A simulados que el seguimiento permanece en Maleta con el mismo hilo y no hereda el contexto con otro conversacion_id.",
+        "pytest tests/test_supervisor.py: 14 passed; pytest completo: 71 passed (2 avisos deprecados de FastAPI). Evidencia: evidencias/taller-implementacion/local/T06-saludo-memoria.md."
+      ],
       "reemplaza": [
         "T09",
         "T10"

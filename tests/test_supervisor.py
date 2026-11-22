@@ -1,8 +1,9 @@
 import asyncio
 from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
 from src.coordinador import catalogo
 
@@ -196,3 +197,153 @@ def test_motivo_normal_se_deja_en_una_linea_y_breve(monkeypatch):
     assert motivo_seguro("La persona pide\n una lista de equipaje.", agentes) == "La persona pide una lista de equipaje."
     largo = motivo_seguro("palabra " * 100, agentes)
     assert len(largo) <= 203 and largo.endswith("...")
+
+
+def _agentes_bienvenida():
+    return [
+        _agente(
+            "Agente de Maleta de Dani",
+            "Prepara listas de equipaje para Punta Arenas, Pucón e Iquique según días y temporada. No consulta el clima.",
+        ),
+        _agente(
+            "Agente de Entrenamiento de Pato",
+            "Explica la anatomía y función de los músculos y arma rutinas de gimnasio con base científica. No da dietas.",
+        ),
+        _agente(
+            "Agente de cristian",
+            "Recomienda lugares para visitar con descripción, ubicación, horarios y precios. No hace reservas.",
+        ),
+    ]
+
+
+def test_grafo_incluye_nodo_de_saludo_y_reconoce_saludos_simples(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    nodos = set(supervisor.graph.get_graph().nodes)
+    assert "saludo" in nodos
+    assert supervisor._es_saludo("¡Hola!")
+    assert supervisor._es_saludo("Buenos días")
+    assert supervisor._es_saludo("¿Qué tal?")
+    assert not supervisor._es_saludo("Hola, ¿qué llevo a Pucón?")
+
+
+def test_nodo_saludo_lista_los_tres_agentes_y_que_sabe_cada_uno(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    async def descubrir():
+        return _agentes_bienvenida()
+
+    class ModeloNoUsado:
+        async def ainvoke(self, mensajes):
+            raise AssertionError("Un saludo simple no debe invocar el supervisor.")
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "modelo_decision", ModeloNoUsado())
+    texto = asyncio.run(
+        supervisor.responder("¡Hola!", str(uuid4()))
+    )
+
+    assert "Maleta:" in texto and "listas de equipaje" in texto
+    assert "Entrenamiento:" in texto and "anatomía y función" in texto
+    assert "Sitios turísticos:" in texto and "lugares para visitar" in texto
+    assert len(texto.splitlines()) == 4
+
+
+def test_supervisor_recibe_historial_usuario_del_hilo_sin_mensajes_del_agente(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+    from src.coordinador.graph import Decision
+
+    agente = _agentes_bienvenida()[0]
+    llamadas_modelo = []
+
+    async def descubrir():
+        return [agente]
+
+    class ModeloFalso:
+        async def ainvoke(self, mensajes):
+            llamadas_modelo.append(mensajes)
+            return Decision(agente=agente.nombre, motivo="Pregunta de equipaje.")
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "modelo_decision", ModeloFalso())
+    estado = {
+        "messages": [
+            HumanMessage(content="maleta para Pucón 3 días en invierno"),
+            AIMessage(content="[Agente de Maleta de Dani] Lista anterior."),
+            HumanMessage(content="¿y si son 5 días?"),
+        ]
+    }
+
+    decision = asyncio.run(supervisor.supervisor(estado))
+
+    entrada_usuario = [
+        mensaje.content
+        for mensaje in llamadas_modelo[0]
+        if isinstance(mensaje, HumanMessage)
+    ]
+    assert decision["agente"] == agente.nombre
+    assert len(entrada_usuario) == 1
+    assert "<mensaje>maleta para Pucón 3 días en invierno</mensaje>" in entrada_usuario[0]
+    assert "<pregunta_actual>¿y si son 5 días?</pregunta_actual>" in entrada_usuario[0]
+    assert not any(
+        isinstance(mensaje, AIMessage) for mensaje in llamadas_modelo[0]
+    )
+
+
+def test_memoria_de_seguimiento_se_aísla_por_conversacion_id(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+    from src.coordinador.graph import Decision
+
+    maleta = _agentes_bienvenida()[0]
+    entradas_modelo = []
+    llamadas_agente = []
+
+    async def descubrir():
+        return [maleta]
+
+    class ModeloFalso:
+        async def ainvoke(self, mensajes):
+            entrada = next(
+                mensaje.content
+                for mensaje in mensajes
+                if isinstance(mensaje, HumanMessage)
+            )
+            entradas_modelo.append(entrada)
+            if "maleta para Pucón" in entrada:
+                return Decision(agente=maleta.nombre, motivo="Tema de equipaje.")
+            return Decision(agente="ninguno", motivo="No hay contexto de equipaje.")
+
+    async def preguntar(cliente, texto, context_id):
+        llamadas_agente.append((texto, context_id))
+        return "Respuesta simulada de Maleta."
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "modelo_decision", ModeloFalso())
+    monkeypatch.setattr(supervisor, "preguntar", preguntar)
+
+    async def ejecutar():
+        hilo_con_memoria = str(uuid4())
+        hilo_nuevo = str(uuid4())
+        await supervisor.responder(
+            "maleta para Pucón 3 días en invierno", hilo_con_memoria
+        )
+        await supervisor.responder(
+            "¿y si son 5 días?", hilo_con_memoria
+        )
+        await supervisor.responder(
+            "¿y si son 5 días?", hilo_nuevo
+        )
+
+    asyncio.run(ejecutar())
+
+    assert [texto for texto, _ in llamadas_agente] == [
+        "maleta para Pucón 3 días en invierno",
+        "¿y si son 5 días?",
+    ]
+    assert "maleta para Pucón 3 días en invierno" in entradas_modelo[1]
+    assert "maleta para Pucón 3 días en invierno" not in entradas_modelo[2]
+    assert "<pregunta_actual>¿y si son 5 días?</pregunta_actual>" in entradas_modelo[2]
