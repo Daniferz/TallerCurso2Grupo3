@@ -473,6 +473,7 @@
         "2026-11-22 HEROKU (parcial): GET /salud -> 200; POST /chat sin clave -> 401. Dos llamadas autenticadas a POST /chat -> 200 y respuesta recibida: Maleta enruta a Agente de Maleta de Dani y la consulta de Valparaíso a Agente de cristian. Log de inicio: 'Supervisor con 2 agentes'.",
         "2026-11-22 TELEGRAM: webhook registrado en https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com/telegram; getWebhookInfo confirma esa URL y 0 actualizaciones pendientes.",
         "2026-11-22 HEROKU (parcial): consulta fuera de catálogo -> POST /chat HTTP 200 y agente=ninguno; se ejecutó la rama que envía aviso a TELEGRAM_CHAT_AVISO. Pendiente confirmar visualmente que el mensaje llegó al grupo y probar las dos consultas desde el chat privado.",
+        "2026-11-22 COSTO: el dyno quedó en Basic (aprox. US$0,01/h, máximo US$7/mes según Heroku). El cambio a Eco no está disponible porque la cuenta no tiene esa suscripción; la app sigue activa en Basic.",
         "Pendiente para completar T12: agregar la URL y clave de Heroku de Pato a URLS_AGENTES/CLAVES_AGENTES y repetir la conversación por Telegram con los 3 agentes y computadores apagados."
       ],
       "reemplaza": [
