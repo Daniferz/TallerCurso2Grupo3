@@ -112,6 +112,7 @@ CATALOGO: dict[str, Agente] = {
         nombre="Agente de cristian",
         descripcion=(
             "Recomienda lugares para visitar con descripción, ubicación, horarios, precios referenciales e imágenes. "
+            "Tiene datos para Santiago, Lima, Bogotá, Cusco y Valparaíso. "
             "No responde sobre vuelos, hoteles, reservas, clima, visas, equipaje ni restricciones de los sitios."
         ),
         paquete="src.agente_cristian",

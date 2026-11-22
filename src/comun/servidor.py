@@ -25,6 +25,7 @@ RUTA_FICHA = "/.well-known/agent-card.json"
 # Rutas públicas: la salud y la ficha A2A (la spec pide que la ficha sea descubrible).
 # Todo lo demás, en especial los mensajes JSON-RPC en "/", exige X-API-Key.
 RUTAS_PUBLICAS = {RUTA_SALUD, RUTA_FICHA}
+RUTAS_WEBHOOK = {"/telegram"}
 
 
 class _SinStackTrace(logging.Filter):
@@ -81,6 +82,10 @@ def crear_app(
         """Rechaza con 401 cualquier llamada no pública sin una X-API-Key válida."""
         ruta = request.url.path
         if request.method == "GET" and ruta in RUTAS_PUBLICAS:
+            return await siguiente(request)
+        # El webhook no puede enviar X-API-Key: Telegram solo conoce su
+        # secreto propio, que valida la ruta /telegram del coordinador.
+        if request.method == "POST" and ruta in RUTAS_WEBHOOK:
             return await siguiente(request)
 
         cliente = request.client.host if request.client else "desconocido"

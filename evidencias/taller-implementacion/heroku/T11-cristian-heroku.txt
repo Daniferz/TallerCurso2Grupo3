@@ -1,0 +1,26 @@
+T11 (Sitios turísticos) · HEROKU · https://agente-cristian-grupo3-60262a116c18.herokuapp.com
+
+[2026-11-19 20:21:03] GET /salud -> HTTP 200 {"ok":true}
+[2026-11-19 20:21] GET ficha -> HTTP 200 · nombre: Agente de cristian ·
+url en la ficha: ['https://agente-cristian-grupo3-60262a116c18.herokuapp.com'] ·
+skills: ['listado_sitios_turisticos', 'horario_atencion']
+[2026-11-19 20:21] POST / sin clave -> HTTP 401
+Detalle: Falta el encabezado X-API-Key.
+[2026-11-19 20:21] POST / clave incorrecta -> HTTP 401
+Detalle: Clave de acceso inválida.
+[2026-11-19 20:21] POST / con CLAVE_CRISTIAN (oculta) -> HTTP 200
+Pregunta: Que sitios turisticos puedo visitar en Valparaiso?
+Respuesta:
+Sitios turísticos en Valparaíso:
+
+1. Ascensor Artillería: ascensor patrimonial que conecta el plan con el
+   cerro Artillería. Horario: Todos los días, 08:00 a 20:00. Precio: Desde
+   $500 CLP por trayecto.
+2. La Sebastiana: casa museo de Pablo Neruda. Horario: Martes a domingo,
+   10:00 a 18:00 (cerrado los lunes). Precio: Desde $9.500 CLP entrada general.
+3. Paseo 21 de Mayo: paseo con miradores hacia el puerto y la bahía. Horario:
+   Recorrido exterior disponible todo el día. Precio: Acceso gratuito.
+[2026-11-19 20:21] POST / con CLAVE_COORDINADOR (de otro agente, oculta) -> HTTP 401
+Detalle: Clave de acceso inválida.
+
+Resultado: la parte de Sitios turísticos de T11 cumple la verificación de Heroku.
