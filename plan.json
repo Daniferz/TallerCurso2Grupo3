@@ -256,7 +256,7 @@
       "etapa": "a2a",
       "nombre": "Datos faltantes y respuesta sin alterar",
       "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Cristian Meza (Sitios)",
-      "estado": "en_curso",
+      "estado": "hecho",
       "depende_de": [
         "T03"
       ],
@@ -283,8 +283,8 @@
         "2026-11-18 20:57 LOCAL (Entrenamiento): misma pregunta directo al agente y vía coordinador, dos casos (rutina de pecho fuerza 5 días intermedio; piernas resistencia 2 días): cifras idénticas, el coordinador solo agrega [Agente de Entrenamiento de Pato] y el motivo. Script reutilizable: scripts/comparar_directo_coordinador.py; salida en evidencias/taller-implementacion/local/T07-pato-directo-vs-coordinador.md.",
         "2026-11-22 LOCAL (Maleta): prompt de Dani actualizado para pedir destino, días y temporada faltantes; no llamar la herramienta con datos supuestos. completar_respuesta conserva la lista de la herramienta y respeta las preguntas aclaratorias. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed.",
         "2026-11-22 LOCAL (Maleta): 'maleta para Pucón' pidió los días y la temporada antes de listar. La comparación directo vs coordinador PASA: categorías y cantidades idénticas; el coordinador solo agrega la etiqueta y el motivo. Se corrigió el .env local dejando URL_PUBLICA vacía para que las fichas anuncien localhost. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed. Evidencia: evidencias/taller-implementacion/local/T07-dani-maleta.md.",
-        "2026-11-19 LOCAL (Sitios, Cristian): se agregaron datos de Valparaíso y se reforzó el prompt para pedir la ciudad y conservar los datos de la herramienta. La comparación directa falló con HTTP 401 por CLAVE_CRISTIAN y queda pendiente repetirla. Evidencia: evidencias/taller-implementacion/local/T07-cristian-sitios.md.",
-        "PARTES DE ENTRENAMIENTO (Pato) Y MALETA (Dani) TERMINADAS. Sitios (Cristian): falta una comparación directa vs. coordinador que pase."
+        "2026-11-22 LOCAL (Sitios, Cristian): pregunta la ciudad cuando falta; la comparación directa vs coordinador para Valparaíso PASA con los mismos sitios, horarios y precios. Evidencia: evidencias/taller-implementacion/local/T07-cristian-sitios.md.",
+        "PARTES DE ENTRENAMIENTO (Pato), MALETA (Dani) Y SITIOS (Cristian) TERMINADAS."
       ],
       "reemplaza": [
         "T28"
