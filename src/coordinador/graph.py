@@ -1,7 +1,9 @@
 """Supervisor LangGraph: elige un agente del catálogo y delega por A2A."""
 
 import os
+import re
 import uuid
+import unicodedata
 from html import escape
 
 from dotenv import load_dotenv
@@ -77,6 +79,95 @@ def _prompt_catalogo(agentes: list[AgenteDescubierto]) -> str:
     return PROMPT_SUPERVISOR.format(catalogo=fichas or "No hay agentes disponibles.")
 
 
+def _es_saludo(texto: str) -> bool:
+    """Reconoce saludos simples sin desviar preguntas que además tienen un tema."""
+    plano = unicodedata.normalize("NFKD", texto)
+    plano = plano.encode("ascii", "ignore").decode("ascii").lower()
+    plano = " ".join(re.sub(r"[^\w\s]", " ", plano).split())
+    return plano in {
+        "hola",
+        "hola hola",
+        "holi",
+        "hey",
+        "buenas",
+        "buen dia",
+        "buenos dias",
+        "buenas tardes",
+        "buenas noches",
+        "saludos",
+        "que tal",
+        "como estas",
+    }
+
+
+def primer_nodo(estado: EstadoSupervisor) -> str:
+    """Enruta un saludo simple al nodo de bienvenida y lo demás al supervisor."""
+    pregunta = _texto(estado["messages"][-1])
+    return "saludo" if _es_saludo(pregunta) else "supervisor"
+
+
+def _nombre_para_saludo(agente: AgenteDescubierto) -> str:
+    """Presenta los nombres de las tres áreas en términos reconocibles."""
+    nombre = agente.nombre.lower()
+    descripcion = agente.descripcion.lower()
+    if "maleta" in nombre or "equipaje" in descripcion:
+        return "Maleta"
+    if "entrenamiento" in nombre or "rutina" in descripcion:
+        return "Entrenamiento"
+    if "sitio" in nombre or "cristian" in nombre or "lugares para visitar" in descripcion:
+        return "Sitios turísticos"
+    return agente.nombre
+
+
+def _primera_frase(texto: str) -> str:
+    """Reduce la descripción de una ficha a una frase para la bienvenida."""
+    texto = " ".join(texto.split())
+    primera = re.split(r"(?<=[.!?])\s+", texto, maxsplit=1)[0].strip()
+    if primera and primera[-1] not in ".!?":
+        primera += "."
+    return primera
+
+
+async def saludo(estado: EstadoSupervisor) -> dict:
+    """Da la bienvenida y describe brevemente los agentes disponibles."""
+    agentes = await descubrir()
+    if not agentes:
+        contenido = (
+            "¡Hola! En este momento no puedo consultar qué agentes están disponibles. "
+            "Inténtalo nuevamente en un momento."
+        )
+    else:
+        lineas = [
+            f"- {_nombre_para_saludo(agente)}: {_primera_frase(agente.descripcion)}"
+            for agente in agentes
+        ]
+        contenido = "¡Hola! Puedo ayudarte con:\n" + "\n".join(lineas)
+    return {"messages": [AIMessage(content=contenido)]}
+
+
+def _entrada_supervisor(mensajes: list[BaseMessage]) -> str:
+    """Delimita las preguntas anteriores y la actual como datos del usuario."""
+    preguntas = [
+        _texto(mensaje).strip()
+        for mensaje in mensajes
+        if isinstance(mensaje, HumanMessage) and _texto(mensaje).strip()
+    ]
+    if not preguntas:
+        return (
+            "<historial_usuario></historial_usuario>\n"
+            "<pregunta_actual></pregunta_actual>"
+        )
+    anteriores = preguntas[:-1]
+    historial = "\n".join(
+        f"<mensaje>{escape(pregunta)}</mensaje>" for pregunta in anteriores
+    )
+    actual = escape(preguntas[-1])
+    return (
+        f"<historial_usuario>{historial}</historial_usuario>\n"
+        f"<pregunta_actual>{actual}</pregunta_actual>"
+    )
+
+
 def motivo_seguro(motivo: str, agentes: list[AgenteDescubierto]) -> str:
     """Deja el motivo en una frase breve y sin texto de las instrucciones ni de las fichas.
 
@@ -100,7 +191,7 @@ def motivo_seguro(motivo: str, agentes: list[AgenteDescubierto]) -> str:
 async def supervisor(estado: EstadoSupervisor) -> dict:
     """Elige con salida estructurada a partir de las fichas descubiertas."""
     agentes = await descubrir()
-    pregunta = _texto(estado["messages"][-1])
+    entrada = _entrada_supervisor(estado["messages"])
     if not agentes:
         return {"agente": "ninguno", "motivo": "No hay agentes disponibles."}
 
@@ -108,7 +199,7 @@ async def supervisor(estado: EstadoSupervisor) -> dict:
         decision = await modelo_decision.ainvoke(
             [
                 SystemMessage(content=_prompt_catalogo(agentes)),
-                HumanMessage(content=pregunta),
+                HumanMessage(content=entrada),
             ]
         )
     except Exception as error:
@@ -184,10 +275,16 @@ async def sin_agente(estado: EstadoSupervisor) -> dict:
 
 
 grafo = StateGraph(EstadoSupervisor)
+grafo.add_node("saludo", saludo)
 grafo.add_node("supervisor", supervisor)
 grafo.add_node("agente_remoto", agente_remoto)
 grafo.add_node("sin_agente", sin_agente)
-grafo.add_edge(START, "supervisor")
+grafo.add_conditional_edges(
+    START,
+    primer_nodo,
+    {"saludo": "saludo", "supervisor": "supervisor"},
+)
+grafo.add_edge("saludo", END)
 grafo.add_conditional_edges(
     "supervisor",
     siguiente,
