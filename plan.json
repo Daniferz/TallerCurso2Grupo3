@@ -474,7 +474,8 @@
         "2026-11-22 TELEGRAM: webhook registrado en https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com/telegram; getWebhookInfo confirma esa URL y 0 actualizaciones pendientes.",
         "2026-11-22 HEROKU (parcial): consulta fuera de catálogo -> POST /chat HTTP 200 y agente=ninguno; se ejecutó la rama que envía aviso a TELEGRAM_CHAT_AVISO. Pendiente confirmar visualmente que el mensaje llegó al grupo y probar las dos consultas desde el chat privado.",
         "2026-11-22 COSTO: el dyno quedó en Basic (aprox. US$0,01/h, máximo US$7/mes según Heroku). El cambio a Eco no está disponible porque la cuenta no tiene esa suscripción; la app sigue activa en Basic.",
-        "Pendiente para completar T12: agregar la URL y clave de Heroku de Pato a URLS_AGENTES/CLAVES_AGENTES y repetir la conversación por Telegram con los 3 agentes y computadores apagados."
+        "2026-11-22 HEROKU (preparación Pato): agregada su URL y el marcador temporal PENDIENTE_CLAVE_PATO en la posición correspondiente de CLAVES_AGENTES. GET /salud y Agent Card de Pato -> 200; el último arranque registra 'Supervisor con 3 agentes' y 0 errores de ficha. Las rutas de Dani y Cristian siguen respondiendo 200. La llamada de Pato no se prueba hasta sustituir el marcador por su clave real.",
+        "Pendiente para completar T12: reemplazar PENDIENTE_CLAVE_PATO por la clave de Heroku de Pato y probar los tres agentes desde Telegram con los computadores apagados; confirmar visualmente el aviso en el grupo."
       ],
       "reemplaza": [
         "T19",
