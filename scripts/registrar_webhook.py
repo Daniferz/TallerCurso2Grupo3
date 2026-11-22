@@ -10,6 +10,7 @@ nunca se imprimen.
 """
 
 import argparse
+import asyncio
 import os
 import sys
 
@@ -36,12 +37,15 @@ def _configuracion() -> tuple[str, str]:
     return token, secreto
 
 
-def llamar(metodo: str, datos: dict | None = None) -> object:
+async def llamar(metodo: str, datos: dict | None = None) -> object:
     """Llama a Telegram con timeout y devuelve el resultado o un error breve."""
     token, _ = _configuracion()
     url = f"https://api.telegram.org/bot{token}/{metodo}"
     try:
-        respuesta = httpx.post(url, json=datos or {}, timeout=TIEMPO_TELEGRAM)
+        async with httpx.AsyncClient(timeout=TIEMPO_TELEGRAM) as http:
+            respuesta = await http.post(
+                url, json=datos or {}, timeout=TIEMPO_TELEGRAM
+            )
     except httpx.TimeoutException:
         raise RuntimeError(f"Telegram no respondió a {metodo} a tiempo.") from None
     except httpx.RequestError:
@@ -55,7 +59,7 @@ def llamar(metodo: str, datos: dict | None = None) -> object:
     return cuerpo.get("result")
 
 
-def ejecutar(argumentos: argparse.Namespace) -> None:
+async def ejecutar(argumentos: argparse.Namespace) -> None:
     """Ejecuta la acción solicitada."""
     token, secreto = _configuracion()
     del token
@@ -67,19 +71,19 @@ def ejecutar(argumentos: argparse.Namespace) -> None:
             raise RuntimeError("La URL del webhook debe comenzar con https://.")
         if not secreto:
             raise RuntimeError("Falta TELEGRAM_SECRETO_WEBHOOK en .env.")
-        resultado = llamar(
+        resultado = await llamar(
             "setWebhook",
             {"url": f"{url}/telegram", "secret_token": secreto},
         )
         print(f"Webhook registrado: {resultado.get('url', f'{url}/telegram')}")
     elif argumentos.accion == "info":
-        resultado = llamar("getWebhookInfo")
+        resultado = await llamar("getWebhookInfo")
         print(
             f"Webhook: {resultado.get('url') or '(ninguno)'}; "
             f"pendientes: {resultado.get('pending_update_count', 0)}"
         )
     else:
-        llamar("deleteWebhook")
+        await llamar("deleteWebhook")
         print("Webhook eliminado; el polling local puede volver a funcionar.")
 
 
@@ -88,7 +92,7 @@ def main() -> int:
     parser.add_argument("accion", choices=("registrar", "info", "borrar"))
     parser.add_argument("url", nargs="?", help="URL pública base del coordinador")
     try:
-        ejecutar(parser.parse_args())
+        asyncio.run(ejecutar(parser.parse_args()))
     except Exception as error:
         print(f"Error: {' '.join(str(error).split())}")
         return 1

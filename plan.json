@@ -255,7 +255,7 @@
       "id": "T07",
       "etapa": "a2a",
       "nombre": "Datos faltantes y respuesta sin alterar",
-      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Sitios por asignar",
+      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Cristian Meza (Sitios)",
       "estado": "en_curso",
       "depende_de": [
         "T03"
@@ -283,7 +283,8 @@
         "2026-11-18 20:57 LOCAL (Entrenamiento): misma pregunta directo al agente y vía coordinador, dos casos (rutina de pecho fuerza 5 días intermedio; piernas resistencia 2 días): cifras idénticas, el coordinador solo agrega [Agente de Entrenamiento de Pato] y el motivo. Script reutilizable: scripts/comparar_directo_coordinador.py; salida en evidencias/taller-implementacion/local/T07-pato-directo-vs-coordinador.md.",
         "2026-11-22 LOCAL (Maleta): prompt de Dani actualizado para pedir destino, días y temporada faltantes; no llamar la herramienta con datos supuestos. completar_respuesta conserva la lista de la herramienta y respeta las preguntas aclaratorias. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed.",
         "2026-11-22 LOCAL (Maleta): 'maleta para Pucón' pidió los días y la temporada antes de listar. La comparación directo vs coordinador PASA: categorías y cantidades idénticas; el coordinador solo agrega la etiqueta y el motivo. Se corrigió el .env local dejando URL_PUBLICA vacía para que las fichas anuncien localhost. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed. Evidencia: evidencias/taller-implementacion/local/T07-dani-maleta.md.",
-        "PARTES DE ENTRENAMIENTO (Pato) Y MALETA (Dani) TERMINADAS. Pendiente: Sitios (Cristian), su revisión de datos faltantes y comparación con scripts/comparar_directo_coordinador.py."
+        "2026-11-19 LOCAL (Sitios, Cristian): se agregaron datos de Valparaíso y se reforzó el prompt para pedir la ciudad y conservar los datos de la herramienta. La comparación directa falló con HTTP 401 por CLAVE_CRISTIAN y queda pendiente repetirla. Evidencia: evidencias/taller-implementacion/local/T07-cristian-sitios.md.",
+        "PARTES DE ENTRENAMIENTO (Pato) Y MALETA (Dani) TERMINADAS. Sitios (Cristian): falta una comparación directa vs. coordinador que pase."
       ],
       "reemplaza": [
         "T28"
@@ -340,8 +341,8 @@
       "id": "T09",
       "etapa": "canal",
       "nombre": "Webhook para Heroku: /telegram y script de registro",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Cristian Meza",
+      "estado": "hecho",
       "depende_de": [
         "T08"
       ],
@@ -361,7 +362,11 @@
         "getWebhookInfo muestra la URL registrada.",
         "Tras borrar el webhook, el bot local por polling vuelve a funcionar."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-19: implementado POST /telegram con X-Telegram-Bot-Api-Secret-Token y reutilización de la lógica del bot local.",
+        "2026-11-19: scripts/registrar_webhook.py registra, consulta y borra el webhook; pruebas de webhook y polling local pasaron. Evidencia: evidencias/taller-implementacion/local/T09-webhook-telegram.md.",
+        "Pendiente T12: repetir la integración con la URL del coordinador desplegado en Heroku."
+      ],
       "reemplaza": [
         "T13",
         "T15"
@@ -400,8 +405,8 @@
       "id": "T11",
       "etapa": "despliegue",
       "nombre": "Desplegar tu agente en Heroku",
-      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Sitios por asignar",
-      "estado": "en_curso",
+      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Cristian Meza (Sitios)",
+      "estado": "hecho",
       "depende_de": [
         "T02",
         "T04"
@@ -425,7 +430,8 @@
         "2026-11-18 21:26 HEROKU (Entrenamiento): app agente-pato-grupo3 desplegada desde taller-sistema-agentes (commit 2341bdf) con APP_MODULO=src.agente_pato.server. URL: https://agente-pato-grupo3-8c9b06247efd.herokuapp.com",
         "2026-11-18 21:26 HEROKU: GET /salud -> 200; la ficha publica la URL de Heroku (URL_PUBLICA) con skills musculo y rutina; POST / sin clave -> 401, clave incorrecta -> 401, CLAVE_DANI -> 401; con CLAVE_PATO -> 200 con rutina real completa (espalda, hipertrofia, 4 días). Salida en evidencias/taller-implementacion/heroku/T11-pato-heroku.txt.",
         "2026-11-22 HEROKU (Maleta): app agente-dani-grupo3 desplegada desde faltantes-dani (commit 73e6730), URL https://agente-dani-grupo3-3494821f347d.herokuapp.com. Build OK, release v4, web=up. GET /salud y ficha -> 200; sin clave, clave incorrecta y CLAVE_PATO -> 401; CLAVE_DANI -> 200 con lista real. Evidencia: evidencias/taller-implementacion/heroku/T11-dani-heroku.txt.",
-        "PARTES DE ENTRENAMIENTO (Pato) Y MALETA (Dani) TERMINADAS. Pendiente: despliegue de Sitios turísticos (Cristian) y probar el acceso cruzado de su agente."
+        "2026-11-19 HEROKU (Sitios, Cristian): app desplegada con /salud y ficha HTTP 200; CLAVE_CRISTIAN responde 200 con datos de Valparaíso y claves ausentes, incorrectas o ajenas son rechazadas. Evidencia: evidencias/taller-implementacion/heroku/T11-cristian-heroku.txt.",
+        "Despliegues de Entrenamiento, Maleta y Sitios terminados; el grupo queda pendiente de T12 (coordinador y bot en Heroku)."
       ],
       "reemplaza": [
         "T16",
