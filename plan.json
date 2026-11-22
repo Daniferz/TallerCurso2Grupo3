@@ -250,7 +250,7 @@
       "id": "T07",
       "etapa": "a2a",
       "nombre": "Datos faltantes y respuesta sin alterar",
-      "responsable": "Patricio Vergara (Entrenamiento); Maleta y Sitios por asignar",
+      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Sitios por asignar",
       "estado": "en_curso",
       "depende_de": [
         "T03"
@@ -276,7 +276,9 @@
         "2026-11-18 20:38 LOCAL (Entrenamiento): antes, 2 de 5 respuestas a 'rutina de pecho para fuerza, 5 días' traían solo la introducción; con completar_respuesta en graph.py y el prompt reforzado, 8 de 8 traen cada ejercicio con series y repeticiones.",
         "2026-11-18 20:38 LOCAL (Entrenamiento): 'arma una rutina' -> pregunta el grupo muscular y muestra las opciones; 'lo mismo que te dije' sin conversación previa -> declara que usó los valores por defecto, sin inventar memoria. Salida en evidencias/taller-implementacion/local/T07-pato-respuesta-completa.txt.",
         "2026-11-18 20:57 LOCAL (Entrenamiento): misma pregunta directo al agente y vía coordinador, dos casos (rutina de pecho fuerza 5 días intermedio; piernas resistencia 2 días): cifras idénticas, el coordinador solo agrega [Agente de Entrenamiento de Pato] y el motivo. Script reutilizable: scripts/comparar_directo_coordinador.py; salida en evidencias/taller-implementacion/local/T07-pato-directo-vs-coordinador.md.",
-        "PARTE DE ENTRENAMIENTO TERMINADA. Pendiente: Maleta (Dani) y Sitios (Cristian), cada uno con su prompts.py y la comparación usando scripts/comparar_directo_coordinador.py dani|cristian \"pregunta\"."
+        "2026-11-22 LOCAL (Maleta): prompt de Dani actualizado para pedir destino, días y temporada faltantes; no llamar la herramienta con datos supuestos. completar_respuesta conserva la lista de la herramienta y respeta las preguntas aclaratorias. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed.",
+        "2026-11-22 LOCAL (Maleta): 'maleta para Pucón' pidió los días y la temporada antes de listar. La comparación directo vs coordinador PASA: categorías y cantidades idénticas; el coordinador solo agrega la etiqueta y el motivo. Se corrigió el .env local dejando URL_PUBLICA vacía para que las fichas anuncien localhost. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed. Evidencia: evidencias/taller-implementacion/local/T07-dani-maleta.md.",
+        "PARTES DE ENTRENAMIENTO (Pato) Y MALETA (Dani) TERMINADAS. Pendiente: Sitios (Cristian), su revisión de datos faltantes y comparación con scripts/comparar_directo_coordinador.py."
       ],
       "reemplaza": [
         "T28"
