@@ -108,3 +108,23 @@ def test_mensajes_largos_se_parten(monkeypatch):
     monkeypatch.setattr(telegram, "llamar_telegram", llamar_telegram)
     asyncio.run(telegram.enviar_mensaje(None, 1, "a" * 9000))
     assert [len(t) for t in trozos] == [4000, 4000, 1000]
+
+
+def test_aviso_al_chat_se_envia_una_vez_por_conversacion(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_TOKEN", TOKEN)
+    monkeypatch.setenv("TELEGRAM_CHAT_AVISO", "-100123")
+    monkeypatch.setenv("AVISO_MINUTOS", "10")
+    telegram._ultimo_aviso.clear()
+    envios = []
+
+    async def llamar(http, metodo, datos, espera=0):
+        envios.append((metodo, datos))
+        return True
+
+    monkeypatch.setattr(telegram, "llamar_telegram", llamar)
+    assert asyncio.run(telegram.avisar_chat("¿Quién ganó?", "hilo-1"))
+    assert not asyncio.run(telegram.avisar_chat("¿Y ahora?", "hilo-1"))
+    assert asyncio.run(telegram.avisar_chat("¿Quién ganó?", "hilo-2"))
+    assert len(envios) == 2
+    assert envios[0][0] == "sendMessage"
+    assert "hilo-1" in envios[0][1]["text"]

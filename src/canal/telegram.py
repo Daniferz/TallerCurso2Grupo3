@@ -13,6 +13,7 @@ Solo atiende a los IDs de TELEGRAM_USUARIOS_PERMITIDOS. Se detiene con Ctrl+C.
 
 import asyncio
 import os
+import time
 from datetime import datetime
 
 import httpx
@@ -67,6 +68,41 @@ class ErrorCoordinador(Exception):
 
 def _token() -> str:
     return os.getenv("TELEGRAM_TOKEN", "").strip()
+
+
+_ultimo_aviso: dict[str, float] = {}
+
+
+async def avisar_chat(pregunta: str, conversacion_id: str) -> bool:
+    """Avisa al chat configurado sin interrumpir la conversación normal."""
+    chat_aviso = os.getenv("TELEGRAM_CHAT_AVISO", "").strip()
+    token = _token()
+    if not chat_aviso or not token:
+        return False
+    try:
+        minutos = max(0.0, float(os.getenv("AVISO_MINUTOS", "10")))
+    except ValueError:
+        minutos = 10.0
+    ahora = time.monotonic()
+    anterior = _ultimo_aviso.get(conversacion_id)
+    if anterior is not None and ahora - anterior < minutos * 60:
+        return False
+    _ultimo_aviso[conversacion_id] = ahora
+    texto = (
+        "Aviso: el coordinador no encontró un agente para esta pregunta.\n"
+        f"Pregunta: {pregunta}\nConversación: {conversacion_id}"
+    )
+    try:
+        async with httpx.AsyncClient() as http:
+            await llamar_telegram(
+                http,
+                "sendMessage",
+                {"chat_id": chat_aviso, "text": texto[:LARGO_MAXIMO]},
+            )
+    except Exception as error:
+        registrar(f"No se pudo enviar aviso al chat configurado: {_sin_token(error)}")
+        return False
+    return True
 
 
 def usuarios_permitidos() -> set[int]:
