@@ -11,4 +11,4 @@
 | Nunca sin persona  | No supone el clima, tampoco prioriza sitios ni inventa restricciones. |
 | Deriva a otro      | Si preguntan por vuelos, hoteles, contenidos de maletas, clima o visas, indica en una frase que corresponde a otro agente y no responde esa parte. |
 | Dónde se ejecuta    | `http://127.0.0.1:8004` · `src/agente_cristian/` · `python main.py cristian "pregunta"`. |
-| Dirección pública  | https://managing-gcc-upload-precious.trycloudflare.com  |
+| Dirección pública  | https://agente-cristian-grupo3-60262a116c18.herokuapp.com  |
