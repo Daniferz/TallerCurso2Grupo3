@@ -4,6 +4,14 @@ __pycache__/
 .pytest_cache/
 companeros.json
 
+# Los ZIP se generan para entregar; no se versionan en el repositorio.
+*.zip
+
+# Capturas originales sin anonimizar; solo se comparten las copias redactadas.
+/evidencias/taller-implementacion/heroku/Telegram/originales-locales/
+/evidencias/taller-implementacion/local/originales-locales/
+/evidencias/taller-implementacion/local/originales-locales/
+
 # Material de referencia local del taller; no pertenece al proyecto entregable.
 /TallerPauta.html
 /A2A*

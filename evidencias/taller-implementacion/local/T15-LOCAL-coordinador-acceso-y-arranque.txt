@@ -1,0 +1,9 @@
+Entorno: LOCAL
+Fecha: 2026-11-23
+Solicitud: inicio del coordinador y una solicitud autenticada a POST /chat; el fragmento compartido no incluye el texto de esa solicitud.
+Esperado: descubrir los tres agentes y aceptar la llamada al endpoint protegido.
+Obtenido:
+- Agente de Maleta, Entrenamiento y Sitios sumados al catálogo.
+- Supervisor con 3 agentes.
+- 14:12:57 · Coordinador POST /chat · PERMITIDO.
+Observaciones: se omitió la dirección de origen. El fragmento no muestra el agente elegido ni el resultado; falta capturar la línea `[chat] ... -> agente` de la misma solicitud para correlacionarla con el log A2A.

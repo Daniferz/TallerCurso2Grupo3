@@ -1,13 +1,14 @@
-"""Supervisor LangGraph: elige un agente del catálogo y delega por A2A."""
+"""Supervisor LangGraph: elige uno o varios agentes del catálogo y delega por A2A."""
 
+import asyncio
 import os
 import re
-import unicodedata
 import uuid
+import unicodedata
 from html import escape
 
 from dotenv import load_dotenv
-from langchain_core.messages import AIMessage, BaseMessage, SystemMessage
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, MessagesState, StateGraph
@@ -35,13 +36,39 @@ MODELO = os.getenv("MODELO", "gemini-3.5-flash-lite")
 modelo = ChatGoogleGenerativeAI(model=MODELO)
 
 
-class Decision(BaseModel):
-    """Selección estructurada del supervisor entre las fichas disponibles."""
+# Una pregunta puede tocar varios temas; como máximo se consulta a este número de agentes.
+MAXIMO_AGENTES = 3
 
-    agente: str = Field(
-        description="Nombre exacto de un agente del catálogo disponible o 'ninguno'."
+
+class Consulta(BaseModel):
+    """Un agente elegido y la parte de la pregunta que le corresponde."""
+
+    agente: str = Field(description="Nombre exacto de un agente del catálogo.")
+    pregunta: str = Field(
+        description=(
+            "La parte de la pregunta actual que responde ese agente, escrita como pregunta "
+            "completa y copiando textualmente los datos de la persona (días, ciudad, "
+            "temporada, objetivo, nivel...)."
+        )
+    )
+
+
+class Decision(BaseModel):
+    """Selección estructurada del supervisor: ninguno, uno o varios agentes."""
+
+    consultas: list[Consulta] = Field(
+        default_factory=list,
+        description=(
+            "Un elemento por cada agente que debe responder una parte de la pregunta actual; "
+            "lista vacía si ningún agente del catálogo aplica."
+        ),
     )
     motivo: str = Field(description="Motivo breve de la selección, en una frase.")
+
+    @property
+    def agente(self) -> str:
+        """Nombres elegidos separados por coma, o 'ninguno' (lo usan /chat y --saltos)."""
+        return ", ".join(consulta.agente for consulta in self.consultas) or "ninguno"
 
 
 modelo_decision = modelo.with_structured_output(Decision)
@@ -50,8 +77,11 @@ modelo_decision = modelo.with_structured_output(Decision)
 class EstadoSupervisor(MessagesState, total=False):
     """Estado conversacional más la decisión de enrutamiento del supervisor."""
 
+    # Nombres elegidos separados por coma, o "ninguno" (lo leen /chat y --saltos).
     agente: str
     motivo: str
+    # [{"agente": nombre, "pregunta": parte de la pregunta}]; vacía si no aplica ninguno.
+    consultas: list[dict]
 
 
 def _texto(mensaje: BaseMessage) -> str:
@@ -68,36 +98,6 @@ def _texto(mensaje: BaseMessage) -> str:
     return str(contenido)
 
 
-def _normalizar_para_saludo(texto: str) -> str:
-    """Normaliza acentos y signos para reconocer saludos simples."""
-    descompuesto = unicodedata.normalize("NFD", texto or "")
-    sin_tildes = "".join(
-        letra for letra in descompuesto if unicodedata.category(letra) != "Mn"
-    )
-    return re.sub(r"[^a-z0-9 ]", "", sin_tildes.lower()).strip()
-
-
-def _es_saludo(texto: str) -> bool:
-    """Indica si el mensaje es un saludo sin una consulta adicional."""
-    return _normalizar_para_saludo(texto) in {
-        "hola",
-        "holi",
-        "hello",
-        "hey",
-        "buen dia",
-        "buenos dias",
-        "buenas tardes",
-        "buenas noches",
-        "saludos",
-    }
-
-
-def ruta_inicial(estado: EstadoSupervisor) -> str:
-    """Envía los saludos al nodo informativo y el resto al supervisor."""
-    ultimo = _texto(estado["messages"][-1])
-    return "saludo" if _es_saludo(ultimo) else "supervisor"
-
-
 def _prompt_catalogo(agentes: list[AgenteDescubierto]) -> str:
     """Incluye las fichas como datos delimitados, nunca como instrucciones."""
     fichas = "\n".join(
@@ -108,6 +108,95 @@ def _prompt_catalogo(agentes: list[AgenteDescubierto]) -> str:
         for agente in agentes
     )
     return PROMPT_SUPERVISOR.format(catalogo=fichas or "No hay agentes disponibles.")
+
+
+def _es_saludo(texto: str) -> bool:
+    """Reconoce saludos simples sin desviar preguntas que además tienen un tema."""
+    plano = unicodedata.normalize("NFKD", texto)
+    plano = plano.encode("ascii", "ignore").decode("ascii").lower()
+    plano = " ".join(re.sub(r"[^\w\s]", " ", plano).split())
+    return plano in {
+        "hola",
+        "hola hola",
+        "holi",
+        "hey",
+        "buenas",
+        "buen dia",
+        "buenos dias",
+        "buenas tardes",
+        "buenas noches",
+        "saludos",
+        "que tal",
+        "como estas",
+    }
+
+
+def primer_nodo(estado: EstadoSupervisor) -> str:
+    """Enruta un saludo simple al nodo de bienvenida y lo demás al supervisor."""
+    pregunta = _texto(estado["messages"][-1])
+    return "saludo" if _es_saludo(pregunta) else "supervisor"
+
+
+def _nombre_para_saludo(agente: AgenteDescubierto) -> str:
+    """Presenta los nombres de las tres áreas en términos reconocibles."""
+    nombre = agente.nombre.lower()
+    descripcion = agente.descripcion.lower()
+    if "maleta" in nombre or "equipaje" in descripcion:
+        return "Maleta"
+    if "entrenamiento" in nombre or "rutina" in descripcion:
+        return "Entrenamiento"
+    if "sitio" in nombre or "cristian" in nombre or "lugares para visitar" in descripcion:
+        return "Sitios turísticos"
+    return agente.nombre
+
+
+def _primera_frase(texto: str) -> str:
+    """Reduce la descripción de una ficha a una frase para la bienvenida."""
+    texto = " ".join(texto.split())
+    primera = re.split(r"(?<=[.!?])\s+", texto, maxsplit=1)[0].strip()
+    if primera and primera[-1] not in ".!?":
+        primera += "."
+    return primera
+
+
+async def saludo(estado: EstadoSupervisor) -> dict:
+    """Da la bienvenida y describe brevemente los agentes disponibles."""
+    agentes = await descubrir()
+    if not agentes:
+        contenido = (
+            "¡Hola! En este momento no puedo consultar qué agentes están disponibles. "
+            "Inténtalo nuevamente en un momento."
+        )
+    else:
+        lineas = [
+            f"- {_nombre_para_saludo(agente)}: {_primera_frase(agente.descripcion)}"
+            for agente in agentes
+        ]
+        contenido = "¡Hola! Puedo ayudarte con:\n" + "\n".join(lineas)
+    return {"messages": [AIMessage(content=contenido)]}
+
+
+def _entrada_supervisor(mensajes: list[BaseMessage]) -> str:
+    """Delimita las preguntas anteriores y la actual como datos del usuario."""
+    preguntas = [
+        _texto(mensaje).strip()
+        for mensaje in mensajes
+        if isinstance(mensaje, HumanMessage) and _texto(mensaje).strip()
+    ]
+    if not preguntas:
+        return (
+            "<historial_usuario></historial_usuario>\n"
+            "<pregunta_actual></pregunta_actual>"
+        )
+    anteriores = preguntas[:-1]
+    historial = "\n".join(
+        f"<mensaje>{escape(pregunta)}</mensaje>" for pregunta in anteriores
+    )
+    actual = escape(preguntas[-1])
+    return (
+        f"<historial_usuario>{historial}</historial_usuario>\n"
+        f"<pregunta_actual>{actual}</pregunta_actual>"
+    )
 
 
 def motivo_seguro(motivo: str, agentes: list[AgenteDescubierto]) -> str:
@@ -133,15 +222,15 @@ def motivo_seguro(motivo: str, agentes: list[AgenteDescubierto]) -> str:
 async def supervisor(estado: EstadoSupervisor) -> dict:
     """Elige con salida estructurada a partir de las fichas descubiertas."""
     agentes = await descubrir()
+    entrada = _entrada_supervisor(estado["messages"])
     if not agentes:
-        return {"agente": "ninguno", "motivo": "No hay agentes disponibles."}
+        return {"agente": "ninguno", "consultas": [], "motivo": "No hay agentes disponibles."}
 
     try:
-        historial = list(estado["messages"])
         decision = await modelo_decision.ainvoke(
             [
                 SystemMessage(content=_prompt_catalogo(agentes)),
-                *historial,
+                HumanMessage(content=entrada),
             ]
         )
     except Exception as error:
@@ -150,26 +239,39 @@ async def supervisor(estado: EstadoSupervisor) -> dict:
             f"el coordinador no pudo evaluar la pregunta: {en_una_linea(error)}"
         ) from None
 
-    disponibles = {agente.nombre for agente in agentes}
-    if decision.agente != "ninguno" and decision.agente not in disponibles:
+    consultas = consultas_validas(decision, agentes, _texto(estado["messages"][-1]))
+    if decision.consultas and not consultas:
         return {
             "agente": "ninguno",
+            "consultas": [],
             "motivo": "El agente elegido no está disponible en el catálogo actual.",
         }
-    return {"agente": decision.agente, "motivo": motivo_seguro(decision.motivo, agentes)}
+    return {
+        "agente": ", ".join(consulta["agente"] for consulta in consultas) or "ninguno",
+        "consultas": consultas,
+        "motivo": motivo_seguro(decision.motivo, agentes),
+    }
 
 
-async def saludo(estado: EstadoSupervisor) -> dict:
-    """Lista los agentes disponibles y el tema que cubre cada uno."""
-    agentes = await descubrir()
-    if not agentes:
-        respuesta = "Hola. En este momento no hay agentes disponibles."
-    else:
-        temas = "\n".join(
-            f"- {agente.nombre}: {agente.descripcion}" for agente in agentes
-        )
-        respuesta = f"Hola. Estos son los agentes disponibles:\n{temas}"
-    return {"messages": [AIMessage(content=respuesta)]}
+def consultas_validas(
+    decision: Decision, agentes: list[AgenteDescubierto], pregunta_original: str
+) -> list[dict]:
+    """Deja solo agentes del catálogo, sin repetir y como máximo MAXIMO_AGENTES.
+
+    Si queda un solo agente, recibe la pregunta original tal cual (así su respuesta es la
+    misma que si se le pregunta directo). Con varios, cada uno recibe su parte.
+    """
+    disponibles = {agente.nombre for agente in agentes}
+    consultas: list[dict] = []
+    for consulta in decision.consultas:
+        nombre = consulta.agente
+        if nombre in disponibles and nombre not in {c["agente"] for c in consultas}:
+            parte = " ".join((consulta.pregunta or "").split()) or pregunta_original
+            consultas.append({"agente": nombre, "pregunta": parte})
+    consultas = consultas[:MAXIMO_AGENTES]
+    if len(consultas) == 1:
+        consultas[0]["pregunta"] = pregunta_original
+    return consultas
 
 
 def aviso_no_disponible(nombre: str) -> str:
@@ -182,37 +284,56 @@ def aviso_no_disponible(nombre: str) -> str:
 
 def siguiente(estado: EstadoSupervisor) -> str:
     """Enruta la decisión hacia el agente remoto o la respuesta sin agente."""
-    return "sin_agente" if estado.get("agente") == "ninguno" else "agente_remoto"
+    return "agente_remoto" if estado.get("consultas") else "sin_agente"
 
 
-async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
-    """Pregunta al agente elegido y etiqueta la respuesta con nombre y motivo."""
-    agentes = await descubrir()
-    elegido = next(
-        (agente for agente in agentes if agente.nombre == estado.get("agente")),
-        None,
-    )
-    if elegido is None:
-        return await sin_agente(estado, config)
+async def _respuesta_de(
+    elegido: AgenteDescubierto, pregunta: str, context_id: str, varios: bool
+) -> tuple[str, bool]:
+    """(texto, respondió): respuesta etiquetada de un agente, o su aviso claro si no contesta.
 
-    pregunta = _texto(estado["messages"][-1])
-    thread_id = (config.get("configurable") or {}).get("thread_id")
-    context_id = thread_id or str(uuid.uuid4())
+    Con un solo agente, una falla distinta de "no disponible" se propaga como error (nunca
+    éxito falso). Con varios, esa parte dice claramente que falló y las demás se entregan.
+    """
     try:
         respuesta = await preguntar(elegido.cliente, pregunta, context_id)
     except AgenteNoDisponible as error:
         # Agente apagado o dormido: aviso claro a la persona y el detalle solo en la terminal.
         print(f"Aviso: {elegido.nombre} ({elegido.url}) no respondió: {en_una_linea(error)}", flush=True)
-        return {"messages": [AIMessage(content=aviso_no_disponible(elegido.nombre))]}
+        return aviso_no_disponible(elegido.nombre), False
     except Exception as error:
-        # La falla del agente remoto se propaga como error, no como respuesta.
-        raise RuntimeError(
-            f"{elegido.nombre} no pudo responder: {en_una_linea(error)}"
-        ) from None
+        detalle = f"{elegido.nombre} no pudo responder: {en_una_linea(error)}"
+        if not varios:
+            # La falla del agente remoto se propaga como error, no como respuesta.
+            raise RuntimeError(detalle) from None
+        print(f"Aviso: {detalle}", flush=True)
+        return f"La parte de {elegido.nombre} tuvo un error y no se pudo responder.", False
+    # La respuesta del agente va tal cual: solo se agrega la etiqueta [Nombre].
+    return f"[{elegido.nombre}] {respuesta}", True
 
+
+async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
+    """Pregunta en paralelo a los agentes elegidos y junta sus respuestas sin alterarlas."""
+    agentes = {agente.nombre: agente for agente in await descubrir()}
+    consultas = [c for c in estado.get("consultas") or [] if c["agente"] in agentes]
+    if not consultas:
+        return await sin_agente(estado, config)
+
+    thread_id = (config.get("configurable") or {}).get("thread_id")
+    context_id = thread_id or str(uuid.uuid4())
+    varios = len(consultas) > 1
+    partes = await asyncio.gather(
+        *(
+            _respuesta_de(agentes[c["agente"]], c["pregunta"], context_id, varios)
+            for c in consultas
+        )
+    )
+    if not varios and not partes[0][1]:
+        # Un solo agente y no contestó: solo el aviso claro, igual que antes.
+        return {"messages": [AIMessage(content=partes[0][0])]}
     contenido = (
-        f"[{elegido.nombre}] {respuesta}\n"
-        f"Motivo de selección: {estado.get('motivo', 'Sin motivo informado.')}"
+        "\n\n".join(texto for texto, _ in partes)
+        + f"\nMotivo de selección: {estado.get('motivo', 'Sin motivo informado.')}"
     )
     return {"messages": [AIMessage(content=contenido)]}
 
@@ -240,7 +361,7 @@ grafo.add_node("agente_remoto", agente_remoto)
 grafo.add_node("sin_agente", sin_agente)
 grafo.add_conditional_edges(
     START,
-    ruta_inicial,
+    primer_nodo,
     {"saludo": "saludo", "supervisor": "supervisor"},
 )
 grafo.add_edge("saludo", END)
@@ -277,6 +398,8 @@ async def saltos(texto: str) -> None:
             print(f"nodo: {nodo}")
             if nodo == "supervisor":
                 print(f"  agente elegido: {datos.get('agente', 'ninguno')}")
+                for consulta in datos.get("consultas") or []:
+                    print(f"    - {consulta['agente']} recibe: {consulta['pregunta']}")
                 print(f"  motivo: {datos.get('motivo', 'Sin motivo informado.')}")
             elif nodo == "agente_remoto":
                 for mensaje in datos.get("messages", []):

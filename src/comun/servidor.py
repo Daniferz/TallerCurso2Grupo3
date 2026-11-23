@@ -1,5 +1,7 @@
 """Servidor A2A común: monta el agente sobre FastAPI una sola vez para los tres agentes."""
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -24,6 +26,22 @@ RUTA_FICHA = "/.well-known/agent-card.json"
 # Todo lo demás, en especial los mensajes JSON-RPC en "/", exige X-API-Key.
 RUTAS_PUBLICAS = {RUTA_SALUD, RUTA_FICHA}
 RUTAS_WEBHOOK = {"/telegram"}
+
+
+class _SinStackTrace(logging.Filter):
+    """Deja el aviso de a2a-sdk en una línea: el motivo ya lo imprimió el Executor."""
+
+    def filter(self, registro: logging.LogRecord) -> bool:
+        registro.exc_info = None
+        registro.exc_text = None
+        registro.stack_info = None
+        return True
+
+
+# Cuando un agente falla (cuota o clave de Gemini, por ejemplo), a2a-sdk registra la excepción
+# con su stack trace. La regla del proyecto es una sola línea entendible, sin stack trace.
+logging.getLogger("a2a.server.agent_execution").addFilter(_SinStackTrace())
+logging.getLogger("a2a.server.agent_execution.active_task").addFilter(_SinStackTrace())
 
 
 def crear_app(

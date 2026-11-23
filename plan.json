@@ -112,7 +112,7 @@
       "reemplaza": [
         "T04"
       ],
-      "observaciones": "Corregido: se agregaron sitios turísticos de Valparaíso a la herramienta de Cristian y se actualizaron su ficha y Agent Card para declarar las ciudades cubiertas. La pregunta 'sitios en Valparaíso' debe enrutarse a Cristian; no era un problema de claves."
+      "observaciones": "La pregunta 'sitios en Valparaíso' fue enrutada a 'ninguno' por el supervisor: es un tema de enrutamiento/ficha (T03, T05 o ficha de Cristian), no de claves. viajes y restaurantes siguen en el catálogo hasta T03."
     },
     {
       "id": "T03",
@@ -219,7 +219,7 @@
       "id": "T06",
       "etapa": "coordinador",
       "nombre": "Saludo y memoria al elegir agente",
-      "responsable": "Cristian Meza",
+      "responsable": "Daniella Fernández",
       "estado": "hecho",
       "depende_de": [
         "T03",
@@ -227,7 +227,8 @@
       ],
       "archivos": [
         "src/coordinador/graph.py",
-        "src/coordinador/graph.py (supervisor)"
+        "src/coordinador/prompts.py",
+        "tests/test_supervisor.py"
       ],
       "descripcion": "(1) Nodo de saludo: 'hola' (y saludos parecidos) responde listando los agentes disponibles y qué sabe cada uno, en vez de 'No tengo un agente para eso'. (2) Historial al elegir agente: El supervisor recibe los mensajes anteriores del hilo, no solo el último, para que un seguimiento como '¿y si son 5 días?' vaya al mismo agente.",
       "entregables": [
@@ -241,9 +242,9 @@
         "Con otro conversacion_id, la segunda pregunta no hereda el contexto."
       ],
       "evidencia": [
-        "2026-11-19: se agregó el nodo saludo; 'hola' lista los agentes disponibles y la descripción de cada uno.",
-        "2026-11-19: el supervisor recibe el historial completo del hilo para enrutar seguimientos al mismo agente.",
-        "2026-11-19: el diagrama muestra saludo, supervisor, agente_remoto y sin_agente; pytest completo: 69 passed."
+        "2026-11-22 LOCAL: tests/test_supervisor.py verifica que '¡Hola!' recorre el nodo saludo, lista Maleta, Entrenamiento y Sitios turísticos con una frase por agente y no invoca al modelo supervisor. `python main.py coordinador --diagrama` muestra el nodo nuevo.",
+        "2026-11-22 LOCAL: test_memoria_de_seguimiento_se_aísla_por_conversacion_id comprueba con supervisor y A2A simulados que el seguimiento permanece en Maleta con el mismo hilo y no hereda el contexto con otro conversacion_id.",
+        "pytest tests/test_supervisor.py: 14 passed; pytest completo: 71 passed (2 avisos deprecados de FastAPI). Evidencia: evidencias/taller-implementacion/local/T06-saludo-memoria.md."
       ],
       "reemplaza": [
         "T09",
@@ -254,8 +255,8 @@
       "id": "T07",
       "etapa": "a2a",
       "nombre": "Datos faltantes y respuesta sin alterar",
-      "responsable": "Patricio Vergara (Entrenamiento); Maleta por asignar; Cristian Meza (Sitios)",
-      "estado": "en_curso",
+      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Cristian Meza (Sitios)",
+      "estado": "hecho",
       "depende_de": [
         "T03"
       ],
@@ -277,11 +278,14 @@
         "La misma pregunta, directo al agente y vía coordinador: cifras, unidades y condiciones idénticas."
       ],
       "evidencia": [
+        "2026-11-23 LOCAL (coordinador, Patricio): preguntas con varios temas. El supervisor elige uno o varios agentes (máx. 3), cada uno recibe su parte de la pregunta y el coordinador junta las respuestas tal cual, cada una con su [Nombre]; con un solo tema el agente recibe la pregunta original. Probado con Gemini: Maleta+Entrenamiento y Maleta+Sitios con cifras idénticas a preguntarle directo a cada agente; el seguimiento \"¿y si son 5 días?\" sigue en Maleta; blindaje 6 de 6. Evidencia: evidencias/taller-implementacion/local/T07-varios-agentes.md. pytest 89 passed.",
         "2026-11-18 20:38 LOCAL (Entrenamiento): antes, 2 de 5 respuestas a 'rutina de pecho para fuerza, 5 días' traían solo la introducción; con completar_respuesta en graph.py y el prompt reforzado, 8 de 8 traen cada ejercicio con series y repeticiones.",
         "2026-11-18 20:38 LOCAL (Entrenamiento): 'arma una rutina' -> pregunta el grupo muscular y muestra las opciones; 'lo mismo que te dije' sin conversación previa -> declara que usó los valores por defecto, sin inventar memoria. Salida en evidencias/taller-implementacion/local/T07-pato-respuesta-completa.txt.",
         "2026-11-18 20:57 LOCAL (Entrenamiento): misma pregunta directo al agente y vía coordinador, dos casos (rutina de pecho fuerza 5 días intermedio; piernas resistencia 2 días): cifras idénticas, el coordinador solo agrega [Agente de Entrenamiento de Pato] y el motivo. Script reutilizable: scripts/comparar_directo_coordinador.py; salida en evidencias/taller-implementacion/local/T07-pato-directo-vs-coordinador.md.",
-        "2026-11-19 LOCAL (Sitios, Cristian): prompt reforzado para pedir la ciudad cuando falta y conservar sin alterar nombres, horarios, precios, fechas y condiciones de las herramientas. Pendiente la comparación en vivo con scripts/comparar_directo_coordinador.py cristian \"pregunta\".",
-        "PARTE DE ENTRENAMIENTO Y SITIOS TERMINADA. Pendiente: Maleta (Dani) y la comparación en vivo de Sitios con scripts/comparar_directo_coordinador.py."
+        "2026-11-22 LOCAL (Maleta): prompt de Dani actualizado para pedir destino, días y temporada faltantes; no llamar la herramienta con datos supuestos. completar_respuesta conserva la lista de la herramienta y respeta las preguntas aclaratorias. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed.",
+        "2026-11-22 LOCAL (Maleta): 'maleta para Pucón' pidió los días y la temporada antes de listar. La comparación directo vs coordinador PASA: categorías y cantidades idénticas; el coordinador solo agrega la etiqueta y el motivo. Se corrigió el .env local dejando URL_PUBLICA vacía para que las fichas anuncien localhost. pytest tests/test_agente_dani.py: 11 passed; pytest completo: 73 passed. Evidencia: evidencias/taller-implementacion/local/T07-dani-maleta.md.",
+        "2026-11-22 LOCAL (Sitios, Cristian): pregunta la ciudad cuando falta; la comparación directa vs coordinador para Valparaíso PASA con los mismos sitios, horarios y precios. Evidencia: evidencias/taller-implementacion/local/T07-cristian-sitios.md.",
+        "PARTES DE ENTRENAMIENTO (Pato), MALETA (Dani) Y SITIOS (Cristian) TERMINADAS."
       ],
       "reemplaza": [
         "T28"
@@ -360,10 +364,9 @@
         "Tras borrar el webhook, el bot local por polling vuelve a funcionar."
       ],
       "evidencia": [
-        "2026-11-19: implementado POST /telegram con X-Telegram-Bot-Api-Secret-Token y reutilización de la lógica de atención del bot.",
-        "2026-11-19: creado scripts/registrar_webhook.py con acciones registrar, info y borrar; todas las llamadas tienen timeout y no muestran token ni secreto.",
-        "2026-11-19: pytest completo: 72 passed.",
-        "2026-11-19 LOCAL: con el coordinador y los agentes en local, el túnel HTTPS researchers-teacher-fwd-radius.trycloudflare.com registró el webhook; getWebhookInfo mostró 0 pendientes; /start respondió correctamente; después deleteWebhook y polling local volvieron a responder. Salida en evidencias/taller-implementacion/local/T09-webhook-telegram.txt."
+        "2026-11-19: implementado POST /telegram con X-Telegram-Bot-Api-Secret-Token y reutilización de la lógica del bot local.",
+        "2026-11-19: scripts/registrar_webhook.py registra, consulta y borra el webhook; pruebas de webhook y polling local pasaron. Evidencia: evidencias/taller-implementacion/local/T09-webhook-telegram.md.",
+        "Pendiente T12: repetir la integración con la URL del coordinador desplegado en Heroku."
       ],
       "reemplaza": [
         "T13",
@@ -383,7 +386,10 @@
       ],
       "archivos": [
         "src/coordinador/graph.py (sin_agente)",
-        "src/canal/telegram.py (función de envío)"
+        "src/canal/telegram.py (función de envío)",
+        ".env.example",
+        "tests/test_supervisor.py",
+        "tests/test_telegram.py"
       ],
       "descripcion": "Cuando ningún agente puede responder, el coordinador avisa a TELEGRAM_CHAT_AVISO con la pregunta y el conversacion_id. Si el aviso falla, la persona igual recibe su respuesta normal. Para controlar envíos: máximo un aviso por conversación cada 10 minutos (configurable con AVISO_MINUTOS).",
       "entregables": [
@@ -395,10 +401,9 @@
         "Tres preguntas fuera de tema seguidas en la misma conversación generan un solo aviso."
       ],
       "evidencia": [
-        "2026-11-19: sin_agente conserva la respuesta normal y avisa a TELEGRAM_CHAT_AVISO con la pregunta y el conversacion_id.",
-        "2026-11-19: el aviso tiene límite de uno por conversación cada AVISO_MINUTOS (10 por defecto); si Telegram falla, la respuesta normal no se interrumpe.",
-        "2026-11-19: pruebas automatizadas de T10 y suite completa: 74 passed.",
-        "2026-11-19 LOCAL: tres preguntas fuera de tema en la misma conversación generaron un solo aviso; con TELEGRAM_CHAT_AVISO inválido la persona recibió su respuesta normal y el coordinador siguió funcionando."
+        "La respuesta normal de sin_agente se conserva aunque Telegram falle; el aviso se limita a uno por conversación cada AVISO_MINUTOS.",
+        "Evidencia manual de la rama de Cristian (2026-11-19): tres preguntas fuera de tema generaron un aviso; un chat inválido no interrumpió la respuesta normal.",
+        "pytest tests/test_supervisor.py tests/test_telegram.py: 24 passed; pytest completo: 85 passed (2 avisos deprecados de FastAPI). Evidencia: evidencias/taller-implementacion/local/T10-aviso-telegram.md."
       ],
       "reemplaza": [
         "T14"
@@ -408,8 +413,8 @@
       "id": "T11",
       "etapa": "despliegue",
       "nombre": "Desplegar tu agente en Heroku",
-      "responsable": "Patricio Vergara (Entrenamiento); Dani por asignar; Cristian Meza (Sitios)",
-      "estado": "en_curso",
+      "responsable": "Patricio Vergara (Entrenamiento); Daniella Fernández (Maleta); Cristian Meza (Sitios)",
+      "estado": "hecho",
       "depende_de": [
         "T02",
         "T04"
@@ -432,8 +437,9 @@
       "evidencia": [
         "2026-11-18 21:26 HEROKU (Entrenamiento): app agente-pato-grupo3 desplegada desde taller-sistema-agentes (commit 2341bdf) con APP_MODULO=src.agente_pato.server. URL: https://agente-pato-grupo3-8c9b06247efd.herokuapp.com",
         "2026-11-18 21:26 HEROKU: GET /salud -> 200; la ficha publica la URL de Heroku (URL_PUBLICA) con skills musculo y rutina; POST / sin clave -> 401, clave incorrecta -> 401, CLAVE_DANI -> 401; con CLAVE_PATO -> 200 con rutina real completa (espalda, hipertrofia, 4 días). Salida en evidencias/taller-implementacion/heroku/T11-pato-heroku.txt.",
-        "2026-11-19 HEROKU (Sitios turísticos): app agente-cristian-grupo3-60262a116c18 desplegada con APP_MODULO=src.agente_cristian.server. GET /salud -> 200; la ficha publica la URL de Heroku y las skills listado_sitios_turisticos y horario_atencion; POST / sin clave -> 401, clave incorrecta -> 401, CLAVE_COORDINADOR -> 401; con CLAVE_CRISTIAN -> 200 y responde los 3 sitios de Valparaíso. Salida en evidencias/taller-implementacion/heroku/T11-cristian-heroku.txt.",
-        "PARTE DE ENTRENAMIENTO Y SITIOS TURÍSTICOS TERMINADA. Pendiente: Maleta (Dani) y probar el agente de otro compañero con su clave."
+        "2026-11-22 HEROKU (Maleta): app agente-dani-grupo3 desplegada desde faltantes-dani (commit 73e6730), URL https://agente-dani-grupo3-3494821f347d.herokuapp.com. Build OK, release v4, web=up. GET /salud y ficha -> 200; sin clave, clave incorrecta y CLAVE_PATO -> 401; CLAVE_DANI -> 200 con lista real. Evidencia: evidencias/taller-implementacion/heroku/T11-dani-heroku.txt.",
+        "2026-11-19 HEROKU (Sitios, Cristian): app desplegada con /salud y ficha HTTP 200; CLAVE_CRISTIAN responde 200 con datos de Valparaíso y claves ausentes, incorrectas o ajenas son rechazadas. Evidencia: evidencias/taller-implementacion/heroku/T11-cristian-heroku.txt.",
+        "Despliegues de Entrenamiento, Maleta y Sitios terminados; el grupo queda pendiente de T12 (coordinador y bot en Heroku)."
       ],
       "reemplaza": [
         "T16",
@@ -445,8 +451,8 @@
       "id": "T12",
       "etapa": "canal",
       "nombre": "Bot del grupo y coordinador en Heroku",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Daniella Fernández",
+      "estado": "hecho",
       "depende_de": [
         "T09",
         "T10",
@@ -463,7 +469,17 @@
         "El bot existe y el chat de avisos recibe un mensaje de prueba.",
         "Con todos los computadores apagados, una conversación en Telegram llega a cada uno de los 3 agentes."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-22 HEROKU (parcial): app coordinador-grupo3-dani-2026 creada y desplegada desde el commit fusionado 8e9481635e3a de taller-sistema-agentes. URL: https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com. Configurada con APP_MODULO=src.coordinador.server, TIEMPO_FICHA_A2A=30 y solo Maleta y Sitios en URLS_AGENTES/CLAVES_AGENTES, en el mismo orden; Pato queda pendiente.",
+        "2026-11-22 HEROKU (parcial): GET /salud -> 200; POST /chat sin clave -> 401. Dos llamadas autenticadas a POST /chat -> 200 y respuesta recibida: Maleta enruta a Agente de Maleta de Dani y la consulta de Valparaíso a Agente de cristian. Log de inicio: 'Supervisor con 2 agentes'.",
+        "2026-11-22 TELEGRAM: webhook registrado en https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com/telegram; getWebhookInfo confirma esa URL y 0 actualizaciones pendientes.",
+        "2026-11-22 HEROKU (parcial): consulta fuera de catálogo -> POST /chat HTTP 200 y agente=ninguno; se ejecutó la rama que envía aviso a TELEGRAM_CHAT_AVISO. Pendiente confirmar visualmente que el mensaje llegó al grupo y probar las dos consultas desde el chat privado.",
+        "2026-11-22 COSTO: el dyno quedó en Basic (aprox. US$0,01/h, máximo US$7/mes según Heroku). El cambio a Eco no está disponible porque la cuenta no tiene esa suscripción; la app sigue activa en Basic.",
+        "2026-11-22 HEROKU (preparación Pato): agregada su URL y el marcador temporal PENDIENTE_CLAVE_PATO en la posición correspondiente de CLAVES_AGENTES. GET /salud y Agent Card de Pato -> 200; el último arranque registra 'Supervisor con 3 agentes' y 0 errores de ficha. Las rutas de Dani y Cristian siguen respondiendo 200. La llamada de Pato no se prueba hasta sustituir el marcador por su clave real.",
+        "2026-11-23 HEROKU: CLAVE_PATO validada contra la app de Pato; CLAVES_AGENTES de Heroku coincide con las tres claves locales, en orden Dani, Pato y Cristian. Tres consultas autenticadas a POST /chat devolvieron HTTP 200 y llegaron al agente correcto.",
+        "2026-11-23 HEROKU: se corrigió la causa del fallo del bot: faltaba URL_COORDINADOR y el webhook intentaba llamar a 127.0.0.1:8002. Configurada URL_COORDINADOR con la URL pública; luego GET /salud -> 200, arranque con 3 agentes y webhook activo.",
+        "2026-11-23 TELEGRAM: Daniella confirmó el recorrido del bot por los tres agentes, incluida la consulta fuera de catálogo. La rama de aviso envió al grupo el aviso de prueba sin registrar error."
+      ],
       "reemplaza": [
         "T19",
         "T20"
@@ -473,8 +489,8 @@
       "id": "T13",
       "etapa": "entrega",
       "nombre": "Documentos de integracion-grupo3 y los 12 resultados",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara (lista de resultados); Daniella Fernández (documentos de integracion-grupo3 y ZIP)",
+      "estado": "hecho",
       "depende_de": [],
       "archivos": [
         "documento-entrega.md",
@@ -491,7 +507,11 @@
         "git merge sin conflictos y pytest pasa.",
         "Cada resultado tiene al menos una tarea del plan que lo cubre."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-21: parte (2) lista: 'Checklist de evaluación (los 12 resultados)' en SPEC.md, sacada de taller_implementacion_agentes.pdf (págs. 2-4): 12 resultados + el +1, cada uno con las tareas que los cubren, la evidencia que ya existe y lo que falta. Revisado que cada resultado tiene al menos una tarea del plan y que las rutas de evidencia citadas existen. Pregunta abierta 1 resuelta.",
+        "2026-11-22 LOCAL: parte (1) completada en la rama t13-documentos: documento-entrega.md y documento-entrega.pdf sincronizados con la integración de documentos; evidencias de Cristian ordenadas en evidencias/Cristian_Meza/ y se actualizaron sus referencias. Se excluyó grupo-3-taller-a2a.zip (archivo legado de 2,7 MB, no necesario para este proyecto); *.zip quedó ignorado en .gitignore. Se conservaron las evidencias de taller-implementacion actuales.",
+        "2026-11-22 LOCAL: el README de evidencias de Cristian describe los archivos y advierte que las URL de túnel son históricas. La lista de resultados de SPEC.md sigue asignando cada resultado a tareas y evidencias."
+      ],
       "reemplaza": [
         "T21",
         "T22"
@@ -501,8 +521,8 @@
       "id": "T14",
       "etapa": "entrega",
       "nombre": "README nuevo",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara (parte local); Daniella Fernández (parte Heroku)",
+      "estado": "en_curso",
       "depende_de": [
         "T08",
         "T12"
@@ -519,7 +539,13 @@
         "Cada integrante revisó su sección y su blueprint.",
         "Explica cómo apagar las apps de Heroku y cómo detener el bot local."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-21 LOCAL: README con sección \"Para el evaluador\" (credenciales propias o acceso por vía privada), instalación con requirements-lock.txt (pip freeze, resolución verificada en un entorno nuevo) y referencia a la evidencia de falla del proveedor.",
+        "2026-11-21 LOCAL: README nuevo con opción elegida, qué se reutiliza, integrantes y aportes, tabla de agentes (nombre, qué sabe, dueño, puerto, clave, URL Heroku), versiones exactas, preparación manual (Gemini, BotFather, ID de Telegram, claves), instalación, .env, iniciar/probar/detener, control de acceso, qué pasa si algo falla, real vs. simulado, dependencias y costos, límites y estructura. El README anterior quedó en docs/README-taller-a2a.md.",
+        "2026-11-21 LOCAL: probados los comandos del README: main.py --diagrama (coordinador y pato), main.py pato, main.py coordinador --saltos (elige Maleta), curl a POST /chat con CLAVE_COORDINADOR (200, Entrenamiento), scripts/probar_acceso.py pato (401 con clave ajena) y pytest (67 passed).",
+        "2026-11-23 HEROKU (parte de Daniella): README actualizado con URLs públicas y fichas de los tres agentes y el coordinador, nombre del bot @grupo3_asistente_bot, variables requeridas del coordinador sin valores secretos, registro y consulta del webhook, comandos para apagar/reiniciar apps y costo observado del dyno Basic. Se documenta que la cuenta no tiene Eco disponible.",
+        "Pendiente: Patricio debe revisar/fusionar la parte local; cada integrante debe revisar su sección y blueprint. La prueba desde cero corresponde a T16."
+      ],
       "reemplaza": [
         "T23"
       ]
@@ -528,8 +554,8 @@
       "id": "T15",
       "etapa": "evidencias",
       "nombre": "Evidencias en local y en Heroku",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Daniella Fernández",
+      "estado": "en_curso",
       "depende_de": [
         "T07",
         "T08",
@@ -552,7 +578,14 @@
         "Nombres, usuarios y teléfonos de Telegram tapados en las capturas.",
         "Se distingue claramente LOCAL de HEROKU en cada captura."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-23 HEROKU: se organizaron cuatro capturas anonimizadas y sus fichas en evidencias/taller-implementacion/heroku/Telegram/: Maleta, Entrenamiento, Sitios/fuera de catálogo y aviso al grupo. Las capturas muestran el chat y las respuestas; los originales sin anonimizar quedan excluidos de Git.",
+        "2026-11-23 LOCAL: salidas --saltos guardadas en T15-LOCAL-saltos-agentes-individuales.txt y T15-LOCAL-saltos-coordinador-rutas.txt. Comparaciones y acceso en T15-LOCAL-comparaciones-y-acceso-parcial.txt: las comparaciones de Dani y Cristian pasan; la de Pato quedó interrumpida por un 503 temporal de Gemini y requiere repetición.",
+        "2026-11-23 LOCAL: recibidas cuatro capturas de Telegram y un log del bot/coordinador; se recortaron contactos y se reemplazaron IDs por marcadores en las copias. Las fichas están en evidencias/taller-implementacion/local/Telegram/. El log muestra rutas, memoria, medios inválidos, fuera de catálogo y un agente no disponible; dos turnos excedieron el timeout de 120 s.",
+        "2026-11-23 HEROKU: extractos anonimizados de Dani (A2A permitido/200) y coordinador (fuera de catálogo, 200) en T15-HEROKU-dani-acceso-parcial.txt y T15-HEROKU-coordinador-fuera-catalogo.txt. El extracto de Dani no trae el log del coordinador de esa misma solicitud; siguen faltando logs de Pato y Cristian.",
+        "2026-11-23 LOCAL: se añadieron extractos anonimizados de acceso A2A permitido para los tres agentes y de arranque/acceso del coordinador. Las marcas de tiempo no corresponden a una misma solicitud, así que son evidencia de acceso separada, no una correlación completa.",
+        "Pendiente: captura local de acceso denegado desde una cuenta no autorizada; capturar en una misma prueba el mensaje, agente elegido y [acceso …] PERMITIDO; obtener logs HEROKU de Pato y Cristian o pedirlos a sus responsables; completar la correlación del log HEROKU de Dani; repetir la comparación local de Pato tras el 503."
+      ],
       "reemplaza": [
         "T24",
         "T25"

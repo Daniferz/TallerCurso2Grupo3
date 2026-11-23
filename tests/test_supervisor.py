@@ -1,8 +1,9 @@
 import asyncio
 from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
 from src.coordinador import catalogo
 
@@ -76,67 +77,10 @@ def test_grafo_supervisor_tiene_rama_para_sin_agente(monkeypatch):
     monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
     from src.coordinador.graph import Decision, graph
 
-    assert Decision(agente="ninguno", motivo="Fuera de tema.").agente == "ninguno"
-    assert Decision(agente="Agente de compañero", motivo="Pregunta de la persona.").agente == "Agente de compañero"
-    assert {"saludo", "supervisor", "agente_remoto", "sin_agente"}.issubset(graph.get_graph().nodes)
-
-
-def test_saludo_lista_agentes_disponibles(monkeypatch):
-    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
-    from src.coordinador import graph as supervisor
-
-    agentes = [
-        _agente("Maleta", "Prepara equipaje."),
-        _agente("Entrenamiento", "Arma rutinas."),
-        _agente("Sitios turísticos", "Recomienda lugares."),
-    ]
-
-    async def descubrir():
-        return agentes
-
-    monkeypatch.setattr(supervisor, "descubrir", descubrir)
-    resultado = asyncio.run(
-        supervisor.saludo({"messages": [HumanMessage(content="¡Buenos días!")]})
-    )
-
-    texto = resultado["messages"][0].content
-    assert "Hola. Estos son los agentes disponibles:" in texto
-    assert "Maleta: Prepara equipaje." in texto
-    assert "Entrenamiento: Arma rutinas." in texto
-    assert "Sitios turísticos: Recomienda lugares." in texto
-
-
-def test_supervisor_recibe_historial_del_hilo(monkeypatch):
-    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
-    from src.coordinador import graph as supervisor
-
-    agente = _agente("Maleta")
-    recibidos = []
-
-    async def descubrir():
-        return [agente]
-
-    class ModeloDePrueba:
-        async def ainvoke(self, mensajes):
-            recibidos.extend(mensajes)
-            return supervisor.Decision(agente="Maleta", motivo="Seguimiento de equipaje.")
-
-    monkeypatch.setattr(supervisor, "descubrir", descubrir)
-    monkeypatch.setattr(supervisor, "modelo_decision", ModeloDePrueba())
-    estado = {
-        "messages": [
-            HumanMessage(content="maleta para Pucón 3 días en invierno"),
-            HumanMessage(content="¿y si son 5 días?"),
-        ]
-    }
-
-    resultado = asyncio.run(supervisor.supervisor(estado))
-
-    assert resultado["agente"] == "Maleta"
-    assert [mensaje.content for mensaje in recibidos[1:]] == [
-        "maleta para Pucón 3 días en invierno",
-        "¿y si son 5 días?",
-    ]
+    assert Decision(consultas=[], motivo="Fuera de tema.").agente == "ninguno"
+    uno = Decision(consultas=[{"agente": "Agente de compañero", "pregunta": "x"}], motivo="Pregunta.")
+    assert uno.agente == "Agente de compañero"
+    assert {"supervisor", "agente_remoto", "sin_agente"}.issubset(graph.get_graph().nodes)
 
 
 def test_agente_elegido_que_no_responde_da_aviso_claro(monkeypatch, capsys):
@@ -157,7 +101,11 @@ def test_agente_elegido_que_no_responde_da_aviso_claro(monkeypatch, capsys):
     monkeypatch.setattr(supervisor, "descubrir", descubrir)
     monkeypatch.setattr(supervisor, "preguntar", preguntar)
 
-    estado = {"messages": [HumanMessage(content="rutina de pecho")], "agente": "Entrenamiento"}
+    estado = {
+        "messages": [HumanMessage(content="rutina de pecho")],
+        "agente": "Entrenamiento",
+        "consultas": [{"agente": "Entrenamiento", "pregunta": "rutina de pecho"}],
+    }
     resultado = asyncio.run(supervisor.agente_remoto(estado, {"configurable": {"thread_id": "t1"}}))
 
     texto = resultado["messages"][0].content
@@ -186,7 +134,11 @@ def test_otra_falla_del_agente_sigue_siendo_error(monkeypatch):
     monkeypatch.setattr(supervisor, "descubrir", descubrir)
     monkeypatch.setattr(supervisor, "preguntar", preguntar)
 
-    estado = {"messages": [HumanMessage(content="maleta")], "agente": "Maleta"}
+    estado = {
+        "messages": [HumanMessage(content="maleta")],
+        "agente": "Maleta",
+        "consultas": [{"agente": "Maleta", "pregunta": "maleta"}],
+    }
     with pytest.raises(RuntimeError, match="401"):
         asyncio.run(supervisor.agente_remoto(estado, {"configurable": {}}))
 
@@ -280,3 +232,266 @@ def test_motivo_normal_se_deja_en_una_linea_y_breve(monkeypatch):
     assert motivo_seguro("La persona pide\n una lista de equipaje.", agentes) == "La persona pide una lista de equipaje."
     largo = motivo_seguro("palabra " * 100, agentes)
     assert len(largo) <= 203 and largo.endswith("...")
+
+
+def _agentes_bienvenida():
+    return [
+        _agente(
+            "Agente de Maleta de Dani",
+            "Prepara listas de equipaje para Punta Arenas, Pucón e Iquique según días y temporada. No consulta el clima.",
+        ),
+        _agente(
+            "Agente de Entrenamiento de Pato",
+            "Explica la anatomía y función de los músculos y arma rutinas de gimnasio con base científica. No da dietas.",
+        ),
+        _agente(
+            "Agente de cristian",
+            "Recomienda lugares para visitar con descripción, ubicación, horarios y precios. No hace reservas.",
+        ),
+    ]
+
+
+def test_grafo_incluye_nodo_de_saludo_y_reconoce_saludos_simples(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    nodos = set(supervisor.graph.get_graph().nodes)
+    assert "saludo" in nodos
+    assert supervisor._es_saludo("¡Hola!")
+    assert supervisor._es_saludo("Buenos días")
+    assert supervisor._es_saludo("¿Qué tal?")
+    assert not supervisor._es_saludo("Hola, ¿qué llevo a Pucón?")
+
+
+def test_nodo_saludo_lista_los_tres_agentes_y_que_sabe_cada_uno(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    async def descubrir():
+        return _agentes_bienvenida()
+
+    class ModeloNoUsado:
+        async def ainvoke(self, mensajes):
+            raise AssertionError("Un saludo simple no debe invocar el supervisor.")
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "modelo_decision", ModeloNoUsado())
+    texto = asyncio.run(
+        supervisor.responder("¡Hola!", str(uuid4()))
+    )
+
+    assert "Maleta:" in texto and "listas de equipaje" in texto
+    assert "Entrenamiento:" in texto and "anatomía y función" in texto
+    assert "Sitios turísticos:" in texto and "lugares para visitar" in texto
+    assert len(texto.splitlines()) == 4
+
+
+def test_supervisor_recibe_historial_usuario_del_hilo_sin_mensajes_del_agente(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+    from src.coordinador.graph import Decision
+
+    agente = _agentes_bienvenida()[0]
+    llamadas_modelo = []
+
+    async def descubrir():
+        return [agente]
+
+    class ModeloFalso:
+        async def ainvoke(self, mensajes):
+            llamadas_modelo.append(mensajes)
+            return Decision(
+                consultas=[{"agente": agente.nombre, "pregunta": "maleta 5 días"}],
+                motivo="Pregunta de equipaje.",
+            )
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "modelo_decision", ModeloFalso())
+    estado = {
+        "messages": [
+            HumanMessage(content="maleta para Pucón 3 días en invierno"),
+            AIMessage(content="[Agente de Maleta de Dani] Lista anterior."),
+            HumanMessage(content="¿y si son 5 días?"),
+        ]
+    }
+
+    decision = asyncio.run(supervisor.supervisor(estado))
+
+    entrada_usuario = [
+        mensaje.content
+        for mensaje in llamadas_modelo[0]
+        if isinstance(mensaje, HumanMessage)
+    ]
+    assert decision["agente"] == agente.nombre
+    assert len(entrada_usuario) == 1
+    assert "<mensaje>maleta para Pucón 3 días en invierno</mensaje>" in entrada_usuario[0]
+    assert "<pregunta_actual>¿y si son 5 días?</pregunta_actual>" in entrada_usuario[0]
+    assert not any(
+        isinstance(mensaje, AIMessage) for mensaje in llamadas_modelo[0]
+    )
+
+
+def test_memoria_de_seguimiento_se_aísla_por_conversacion_id(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+    from src.coordinador.graph import Decision
+
+    maleta = _agentes_bienvenida()[0]
+    entradas_modelo = []
+    llamadas_agente = []
+
+    async def descubrir():
+        return [maleta]
+
+    class ModeloFalso:
+        async def ainvoke(self, mensajes):
+            entrada = next(
+                mensaje.content
+                for mensaje in mensajes
+                if isinstance(mensaje, HumanMessage)
+            )
+            entradas_modelo.append(entrada)
+            if "maleta para Pucón" in entrada:
+                return Decision(
+                    consultas=[{"agente": maleta.nombre, "pregunta": "maleta"}],
+                    motivo="Tema de equipaje.",
+                )
+            return Decision(consultas=[], motivo="No hay contexto de equipaje.")
+
+    async def preguntar(cliente, texto, context_id):
+        llamadas_agente.append((texto, context_id))
+        return "Respuesta simulada de Maleta."
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "modelo_decision", ModeloFalso())
+    monkeypatch.setattr(supervisor, "preguntar", preguntar)
+
+    async def ejecutar():
+        hilo_con_memoria = str(uuid4())
+        hilo_nuevo = str(uuid4())
+        await supervisor.responder(
+            "maleta para Pucón 3 días en invierno", hilo_con_memoria
+        )
+        await supervisor.responder(
+            "¿y si son 5 días?", hilo_con_memoria
+        )
+        await supervisor.responder(
+            "¿y si son 5 días?", hilo_nuevo
+        )
+
+    asyncio.run(ejecutar())
+
+    assert [texto for texto, _ in llamadas_agente] == [
+        "maleta para Pucón 3 días en invierno",
+        "¿y si son 5 días?",
+    ]
+    assert "maleta para Pucón 3 días en invierno" in entradas_modelo[1]
+    assert "maleta para Pucón 3 días en invierno" not in entradas_modelo[2]
+    assert "<pregunta_actual>¿y si son 5 días?</pregunta_actual>" in entradas_modelo[2]
+
+
+def _dos_agentes():
+    maleta = catalogo.AgenteDescubierto(nombre="Maleta", descripcion="Equipaje.", cliente="c-maleta", url="http://maleta")
+    sitios = catalogo.AgenteDescubierto(nombre="Sitios", descripcion="Lugares.", cliente="c-sitios", url="http://sitios")
+    return maleta, sitios
+
+
+def test_supervisor_puede_elegir_varios_agentes_y_un_solo_agente_recibe_la_pregunta_original(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    maleta, sitios = _dos_agentes()
+    original = "Voy a Pucón 3 días en invierno: ¿qué llevo y qué visito?"
+    varios = supervisor.Decision(
+        consultas=[
+            {"agente": "Maleta", "pregunta": "¿Qué llevo a Pucón 3 días en invierno?"},
+            {"agente": "Sitios", "pregunta": "¿Qué visito en Pucón?"},
+            {"agente": "Maleta", "pregunta": "repetido"},
+            {"agente": "Inventado", "pregunta": "no existe"},
+        ],
+        motivo="Dos temas.",
+    )
+    consultas = supervisor.consultas_validas(varios, [maleta, sitios], original)
+    assert consultas == [
+        {"agente": "Maleta", "pregunta": "¿Qué llevo a Pucón 3 días en invierno?"},
+        {"agente": "Sitios", "pregunta": "¿Qué visito en Pucón?"},
+    ]
+
+    uno = supervisor.Decision(consultas=[{"agente": "Sitios", "pregunta": "reescrita"}], motivo="Un tema.")
+    assert supervisor.consultas_validas(uno, [maleta, sitios], original) == [
+        {"agente": "Sitios", "pregunta": original}
+    ]
+    assert supervisor.siguiente({"consultas": []}) == "sin_agente"
+    assert supervisor.siguiente({"consultas": consultas}) == "agente_remoto"
+
+
+def test_varios_agentes_responden_y_se_juntan_sin_alterar(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+
+    maleta, sitios = _dos_agentes()
+    recibidas = {}
+
+    async def descubrir():
+        return [maleta, sitios]
+
+    async def preguntar(cliente, texto, context_id):
+        recibidas[cliente] = (texto, context_id)
+        return {
+            "c-maleta": "4 × ropa interior; 3 × capa térmica.",
+            "c-sitios": "Termas abren 9:00-23:00, $25.000.",
+        }[cliente]
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "preguntar", preguntar)
+    estado = {
+        "messages": [HumanMessage(content="Pucón 3 días en invierno: ¿qué llevo y qué visito?")],
+        "motivo": "Dos temas.",
+        "consultas": [
+            {"agente": "Maleta", "pregunta": "¿Qué llevo a Pucón 3 días en invierno?"},
+            {"agente": "Sitios", "pregunta": "¿Qué visito en Pucón?"},
+        ],
+    }
+    texto = asyncio.run(supervisor.agente_remoto(estado, {"configurable": {"thread_id": "t9"}}))["messages"][0].content
+
+    assert texto == (
+        "[Maleta] 4 × ropa interior; 3 × capa térmica.\n\n"
+        "[Sitios] Termas abren 9:00-23:00, $25.000.\n"
+        "Motivo de selección: Dos temas."
+    )
+    assert recibidas["c-maleta"] == ("¿Qué llevo a Pucón 3 días en invierno?", "t9")
+    assert recibidas["c-sitios"] == ("¿Qué visito en Pucón?", "t9")
+
+
+def test_con_varios_agentes_uno_caido_no_bota_la_respuesta_del_otro(monkeypatch, capsys):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador import graph as supervisor
+    from src.coordinador.cliente import AgenteNoDisponible
+
+    maleta, sitios = _dos_agentes()
+
+    async def descubrir():
+        return [maleta, sitios]
+
+    async def preguntar(cliente, texto, context_id):
+        if cliente == "c-sitios":
+            raise AgenteNoDisponible("No se pudo conectar con el agente.")
+        return "Lista de equipaje."
+
+    monkeypatch.setattr(supervisor, "descubrir", descubrir)
+    monkeypatch.setattr(supervisor, "preguntar", preguntar)
+    estado = {
+        "messages": [HumanMessage(content="¿qué llevo y qué visito?")],
+        "motivo": "Dos temas.",
+        "consultas": [{"agente": "Maleta", "pregunta": "a"}, {"agente": "Sitios", "pregunta": "b"}],
+    }
+    texto = asyncio.run(supervisor.agente_remoto(estado, {"configurable": {}}))["messages"][0].content
+    assert texto.startswith("[Maleta] Lista de equipaje.\n\nLa parte de Sitios no está disponible")
+    assert "No se pudo conectar" in capsys.readouterr().out
+
+
+def test_prompt_explica_como_elegir_varios_agentes():
+    from src.coordinador.prompts import PROMPT_SUPERVISOR
+
+    assert "si toca varios temas" in PROMPT_SUPERVISOR
+    assert "copiando textualmente los datos de la persona" in PROMPT_SUPERVISOR
