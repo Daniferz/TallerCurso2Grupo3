@@ -1,0 +1,10 @@
+HEROKU · Extracto anonimizado compartido por la responsable · 2026-11-23
+
+13:47:32Z  Coordinador POST /chat -> PERMITIDO
+13:47:33Z  Coordinador: agente=ninguno; POST /chat -> HTTP 200
+13:47:33Z  Bot: respuesta de fuera de catálogo
+13:47:34Z  POST /telegram -> HTTP 200
+
+Se omitieron chat_id, user_id, IP, request_id y correo. La captura del aviso al grupo está en
+`heroku/Telegram/T15-HEROKU-04-aviso-grupo.jpg`. Este extracto corresponde a la prueba fuera de
+catálogo, no a las consultas de Maleta, Entrenamiento o Sitios.
