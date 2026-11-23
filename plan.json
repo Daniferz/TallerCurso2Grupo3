@@ -521,7 +521,7 @@
       "id": "T14",
       "etapa": "entrega",
       "nombre": "README nuevo",
-      "responsable": "Patricio Vergara (parte local); parte Heroku por asignar",
+      "responsable": "Patricio Vergara (parte local); Daniella Fernández (parte Heroku)",
       "estado": "en_curso",
       "depende_de": [
         "T08",
