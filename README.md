@@ -4,9 +4,11 @@ Taller de implementación (Agentic AI, Curso 2). Un bot de Telegram recibe la pr
 **coordinador** elige al agente especialista y le pregunta por **A2A**; la respuesta vuelve al
 mismo chat con la etiqueta `[Nombre del agente]`.
 
-> **Estado de este README (2026-11-21):** la parte **local** está completa y probada. Las secciones
-> de Heroku para el coordinador y el bot (webhook) se completan en T12. El plan está en `plan.json`
-> y el checklist de evaluación en `SPEC.md`.
+> **Estado de este README (2026-11-23):** la parte local está completa; los tres agentes y el
+> coordinador están desplegados en Heroku y el bot del grupo usa webhook. La sección Heroku de T14
+> está documentada; falta la revisión de aportes de los integrantes. T15 (evidencias) y T16 (prueba
+> desde cero y entrega) siguen pendientes/en curso. El plan está en `plan.json` y el checklist de
+> evaluación en `SPEC.md`.
 
 ## Opción elegida y qué resuelve
 
@@ -23,11 +25,11 @@ mismo chat con la etiqueta `[Nombre del agente]`.
 
 | Integrante | Aportes |
 |---|---|
-| Daniella Fernández | Agente de Maleta (`src/agente_dani`); base del supervisor A2A y catálogo dinámico del taller anterior; documentos de entrega de `integracion-grupo3`. |
-| Cristian Meza | Agente de Sitios turísticos (`src/agente_cristian`) y su despliegue en Heroku (T11). En su rama, pendientes de fusionar: saludo y memoria (T06), webhook (T09) y aviso a una persona (T10). |
+| Daniella Fernández | Agente de Maleta (`src/agente_dani`); base del supervisor A2A y catálogo dinámico del taller anterior; documentos de entrega de `integracion-grupo3`; saludo y memoria del coordinador (T06); despliegue de Maleta (T11) y coordinador/bot del grupo en Heroku (T12). |
+| Cristian Meza | Agente de Sitios turísticos (`src/agente_cristian`); datos faltantes y comparación directa/coordinador de Sitios (T07); despliegue en Heroku (T11); webhook de Telegram (T09) y aviso del extra (T10). |
 | Patricio Vergara | Agente de Entrenamiento (`src/agente_pato`); clave por agente (T01, T02); catálogo con agentes caídos (T03); Procfile (T04); supervisor blindado (T05); `/chat` y bot de Telegram (T08); datos faltantes y comparación de su agente (T07); su agente en Heroku (T11); checklist de evaluación (T13). |
 
-*(Actualizar esta tabla con lo que cada uno fusione antes de entregar.)*
+*Cada integrante debe revisar su fila antes de entregar.*
 
 ## Cómo funciona
 
@@ -39,14 +41,15 @@ Telegram ──polling──▶ src/canal/telegram.py ──POST /chat──▶ 
                               Maleta (8003)          Entrenamiento (8005)     Sitios turísticos (8004)
 ```
 
-| Agente | Qué sabe | Dueño | Puerto local | Clave | Heroku |
+| Agente | Qué sabe | Dueño | Puerto local | Clave | Ficha Heroku y comprobación pública |
 |---|---|---|---|---|---|
-| Agente de Maleta de Dani | Listas de equipaje para Punta Arenas, Pucón e Iquique según días y temporada | Daniella | 8003 | `CLAVE_DANI` | pendiente |
-| Agente de Entrenamiento de Pato | Anatomía y rutinas de gimnasio con base científica | Patricio | 8005 | `CLAVE_PATO` | https://agente-pato-grupo3-8c9b06247efd.herokuapp.com |
-| Agente de cristian (Sitios turísticos) | Sitios con ubicación, horarios y precios | Cristian | 8004 | `CLAVE_CRISTIAN` | https://agente-cristian-grupo3-60262a116c18.herokuapp.com |
-| Coordinador | Elige el agente, no altera la respuesta y la etiqueta `[Nombre]` | Grupo | 8002 | `CLAVE_COORDINADOR` | pendiente (T12) |
+| Agente de Maleta de Dani | Listas de equipaje para Punta Arenas, Pucón e Iquique según días y temporada | Daniella | 8003 | `CLAVE_DANI` | [Ficha](https://agente-dani-grupo3-3494821f347d.herokuapp.com/.well-known/agent-card.json); `curl.exe -i https://agente-dani-grupo3-3494821f347d.herokuapp.com/salud` |
+| Agente de Entrenamiento de Pato | Anatomía y rutinas de gimnasio con base científica | Patricio | 8005 | `CLAVE_PATO` | [Ficha](https://agente-pato-grupo3-8c9b06247efd.herokuapp.com/.well-known/agent-card.json); `curl.exe -i https://agente-pato-grupo3-8c9b06247efd.herokuapp.com/salud` |
+| Agente de cristian (Sitios turísticos) | Sitios con ubicación, horarios y precios | Cristian | 8004 | `CLAVE_CRISTIAN` | [Ficha](https://agente-cristian-grupo3-60262a116c18.herokuapp.com/.well-known/agent-card.json); `curl.exe -i https://agente-cristian-grupo3-60262a116c18.herokuapp.com/salud` |
+| Coordinador | Elige el agente, no altera la respuesta y la etiqueta `[Nombre]` | Grupo | 8002 | `CLAVE_COORDINADOR` | [Ficha](https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com/.well-known/agent-card.json); `curl.exe -i https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com/salud` |
 
-Cada agente publica su ficha en `/.well-known/agent-card.json` y su estado en `/salud`.
+Cada servicio publica su ficha en `/.well-known/agent-card.json` y su estado en `/salud`. El bot del
+grupo es **@grupo3_asistente_bot**.
 
 ## Versiones probadas
 
@@ -251,8 +254,9 @@ en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
 - **Internet:** sí, aunque se ejecute en local (Gemini y Telegram).
 - **Gemini:** cuota gratuita de Google AI Studio; si se acaba, los agentes responden un error claro (429).
 - **Telegram:** gratis.
-- **Heroku (solo para el +1):** plan Eco, unos 5 USD al mes por cuenta; las apps duermen tras 30 min
-  sin uso y tardan 10-20 s en despertar.
+- **Heroku (para el +1):** el coordinador del grupo está en un dyno Basic, con costo indicado por
+  Heroku de aproximadamente US$0,01/h (máximo US$7/mes). Esta cuenta no tiene una suscripción Eco;
+  consulta **Resources** y **Billing** para conocer el plan y costo de cada app de los integrantes.
 
 ## Límites conocidos
 
@@ -262,9 +266,10 @@ en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
   webhook al mismo tiempo.
 - El bot atiende los mensajes de a uno: una respuesta lenta retrasa la siguiente.
 
-## Despliegue en Heroku (+1, en curso)
+## Despliegue en Heroku (+1)
 
-Una app por agente desde este mismo repo; el `Procfile` arranca el módulo de `APP_MODULO`:
+Hay una app por agente y una para el coordinador, todas desde este repo. El `Procfile` arranca el
+módulo indicado por `APP_MODULO`:
 
 ```
 web: uvicorn $APP_MODULO:app --host 0.0.0.0 --port $PORT
@@ -276,8 +281,30 @@ Variables de cada app de agente: `APP_MODULO` (ej.: `src.agente_pato.server`), `
 `taller-sistema-agentes` (si el repo no es tuyo, conéctalo desde un fork y usa **Sync fork** antes de
 cada despliegue).
 
-*Pendiente (T12): app del coordinador con `URLS_AGENTES`, `CLAVES_AGENTES`, `CLAVE_COORDINADOR`,
-`TIEMPO_FICHA_A2A=30` y el bot del grupo por webhook.*
+La app del coordinador es `coordinador-grupo3-dani-2026`. Sus variables incluyen `APP_MODULO` (valor
+`src.coordinador.server`), `GOOGLE_API_KEY`, `MODELO`, `CLAVE_COORDINADOR`, `URL_COORDINADOR`,
+`URLS_AGENTES`, `CLAVES_AGENTES`, `TIEMPO_FICHA_A2A=30`, `TELEGRAM_TOKEN`,
+`TELEGRAM_SECRETO_WEBHOOK`, `TELEGRAM_USUARIOS_PERMITIDOS` y `TELEGRAM_CHAT_AVISO`. En
+`URLS_AGENTES` y `CLAVES_AGENTES`, el orden debe ser siempre Maleta (Dani), Entrenamiento (Pato) y
+Sitios (Cristian). No copies valores secretos a este README.
+
+El coordinador público es
+`https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com`; el webhook de Telegram se registra
+en su ruta `/telegram`:
+
+```powershell
+python scripts/registrar_webhook.py registrar https://coordinador-grupo3-dani-2026-1dde01e29291.herokuapp.com
+python scripts/registrar_webhook.py info
+```
+
+El script lee `TELEGRAM_TOKEN` y `TELEGRAM_SECRETO_WEBHOOK` del `.env` local y no muestra sus valores.
+No ejecutes `borrar` ni uses el bot del grupo por polling local salvo que quieras interrumpir
+temporalmente su webhook de Heroku.
+
+Para apagar una app, usa `heroku ps:scale web=0 --app <nombre-de-app>`; para volver a iniciarla,
+`heroku ps:scale web=1 --app <nombre-de-app>`. Cada responsable puede apagar su propia app. El bot
+local se detiene con Ctrl+C en su terminal. El proceso del coordinador está actualmente en Basic;
+el cambio a Eco requiere una suscripción Eco en la cuenta.
 
 ## Evidencias
 
