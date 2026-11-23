@@ -140,12 +140,20 @@ def primer_nodo(estado: EstadoSupervisor) -> str:
 def _nombre_para_saludo(agente: AgenteDescubierto) -> str:
     """Presenta los nombres de las tres áreas en términos reconocibles."""
     nombre = agente.nombre.lower()
-    descripcion = agente.descripcion.lower()
-    if "maleta" in nombre or "equipaje" in descripcion:
+    if "maleta" in nombre:
         return "Maleta"
-    if "entrenamiento" in nombre or "rutina" in descripcion:
+    if "entrenamiento" in nombre:
         return "Entrenamiento"
-    if "sitio" in nombre or "cristian" in nombre or "lugares para visitar" in descripcion:
+    if "sitio" in nombre or "cristian" in nombre:
+        return "Sitios turísticos"
+    # Si el nombre no basta, se mira solo la primera frase (lo que el agente SÍ hace): la
+    # ficha también dice lo que no hace, por ejemplo "no responde sobre ... equipaje".
+    hace = _primera_frase(agente.descripcion).lower()
+    if "equipaje" in hace or "maleta" in hace:
+        return "Maleta"
+    if "rutina" in hace or "músculo" in hace:
+        return "Entrenamiento"
+    if "lugares" in hace or "sitios" in hace:
         return "Sitios turísticos"
     return agente.nombre
 

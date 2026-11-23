@@ -495,3 +495,21 @@ def test_prompt_explica_como_elegir_varios_agentes():
 
     assert "si toca varios temas" in PROMPT_SUPERVISOR
     assert "copiando textualmente los datos de la persona" in PROMPT_SUPERVISOR
+
+
+def test_saludo_no_confunde_sitios_con_maleta_por_lo_que_no_hace(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.coordinador.graph import _nombre_para_saludo
+
+    # La ficha real de Cristian dice que NO responde sobre equipaje: no debe salir como "Maleta".
+    sitios = _agente(
+        "Agente de cristian",
+        "Recomienda lugares para visitar con descripción, ubicación, horarios, precios referenciales e imágenes. "
+        "No responde sobre vuelos, hoteles, reservas, clima, visas, equipaje ni restricciones de los sitios.",
+    )
+    assert _nombre_para_saludo(sitios) == "Sitios turísticos"
+    assert _nombre_para_saludo(_agente("Agente de Maleta de Dani", "Prepara listas de equipaje.")) == "Maleta"
+    assert _nombre_para_saludo(_agente("Agente de Entrenamiento de Pato", "Arma rutinas.")) == "Entrenamiento"
+    # Sin pistas en el nombre: solo cuenta la primera frase (lo que hace).
+    otro = _agente("Agente X", "Arma listas de equipaje para viajes. No responde sobre rutinas ni lugares.")
+    assert _nombre_para_saludo(otro) == "Maleta"

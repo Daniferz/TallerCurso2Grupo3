@@ -2,13 +2,14 @@
 
 import hashlib
 import hmac
+import json
 import os
 import uuid
 
 import httpx
-from fastapi import Header, HTTPException
+from fastapi import Header, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from src.comun.errores import en_una_linea
 from src.comun.registro import CATALOGO
@@ -66,12 +67,38 @@ async def _agente_elegido(conversacion_id: str) -> str:
     return (estado.values or {}).get("agente") or "ninguno"
 
 
+FORMATO_CHAT = 'Envía JSON: {"texto": "tu pregunta", "conversacion_id": "opcional"}.'
+
+
+def _leer_mensaje_chat(cuerpo: bytes) -> MensajeChat:
+    """Lee el JSON de /chat con mensajes de error claros en español.
+
+    curl en Windows suele mandar las tildes en la codificación de la consola (cp1252) y no
+    en UTF-8: se acepta igual, para que "días" o "Pucón" no terminen en un error de parseo.
+    """
+    try:
+        texto = cuerpo.decode("utf-8")
+    except UnicodeDecodeError:
+        texto = cuerpo.decode("cp1252", errors="replace")
+    try:
+        datos = json.loads(texto)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail=f"El cuerpo no es JSON válido. {FORMATO_CHAT}") from None
+    try:
+        return MensajeChat.model_validate(datos)
+    except ValidationError:
+        raise HTTPException(
+            status_code=422, detail=f'Falta el campo "texto" o no es texto. {FORMATO_CHAT}'
+        ) from None
+
+
 @app.post("/chat")
-async def chat(datos: MensajeChat):
+async def chat(request: Request):
     """Recibe {texto, conversacion_id} y devuelve {respuesta}. Exige X-API-Key = CLAVE_COORDINADOR.
 
     La clave la valida el middleware de crear_app, igual que en "/".
     """
+    datos = _leer_mensaje_chat(await request.body())
     texto = datos.texto.strip()
     if not texto:
         raise HTTPException(status_code=422, detail="El texto está vacío: escribe una pregunta.")
