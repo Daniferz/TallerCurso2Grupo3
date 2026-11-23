@@ -476,6 +476,7 @@
         "2026-11-22 COSTO: el dyno quedó en Basic (aprox. US$0,01/h, máximo US$7/mes según Heroku). El cambio a Eco no está disponible porque la cuenta no tiene esa suscripción; la app sigue activa en Basic.",
         "2026-11-22 HEROKU (preparación Pato): agregada su URL y el marcador temporal PENDIENTE_CLAVE_PATO en la posición correspondiente de CLAVES_AGENTES. GET /salud y Agent Card de Pato -> 200; el último arranque registra 'Supervisor con 3 agentes' y 0 errores de ficha. Las rutas de Dani y Cristian siguen respondiendo 200. La llamada de Pato no se prueba hasta sustituir el marcador por su clave real.",
         "2026-11-23 HEROKU: CLAVE_PATO validada contra la app de Pato; CLAVES_AGENTES de Heroku coincide con las tres claves locales, en orden Dani, Pato y Cristian. Tres consultas autenticadas a POST /chat devolvieron HTTP 200 y llegaron al agente correcto.",
+        "2026-11-23 HEROKU: se corrigió la causa del fallo del bot: faltaba URL_COORDINADOR y el webhook intentaba llamar a 127.0.0.1:8002. Configurada URL_COORDINADOR con la URL pública; luego GET /salud -> 200, arranque con 3 agentes y webhook activo. Pendiente repetir una consulta entrante desde Telegram para confirmar la corrección en el chat.",
         "Pendiente para completar T12: probar por Telegram las tres consultas con los computadores apagados y confirmar visualmente en el grupo el aviso de la consulta fuera de catálogo."
       ],
       "reemplaza": [
