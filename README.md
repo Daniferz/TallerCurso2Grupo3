@@ -25,7 +25,7 @@ mismo chat con la etiqueta `[Nombre del agente]`.
 
 | Integrante | Aportes |
 |---|---|
-| Daniella Fernández | Agente de Maleta (`src/agente_dani`); base del supervisor A2A y catálogo dinámico del taller anterior; documentos de entrega de `integracion-grupo3`; saludo y memoria del coordinador (T06); despliegue de Maleta (T11) y coordinador/bot del grupo en Heroku (T12). |
+| Daniella Fernández | Agente de Maleta (`src/agente_dani`); base del supervisor A2A y catálogo dinámico del taller anterior; saludo y memoria del coordinador (T06); datos faltantes y comparación de Maleta (T07); documentos de entrega de `integracion-grupo3`; despliegue de Maleta (T11) y coordinador/bot del grupo en Heroku (T12). |
 | Cristian Meza | Agente de Sitios turísticos (`src/agente_cristian`); datos faltantes y comparación directa/coordinador de Sitios (T07); despliegue en Heroku (T11); webhook de Telegram (T09) y aviso del extra (T10). |
 | Patricio Vergara | Agente de Entrenamiento (`src/agente_pato`); clave por agente (T01, T02); catálogo con agentes caídos (T03); Procfile (T04); supervisor blindado (T05); `/chat` y bot de Telegram (T08); datos faltantes y comparación de su agente (T07); su agente en Heroku (T11); checklist de evaluación (T13). |
 
