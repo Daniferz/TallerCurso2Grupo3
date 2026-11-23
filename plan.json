@@ -553,8 +553,8 @@
       "id": "T15",
       "etapa": "evidencias",
       "nombre": "Evidencias en local y en Heroku",
-      "responsable": "por asignar",
-      "estado": "pendiente",
+      "responsable": "Daniella Fernández",
+      "estado": "en_curso",
       "depende_de": [
         "T07",
         "T08",
