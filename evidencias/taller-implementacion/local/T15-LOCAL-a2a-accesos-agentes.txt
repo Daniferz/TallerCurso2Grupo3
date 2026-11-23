@@ -1,0 +1,9 @@
+Entorno: LOCAL
+Fecha: 2026-11-23
+Solicitud: llamadas A2A del coordinador a los servidores locales; el fragmento compartido no incluye el texto de cada solicitud.
+Esperado: cada agente acepte la llamada con su clave y responda HTTP 200.
+Obtenido:
+- 09:21:15 · Agente de Maleta de Dani · POST / · PERMITIDO
+- 09:22:31 · Agente de Entrenamiento de Pato · POST / · PERMITIDO
+- 09:22:45 · Agente de cristian · POST / · PERMITIDO
+Observaciones: se omitieron IP y PID. Estos accesos prueban que los tres servidores aceptaron A2A, pero sus horas no coinciden con el POST /chat del coordinador registrado aparte; no se presentan como una misma transacción.
