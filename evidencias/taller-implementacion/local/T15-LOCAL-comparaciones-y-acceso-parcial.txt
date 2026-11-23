@@ -1,0 +1,167 @@
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py scripts/comparar_directo_coordinador.py dani "Voy cinco días a Punta Arenas en julio, ¿qué debería llevar?"
+### Agente de Maleta de Dani · LOCAL · 2026-11-23 09:26
+Pregunta: Voy cinco días a Punta Arenas en julio, ¿qué debería llevar?
+
+**Directo al agente:**
+
+Aquí tienes la lista de equipaje recomendada para tu viaje de 5 días a Punta Arenas en julio:
+
+**Ropa:**
+- 6 × ropa interior
+- 6 × calcetines
+- 5 × primera capa térmica
+- polar o suéter abrigado
+- chaqueta impermeable
+- 2 × pantalones
+- gorro
+- guantes
+- bufanda
+
+**Documentos:**
+- documento de identidad
+- reservas y pasajes descargados
+
+**Tecnología:**
+- teléfono y cargador
+- batería externa
+
+**Botiquín:**
+- medicamentos personales
+- artículos básicos de primeros auxilios
+
+**No te olvides:**
+- bolsa para separar ropa húmeda
+- revisar documentos antes de salir
+
+**Vía coordinador:**
+
+[Agente de Maleta de Dani] Aquí tienes la lista de equipaje para tus 5 días en Punta Arenas en julio:
+
+Ropa:
+- 6 × ropa interior
+- 6 × calcetines
+- 5 × primera capa térmica
+- polar o suéter abrigado
+- chaqueta impermeable
+- 2 × pantalones
+- gorro
+- guantes
+- bufanda
+
+Documentos:
+- documento de identidad
+- reservas y pasajes descargados
+
+Tecnología:
+- teléfono y cargador
+- batería externa
+
+Botiquín:
+- medicamentos personales
+- artículos básicos de primeros auxilios
+
+No te olvides:
+- bolsa para separar ropa húmeda
+- revisar documentos antes de salir
+Motivo de selección: La pregunta trata sobre qué llevar en un viaje de cinco días a Punta Arenas, por lo que corresponde al agente especializado en listas de equipaje.
+
+- Etiqueta [Agente de Maleta de Dani] al inicio: sí
+- Cifras directo: 5, 6, 2
+- Cifras vía coordinador: 5, 6, 2
+- Resultado: PASA (mismas cifras, solo cambia la etiqueta)
+
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py scripts/comparar_directo_coordinador.py pato "Estoy empezando en el gimnasio; ¿qué rutina de piernas hago?"
+### Agente de Entrenamiento de Pato · LOCAL · 2026-11-23 09:27
+Pregunta: Estoy empezando en el gimnasio; ¿qué rutina de piernas hago?
+
+Error: Coordinador devolvió un error: No se pudo responder: el coordinador no pudo evaluar la pregunta: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNA...
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py scripts/comparar_directo_coordinador.py cristian "¿Qué lugares turísticos puedo visitar en Valparaíso?"
+### Agente de cristian · LOCAL · 2026-11-23 09:28
+Pregunta: ¿Qué lugares turísticos puedo visitar en Valparaíso?
+
+**Directo al agente:**
+
+Puedes visitar el Ascensor Artillería, La Sebastiana y el Paseo 21 de Mayo en Valparaíso.
+
+**Vía coordinador:**
+
+[Agente de cristian] En Valparaíso puedes visitar el Ascensor Artillería, La Sebastiana y el Paseo 21 de Mayo.
+Motivo de selección: La pregunta es sobre lugares turísticos para visitar en Valparaíso, lo cual corresponde a las recomendaciones turísticas de este agente.
+
+- Etiqueta [Agente de cristian] al inicio: sí
+- Cifras directo: 21
+- Cifras vía coordinador: 21
+- Resultado: PASA (mismas cifras, solo cambia la etiqueta)
+
+PS C:\Agents\Projects\CursoUAI\TallerCurso2>
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py scripts/probar_acceso.py dani "maleta para Pucón"
+Entorno: LOCAL · 2026-11-23 09:29:18
+Agente: Agente de Maleta de Dani en http://127.0.0.1:8003
+
+1. Sin clave -> HTTP 401
+   Detalle: Falta el encabezado X-API-Key.
+
+2. Clave incorrecta -> HTTP 401
+   Detalle: Clave de acceso inválida.
+
+3. Clave correcta (CLAVE_DANI, oculta) -> HTTP 200
+   Pregunta: maleta para Pucón
+   Respuesta: ¡Hola! Soy Dani, especialista en equipaje y preparación de maletas.
+
+Para poder darte la lista exacta que necesitas para Pucón, ¿me podrías decir cuántos días durará tu viaje (entre 1 y 30) y en qué temporada o mes del año planeas ir (invierno, verano o un mes del calendario chileno)?
+
+4. Clave de otro agente (CLAVE_PATO, oculta) -> HTTP 401
+   Detalle: Clave de acceso inválida.
+
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py scripts/probar_acceso.py pato "rutina de piernas"
+Entorno: LOCAL · 2026-11-23 09:29:31
+Agente: Agente de Entrenamiento de Pato en http://127.0.0.1:8005
+
+1. Sin clave -> HTTP 401
+   Detalle: Falta el encabezado X-API-Key.
+
+2. Clave incorrecta -> HTTP 401
+   Detalle: Clave de acceso inválida.
+
+3. Clave correcta (CLAVE_PATO, oculta) -> HTTP 200
+   Pregunta: rutina de piernas
+   Respuesta: Como no especificaste el objetivo, el nivel ni los días, usé los valores por defecto (hipertrofia, principiante y 3 días). Ante cualquier dolor, te recomiendo consultar a un profesional de la salud antes de entrenar.
+
+Aquí tienes tu rutina:
+
+Rutina de piernas · objetivo hipertrofia · nivel principiante · 3 día(s) disponibles
+Músculos trabajados: cuádriceps, isquiotibiales, glúteos y pantorrillas.
+Volumen: 10 series semanales para piernas, repartidas en 2 sesión(es) por semana (5 series por sesión).
+Ejercicios por sesión:
+1. Sentadilla (con barra o goblet): 3 × 8-12
+2. Peso muerto rumano: 2 × 8-12
+Intensidad: terminar a 2-3 repeticiones del fallo.
+Descanso entre series: 2 minutos (1-1,5 en aislamiento).
+Progresión: cuando completes todas las series en el tope del rango, sube un poco el peso.
+Por qué funciona:
+- Más series semanales por músculo producen más hipertrofia (relación dosis-respuesta) — Schoenfeld, Ogborn y Krieger, 2017, J Sports Sci.
+- Entrenar cada músculo al menos 2 veces por semana supera a 1 vez; con el mismo volumen semanal la diferencia es pequeña — Schoenfeld, Ogborn y Krieger, 2016, Sports Med; Schoenfeld, Grgic y Krieger, 2019, J Sports Sci.
+- Terminar las series a pocas repeticiones del fallo favorece la hipertrofia; llegar siempre al fallo no es necesario — Refalo et al., 2023, Sports Med.
+- Sobrecarga progresiva y variables según objetivo y nivel — ACSM, 2009, Progression Models in Resistance Training for Healthy Adults, Med Sci Sports Exerc.
+
+4. Clave de otro agente (CLAVE_DANI, oculta) -> HTTP 401
+   Detalle: Clave de acceso inválida.
+
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py scripts/probar_acceso.py cristian "sitios turísticos en Valparaíso"
+Entorno: LOCAL · 2026-11-23 09:30:37
+Agente: Agente de cristian en http://127.0.0.1:8004
+
+1. Sin clave -> HTTP 401
+   Detalle: Falta el encabezado X-API-Key.
+
+2. Clave incorrecta -> HTTP 401
+   Detalle: Clave de acceso inválida.
+
+3. Clave correcta (CLAVE_CRISTIAN, oculta) -> HTTP 200
+   Pregunta: sitios turísticos en Valparaíso
+   Respuesta: - Ascensor Artillería (Horario: Todos los días, 08:00 a 20:00. Precio: Desde $500 CLP por trayecto).
+- La Sebastiana (Horario: Martes a domingo, 10:00 a 18:00. Precio: Desde $9.500 CLP entrada general).
+- Paseo 21 de Mayo (Horario: Recorrido exterior disponible todo el día. Precio: Acceso gratuito).
+
+4. Clave de otro agente (CLAVE_PATO, oculta) -> HTTP 401
+   Detalle: Clave de acceso inválida.

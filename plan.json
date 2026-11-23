@@ -577,7 +577,11 @@
         "Nombres, usuarios y teléfonos de Telegram tapados en las capturas.",
         "Se distingue claramente LOCAL de HEROKU en cada captura."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-23 HEROKU: se organizaron cuatro capturas anonimizadas y sus fichas en evidencias/taller-implementacion/heroku/Telegram/: Maleta, Entrenamiento, Sitios/fuera de catálogo y aviso al grupo. Las capturas muestran el chat y las respuestas; los originales sin anonimizar quedan excluidos de Git.",
+        "2026-11-23 LOCAL: salidas --saltos guardadas en T15-LOCAL-saltos-agentes-individuales.txt y T15-LOCAL-saltos-coordinador-rutas.txt. Comparaciones y acceso en T15-LOCAL-comparaciones-y-acceso-parcial.txt: las comparaciones de Dani y Cristian pasan; la de Pato quedó interrumpida por un 503 temporal de Gemini y requiere repetición.",
+        "Pendiente: capturas locales de Telegram para los resultados restantes; unir a cada conversación los logs del coordinador y la línea [acceso …] PERMITIDO del agente; obtener logs de Heroku de Pato y Cristian o coordinar capturas con sus responsables; repetir la comparación local de Pato y completar las evidencias HEROKU restantes."
+      ],
       "reemplaza": [
         "T24",
         "T25"
