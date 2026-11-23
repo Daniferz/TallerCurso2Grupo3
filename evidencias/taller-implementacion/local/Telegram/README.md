@@ -12,5 +12,8 @@ no subir esa carpeta.
 | `T15-LOCAL-04-sitios-saludo-memoria.jpg` | Sitios en Valparaíso, saludo y comienzo de la conversación con memoria. |
 
 El log del bot se guarda como `T15-LOCAL-bot-coordinador-redactado.txt`; los IDs se sustituyeron
-por `<ID-REDACTADO>`. Falta adjuntar logs de los servidores locales con las líneas de acceso A2A
-permitido y una captura de usuario no autorizado.
+por `<ID-REDACTADO>`. Hay extractos locales de acceso A2A en
+`../T15-LOCAL-a2a-accesos-agentes.txt` y `../T15-LOCAL-coordinador-acceso-y-arranque.txt`.
+Estos extractos muestran permisos, pero sus marcas de tiempo no coinciden entre sí. Falta una
+captura de la misma consulta que correlacione chat, agente elegido y `[acceso …] PERMITIDO`, además
+de una prueba desde una cuenta no autorizada.
