@@ -12,7 +12,7 @@ from collections.abc import Awaitable, Callable
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.types import Message, Part, Role
-from a2a.utils.errors import UnsupportedOperationError
+from a2a.utils.errors import InternalError, UnsupportedOperationError
 
 from .errores import en_una_linea
 
@@ -42,8 +42,11 @@ class Executor(AgentExecutor):
                 respuesta = await respuesta
             contenido = str(respuesta)
         except Exception as error:
-            # Nunca rompemos el servidor: el cliente recibe el motivo en el texto.
-            contenido = f"No se pudo responder: {en_una_linea(error)}"
+            # Una falla (modelo, clave, red) no se disfraza de respuesta: el cliente
+            # recibe un error JSON-RPC con el motivo en una línea, sin stack trace.
+            motivo = f"No se pudo responder: {en_una_linea(error)}"
+            print(f"[error] {motivo}", flush=True)
+            raise InternalError(message=motivo) from None
 
         await event_queue.enqueue_event(
             Message(

@@ -13,6 +13,22 @@ const avisoRegistro = document.getElementById("aviso-registro");
 const campo = document.getElementById("campo");
 const botonEnviar = document.getElementById("enviar");
 const contenedorMensajes = document.getElementById("mensajes");
+const campoClave = document.getElementById("clave-acceso");
+
+// La clave la escribe la persona; solo se recuerda en esta pestaña (sessionStorage).
+// El servidor de la consola la valida contra CLAVE_API: el código no trae ninguna clave.
+try {
+  campoClave.value = sessionStorage.getItem("clave-acceso") || "";
+} catch (error) {
+  // Sin almacenamiento (modo privado, por ejemplo): se escribe cada vez.
+}
+campoClave.addEventListener("input", () => {
+  try {
+    sessionStorage.setItem("clave-acceso", campoClave.value);
+  } catch (error) {
+    // Ignorado a propósito.
+  }
+});
 
 /** Identificador de conversación: el agente lo usa como memoria del hilo. */
 function nuevoContexto() {
@@ -481,7 +497,10 @@ async function enviar(evento) {
   try {
     const respuesta = await fetch("/api/mensajes", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": campoClave.value.trim(),
+      },
       body: JSON.stringify({
         agente: agente.clave,
         texto,

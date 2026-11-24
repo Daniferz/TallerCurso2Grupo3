@@ -95,10 +95,10 @@ async def supervisor(estado: EstadoSupervisor) -> dict:
             ]
         )
     except Exception as error:
-        return {
-            "agente": "ninguno",
-            "motivo": f"No se pudo evaluar la pregunta: {en_una_linea(error)}",
-        }
+        # Si el modelo falla no hay decisión: se informa el error, no "sin agente".
+        raise RuntimeError(
+            f"el coordinador no pudo evaluar la pregunta: {en_una_linea(error)}"
+        ) from None
 
     disponibles = {agente.nombre for agente in agentes}
     if decision.agente != "ninguno" and decision.agente not in disponibles:
@@ -130,7 +130,10 @@ async def agente_remoto(estado: EstadoSupervisor, config) -> dict:
     try:
         respuesta = await preguntar(elegido.cliente, pregunta, context_id)
     except Exception as error:
-        respuesta = f"No se pudo contactar al agente: {en_una_linea(error)}"
+        # La falla del agente remoto se propaga como error, no como respuesta.
+        raise RuntimeError(
+            f"{elegido.nombre} no pudo responder: {en_una_linea(error)}"
+        ) from None
 
     contenido = (
         f"[{elegido.nombre}] {respuesta}\n"
