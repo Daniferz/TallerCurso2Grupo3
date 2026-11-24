@@ -1,0 +1,12 @@
+T15 · HEROKU · Coordinador → Cristian · 2026-11-24
+
+Solicitud correlacionada: “¿Qué sitios turísticos puedo visitar en Valparaíso?”
+Conversación: <ID-TELEGRAM>
+
+[2026-11-24 00:39:20] POST /chat -> HTTP 200
+[2026-11-24 00:39:20] chat <ID-TELEGRAM> -> agente: Agente de cristian
+[2026-11-24 00:39:20] respuesta: [Agente de cristian] En Valparaíso puedes visitar Ascensor Artillería...
+[2026-11-24 00:39:21] POST /telegram -> HTTP 200
+
+Resultado: el coordinador recibió el mensaje por webhook, eligió a Cristian y
+devolvió la respuesta al chat. El ID de Telegram fue anonimizado.
