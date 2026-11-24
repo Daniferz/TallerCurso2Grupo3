@@ -580,12 +580,15 @@
         "Se distingue claramente LOCAL de HEROKU en cada captura."
       ],
       "evidencia": [
+        "2026-11-23 REVISIÓN FINAL (Patricio): (1) las imágenes T15-LOCAL-02/03/04 estaban corridas respecto de sus fichas; se renombraron para que cada imagen calce con su .md (sin cambiar su contenido). (2) El saludo rotulaba a Sitios como \"Maleta\" porque su ficha dice que no responde sobre equipaje; corregido en _nombre_para_saludo y anotado en T15-LOCAL-04. (3) POST /chat acepta tildes enviadas por curl en Windows (cp1252) y da errores claros en español ante JSON inválido (400) o sin texto (422). Prueba desde cero (clon nuevo + requirements-lock.txt): pytest pasa y /chat responde con un agente, con varios agentes y el saludo. pytest 92 passed.",
+        "2026-11-23 LOCAL (Patricio): comparación de Pato repetida tras el 503 de Gemini: PASA en las dos preguntas (T15-LOCAL-pato-comparacion-repetida.md). Recorrido correlacionado de UNA solicitud por Telegram: captura + logs del coordinador (POST /chat PERMITIDO y agente elegido), del agente de Pato (A2A PERMITIDO) y del bot (Telegram/T15-LOCAL-05-pato-recorrido-correlacionado.*). Acceso denegado en Telegram desde un usuario no autorizado, con el ID tapado y sin llamar al coordinador (Telegram/T15-LOCAL-06-pato-acceso-denegado.*). Pendiente: logs HEROKU de Pato.",
         "2026-11-23 HEROKU: se organizaron cuatro capturas anonimizadas y sus fichas en evidencias/taller-implementacion/heroku/Telegram/: Maleta, Entrenamiento, Sitios/fuera de catálogo y aviso al grupo. Las capturas muestran el chat y las respuestas; los originales sin anonimizar quedan excluidos de Git.",
         "2026-11-23 LOCAL: salidas --saltos guardadas en T15-LOCAL-saltos-agentes-individuales.txt y T15-LOCAL-saltos-coordinador-rutas.txt. Comparaciones y acceso en T15-LOCAL-comparaciones-y-acceso-parcial.txt: las comparaciones de Dani y Cristian pasan; la de Pato quedó interrumpida por un 503 temporal de Gemini y requiere repetición.",
         "2026-11-23 LOCAL: recibidas cuatro capturas de Telegram y un log del bot/coordinador; se recortaron contactos y se reemplazaron IDs por marcadores en las copias. Las fichas están en evidencias/taller-implementacion/local/Telegram/. El log muestra rutas, memoria, medios inválidos, fuera de catálogo y un agente no disponible; dos turnos excedieron el timeout de 120 s.",
         "2026-11-23 HEROKU: extractos anonimizados de Dani (A2A permitido/200) y coordinador (fuera de catálogo, 200) en T15-HEROKU-dani-acceso-parcial.txt y T15-HEROKU-coordinador-fuera-catalogo.txt. El extracto de Dani no trae el log del coordinador de esa misma solicitud; siguen faltando logs de Pato y Cristian.",
         "2026-11-23 LOCAL: se añadieron extractos anonimizados de acceso A2A permitido para los tres agentes y de arranque/acceso del coordinador. Las marcas de tiempo no corresponden a una misma solicitud, así que son evidencia de acceso separada, no una correlación completa.",
-        "Pendiente: captura local de acceso denegado desde una cuenta no autorizada; capturar en una misma prueba el mensaje, agente elegido y [acceso …] PERMITIDO; obtener logs HEROKU de Pato y Cristian o pedirlos a sus responsables; completar la correlación del log HEROKU de Dani; repetir la comparación local de Pato tras el 503."
+        "2026-11-23 HEROKU (Patricio): logs del agente de Pato en Heroku, anonimizados: POST / sin clave -> RECHAZADO/401; con CLAVE_PATO -> PERMITIDO/200 (~21 s, Gemini); el coordinador de Heroku lee la ficha al arrancar. Evidencia: evidencias/taller-implementacion/heroku/T15-HEROKU-pato-logs.md.",
+        "Pendiente: logs HEROKU de Cristian y completar la correlación del log HEROKU de Dani. Ya resueltos (Patricio, 2026-11-23): captura local de acceso denegado, una misma prueba con mensaje + agente elegido + [acceso] PERMITIDO, logs HEROKU de Pato y comparación local de Pato tras el 503."
       ],
       "reemplaza": [
         "T24",
@@ -596,8 +599,8 @@
       "id": "T16",
       "etapa": "entrega",
       "nombre": "Prueba desde cero y entrega",
-      "responsable": "por asignar (alguien que no escribió el README)",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara",
+      "estado": "en_curso",
       "depende_de": [
         "T14",
         "T15"
@@ -616,7 +619,11 @@
         "El evaluador está autorizado en el bot de Heroku antes de entregar.",
         ".env.example contiene todas las variables que el código lee con os.getenv, con valores ficticios."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-23 LOCAL (Patricio): git grep de patrones de clave (AIza, AQ., tokens de bot) sin resultados; .env no versionado y en .gitignore; .env.example tiene todas las variables que el código lee con os.getenv, con valores ficticios; pytest 92 passed.",
+        "2026-11-23 LOCAL (Patricio): prueba desde un clon nuevo siguiendo el README (requirements-lock.txt, .env desde .env.example, comandos de \"Iniciar en local\"): pytest pasa en el clon y por Telegram el saludo y una pregunta mixta (Maleta + Sitios) funcionan sin pasos no documentados. Evidencia: evidencias/taller-implementacion/local/Telegram/T16-LOCAL-07-clon-nuevo-varios-agentes.*",
+        "Pendiente: PR de taller-sistema-agentes a main, verificar pytest en main y autorizar al evaluador en el bot de Heroku por vía privada antes de entregar."
+      ],
       "reemplaza": [
         "T26",
         "T27"

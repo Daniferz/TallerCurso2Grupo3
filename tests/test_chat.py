@@ -112,3 +112,25 @@ def test_webhook_con_secreto_procesa_update(servidor, monkeypatch):
     assert respuesta.status_code == 200
     assert respuesta.json() == {"ok": True}
     assert recibidos == [actualizacion]
+
+
+def test_chat_acepta_tildes_enviadas_como_cp1252_por_curl_en_windows(servidor):
+    cliente, llamadas, _ = servidor
+    cuerpo = '{"texto": "maleta para Pucón 3 días", "conversacion_id": "w1"}'.encode("cp1252")
+    respuesta = cliente.post(
+        "/chat", content=cuerpo, headers={"X-API-Key": CLAVE, "Content-Type": "application/json"}
+    )
+    assert respuesta.status_code == 200
+    assert llamadas == [("maleta para Pucón 3 días", "w1")]
+
+
+def test_chat_json_invalido_o_sin_texto_da_error_claro_en_espanol(servidor):
+    cliente, llamadas, _ = servidor
+    encabezados = {"X-API-Key": CLAVE, "Content-Type": "application/json"}
+    malo = cliente.post("/chat", content=b"esto no es json", headers=encabezados)
+    assert malo.status_code == 400
+    assert malo.json()["detail"].startswith("El cuerpo no es JSON válido.")
+    sin_texto = cliente.post("/chat", json={"conversacion_id": "x"}, headers={"X-API-Key": CLAVE})
+    assert sin_texto.status_code == 422
+    assert 'Falta el campo "texto"' in sin_texto.json()["detail"]
+    assert llamadas == []

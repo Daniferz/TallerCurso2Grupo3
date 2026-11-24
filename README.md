@@ -4,11 +4,10 @@ Taller de implementación (Agentic AI, Curso 2). Un bot de Telegram recibe la pr
 **coordinador** elige al agente especialista y le pregunta por **A2A**; la respuesta vuelve al
 mismo chat con la etiqueta `[Nombre del agente]`.
 
-> **Estado de este README (2026-11-23):** la parte local está completa; los tres agentes y el
-> coordinador están desplegados en Heroku y el bot del grupo usa webhook. La sección Heroku de T14
-> está documentada; falta la revisión de aportes de los integrantes. T15 (evidencias) y T16 (prueba
-> desde cero y entrega) siguen pendientes/en curso. El plan está en `plan.json` y el checklist de
-> evaluación en `SPEC.md`.
+> **Estado de la entrega (2026-11-23):** funciona en local (entrega obligatoria) y en Heroku (+1):
+> los tres agentes y el coordinador están desplegados y el bot del grupo usa webhook. Este README se
+> probó desde un clon nuevo. El plan está en `plan.json`, el checklist de evaluación en `SPEC.md` y
+> las evidencias en `evidencias/taller-implementacion/` (LOCAL y HEROKU por separado).
 
 ## Opción elegida y qué resuelve
 
@@ -27,7 +26,7 @@ mismo chat con la etiqueta `[Nombre del agente]`.
 |---|---|
 | Daniella Fernández | Agente de Maleta (`src/agente_dani`); base del supervisor A2A y catálogo dinámico del taller anterior; saludo y memoria del coordinador (T06); datos faltantes y comparación de Maleta (T07); documentos de entrega de `integracion-grupo3`; despliegue de Maleta (T11) y coordinador/bot del grupo en Heroku (T12). |
 | Cristian Meza | Agente de Sitios turísticos (`src/agente_cristian`); datos faltantes y comparación directa/coordinador de Sitios (T07); despliegue en Heroku (T11); webhook de Telegram (T09) y aviso del extra (T10). |
-| Patricio Vergara | Agente de Entrenamiento (`src/agente_pato`); clave por agente (T01, T02); catálogo con agentes caídos (T03); Procfile (T04); supervisor blindado (T05); `/chat` y bot de Telegram (T08); datos faltantes y comparación de su agente (T07); su agente en Heroku (T11); checklist de evaluación (T13). |
+| Patricio Vergara | Agente de Entrenamiento (`src/agente_pato`); clave por agente (T01, T02); catálogo con agentes caídos (T03); Procfile (T04); supervisor blindado (T05); `/chat` y bot de Telegram (T08); datos faltantes y comparación de su agente (T07); preguntas con varios temas en el coordinador (varios agentes, sin alterar cifras); su agente en Heroku (T11); checklist de evaluación (T13); README parte local, `requirements-lock.txt` y evidencia de falla del proveedor (T14, T15). |
 
 *Cada integrante debe revisar su fila antes de entregar.*
 
@@ -91,7 +90,6 @@ ese es el número que tienes que mandarnos.
 ```bash
 git clone https://github.com/Daniferz/TallerCurso2Grupo3.git
 cd TallerCurso2Grupo3
-git checkout taller-sistema-agentes
 python -m venv .venv
 ```
 
@@ -242,12 +240,25 @@ en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
   responde 502 y el bot avisa en el chat. Evidencia: `evidencias/taller-implementacion/local/falla-proveedor-gemini.md`.
 - **Texto vacío en `/chat`:** 422 "El texto está vacío: escribe una pregunta."
 
-## Qué es real y qué es simulado
+## Probado, pendiente y simulado
 
 - **Real:** Gemini, la comunicación A2A entre procesos, el control de acceso y los mensajes de
   Telegram.
 - **Simulado (datos estáticos en cada `tools.py`):** las guías de equipaje, los músculos y rutinas y
   los sitios turísticos con sus horarios y precios.
+- **Probado:** cada caso de la pauta, en LOCAL y en HEROKU, con fecha, solicitud, resultado esperado
+  y obtenido en `evidencias/taller-implementacion/README.md`.
+- **Pendiente:** los registros internos de Heroku del agente de Sitios, y autorizar el ID de
+  Telegram del evaluador en el bot de Heroku cuando lo envíe por vía privada.
+
+## Qué datos deben conservarse
+
+Ninguno es obligatorio: los agentes no tienen base de datos. La memoria de cada conversación
+(`MemorySaver`) y las tareas A2A viven en RAM y se pierden al reiniciar un proceso o cuando Heroku
+reinicia la app (por ejemplo, al despertarla). Lo único que hay que guardar entre despliegues es la
+**configuración**: las variables de `.env` en local, o las *Config Vars* de cada app en Heroku
+(claves, `URLS_AGENTES`/`CLAVES_AGENTES`, token y secreto del bot). Los puertos, direcciones y
+secretos se configuran por variables, sin tocar el código.
 
 ## Dependencias externas y costos
 
@@ -308,8 +319,9 @@ el cambio a Eco requiere una suscripción Eco en la cuenta.
 
 ## Evidencias
 
-En `evidencias/taller-implementacion/local/` y `evidencias/taller-implementacion/heroku/`. Qué
-evidencia cubre cada resultado de la pauta: `SPEC.md`, "Checklist de evaluación".
+**Índice con el formato de la pauta (entorno y fecha, solicitud, esperado, obtenido y observaciones):
+`evidencias/taller-implementacion/README.md`.** Las evidencias están separadas en `local/` y
+`heroku/`; el checklist de evaluación está en `SPEC.md`.
 
 ## Estructura
 
