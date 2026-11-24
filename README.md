@@ -240,12 +240,25 @@ en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
   responde 502 y el bot avisa en el chat. Evidencia: `evidencias/taller-implementacion/local/falla-proveedor-gemini.md`.
 - **Texto vacío en `/chat`:** 422 "El texto está vacío: escribe una pregunta."
 
-## Qué es real y qué es simulado
+## Probado, pendiente y simulado
 
 - **Real:** Gemini, la comunicación A2A entre procesos, el control de acceso y los mensajes de
   Telegram.
 - **Simulado (datos estáticos en cada `tools.py`):** las guías de equipaje, los músculos y rutinas y
   los sitios turísticos con sus horarios y precios.
+- **Probado:** cada caso de la pauta, en LOCAL y en HEROKU, con fecha, solicitud, resultado esperado
+  y obtenido en `evidencias/taller-implementacion/README.md`.
+- **Pendiente:** los registros internos de Heroku del agente de Sitios, y autorizar el ID de
+  Telegram del evaluador en el bot de Heroku cuando lo envíe por vía privada.
+
+## Qué datos deben conservarse
+
+Ninguno es obligatorio: los agentes no tienen base de datos. La memoria de cada conversación
+(`MemorySaver`) y las tareas A2A viven en RAM y se pierden al reiniciar un proceso o cuando Heroku
+reinicia la app (por ejemplo, al despertarla). Lo único que hay que guardar entre despliegues es la
+**configuración**: las variables de `.env` en local, o las *Config Vars* de cada app en Heroku
+(claves, `URLS_AGENTES`/`CLAVES_AGENTES`, token y secreto del bot). Los puertos, direcciones y
+secretos se configuran por variables, sin tocar el código.
 
 ## Dependencias externas y costos
 
@@ -306,8 +319,9 @@ el cambio a Eco requiere una suscripción Eco en la cuenta.
 
 ## Evidencias
 
-En `evidencias/taller-implementacion/local/` y `evidencias/taller-implementacion/heroku/`. Qué
-evidencia cubre cada resultado de la pauta: `SPEC.md`, "Checklist de evaluación".
+**Índice con el formato de la pauta (entorno y fecha, solicitud, esperado, obtenido y observaciones):
+`evidencias/taller-implementacion/README.md`.** Las evidencias están separadas en `local/` y
+`heroku/`; el checklist de evaluación está en `SPEC.md`.
 
 ## Estructura
 
