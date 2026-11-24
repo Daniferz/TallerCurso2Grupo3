@@ -598,8 +598,8 @@
       "id": "T16",
       "etapa": "entrega",
       "nombre": "Prueba desde cero y entrega",
-      "responsable": "por asignar (alguien que no escribió el README)",
-      "estado": "pendiente",
+      "responsable": "Patricio Vergara",
+      "estado": "en_curso",
       "depende_de": [
         "T14",
         "T15"
