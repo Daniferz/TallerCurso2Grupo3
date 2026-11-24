@@ -4,11 +4,10 @@ Taller de implementación (Agentic AI, Curso 2). Un bot de Telegram recibe la pr
 **coordinador** elige al agente especialista y le pregunta por **A2A**; la respuesta vuelve al
 mismo chat con la etiqueta `[Nombre del agente]`.
 
-> **Estado de este README (2026-11-23):** la parte local está completa; los tres agentes y el
-> coordinador están desplegados en Heroku y el bot del grupo usa webhook. La sección Heroku de T14
-> está documentada; falta la revisión de aportes de los integrantes. T15 (evidencias) y T16 (prueba
-> desde cero y entrega) siguen pendientes/en curso. El plan está en `plan.json` y el checklist de
-> evaluación en `SPEC.md`.
+> **Estado de la entrega (2026-11-23):** funciona en local (entrega obligatoria) y en Heroku (+1):
+> los tres agentes y el coordinador están desplegados y el bot del grupo usa webhook. Este README se
+> probó desde un clon nuevo. El plan está en `plan.json`, el checklist de evaluación en `SPEC.md` y
+> las evidencias en `evidencias/taller-implementacion/` (LOCAL y HEROKU por separado).
 
 ## Opción elegida y qué resuelve
 
@@ -91,7 +90,6 @@ ese es el número que tienes que mandarnos.
 ```bash
 git clone https://github.com/Daniferz/TallerCurso2Grupo3.git
 cd TallerCurso2Grupo3
-git checkout taller-sistema-agentes
 python -m venv .venv
 ```
 
