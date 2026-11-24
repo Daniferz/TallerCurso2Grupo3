@@ -85,7 +85,7 @@ Estado al 2026-11-23 en `main` (entrega). Detalle de cada caso, con el formato d
 | 10 | **Acciones con efectos reales controladas:** bots de prueba, usuarios permitidos, cómo detener bot y apps | T08, T10, T14 | ✅ README, "Detener y evitar envíos accidentales" | 8 |
 | 11 | **Registro de ejecución** que relaciona la solicitud con el agente y el A2A | T03, T08, T15 | ✅ una misma solicitud correlacionada | 9 |
 | 12 | **README reproducible** y probado al clonar en otra carpeta | T14, T16 | ✅ clon nuevo con `requirements-lock.txt` | 10 |
-| +1 | **Despliegue verificable** con los computadores apagados y evidencia remota | T11, T12, T15 | ✅ 3 agentes, coordinador y bot por webhook. Pendiente: logs internos de Sitios y autorizar al evaluador | 11 |
+| +1 | **Despliegue verificable** con los computadores apagados y evidencia remota | T11, T12, T15 | ✅ 3 agentes, coordinador y bot por webhook. Pendiente: autorizar al evaluador | 11 |
 
 **Antes de enviar** (pauta, pág. 4): repetir el arranque desde el README y una consulta real; acceso
 protegido sin secretos; capturas explicadas como evidencia LOCAL; el GitHub o ZIP incluye todo y el

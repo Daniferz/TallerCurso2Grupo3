@@ -255,7 +255,7 @@ en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
   los sitios turísticos con sus horarios y precios.
 - **Probado:** cada caso de la pauta, en LOCAL y en HEROKU, con fecha, solicitud, resultado esperado
   y obtenido en `evidencias/taller-implementacion/README.md`.
-- **Pendiente:** los registros internos de Heroku del agente de Sitios; autorizar el ID de
+- **Pendiente:** autorizar el ID de
   Telegram del evaluador en el bot de Heroku cuando lo envíe por vía privada; y volver a desplegar
   en Heroku el coordinador y los agentes de Maleta y Sitios para que tomen los últimos ajustes del
   2026-11-23 (rótulo del saludo y reglas de seguridad y datos referenciales en sus prompts). En local

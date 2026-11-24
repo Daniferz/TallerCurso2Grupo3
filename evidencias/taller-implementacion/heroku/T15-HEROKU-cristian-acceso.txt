@@ -1,0 +1,10 @@
+T15 · HEROKU · Acceso A2A permitido de Cristian · 2026-11-24
+
+Solicitud correlacionada: “¿Qué sitios turísticos puedo visitar en Valparaíso?”
+
+[2026-11-24 00:39:20] [acceso] Agente de cristian POST / desde <IP-ANONIMIZADA>: PERMITIDO
+[2026-11-24 00:39:20] POST / -> HTTP 200
+
+Resultado: el coordinador accedió a Cristian mediante A2A con la clave
+correspondiente y obtuvo una respuesta real con sitios turísticos de Valparaíso.
+La IP fue anonimizada y no se incluye ninguna clave.
