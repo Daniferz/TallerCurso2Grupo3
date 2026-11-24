@@ -1,0 +1,9 @@
+HEROKU · Extracto anonimizado compartido por la responsable · 2026-11-23
+
+13:42:34Z  GET /.well-known/agent-card.json -> HTTP 200
+13:44:44Z  Agente de Maleta de Dani POST / -> PERMITIDO
+13:44:46Z  POST / -> HTTP 200
+
+Se omitieron IP, request_id, correo y otros datos de transporte. Este extracto acredita el acceso
+permitido de Maleta, pero falta el log correlacionado del coordinador que muestre esa misma solicitud
+y el agente elegido.

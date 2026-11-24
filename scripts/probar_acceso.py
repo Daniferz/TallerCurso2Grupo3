@@ -6,7 +6,8 @@ Uso:
 
 1) sin X-API-Key -> debe dar 401
 2) con una clave incorrecta -> debe dar 401
-3) con CLAVE_API del .env -> debe dar 200 y la respuesta del agente
+3) con la clave propia del agente (ej.: CLAVE_PATO) -> debe dar 200 y la respuesta
+4) con la clave de OTRO agente -> debe dar 401
 
 Nunca imprime la clave: sirve para capturas de evidencia.
 """
@@ -55,9 +56,14 @@ def main() -> int:
     argumentos = analizador.parse_args()
 
     agente = CATALOGO[argumentos.agente]
-    if not clave_configurada():
-        print("Falta CLAVE_API en .env.")
+    variable = agente.variable_clave
+    if not clave_configurada(variable):
+        print(f"Falta {variable} en .env.")
         return 1
+    otro = next(
+        (a for a in CATALOGO.values() if a.clave != agente.clave and clave_configurada(a.variable_clave)),
+        None,
+    )
 
     print(f"Entorno: LOCAL · {datetime.now():%Y-%m-%d %H:%M:%S}")
     print(f"Agente: {agente.nombre} en {agente.url}\n")
@@ -65,8 +71,12 @@ def main() -> int:
     casos = [
         ("1. Sin clave", {}),
         ("2. Clave incorrecta", {ENCABEZADO: "clave-incorrecta"}),
-        ("3. Clave correcta (CLAVE_API, oculta)", {ENCABEZADO: clave_configurada()}),
+        (f"3. Clave correcta ({variable}, oculta)", {ENCABEZADO: clave_configurada(variable)}),
     ]
+    if otro:
+        casos.append(
+            (f"4. Clave de otro agente ({otro.variable_clave}, oculta)", {ENCABEZADO: clave_configurada(otro.variable_clave)})
+        )
     with httpx.Client(timeout=TIEMPO_ESPERA) as cliente:
         for titulo, encabezados in casos:
             try:

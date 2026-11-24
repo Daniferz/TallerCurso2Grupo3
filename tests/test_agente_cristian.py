@@ -4,6 +4,7 @@ import importlib
 import sys
 
 from src.agente_cristian.tools import horario_atencion, listado_sitios_turisticos
+from src.agente_cristian.prompts import SYSTEM_PROMPT
 from src.comun.registro import CATALOGO
 
 
@@ -19,15 +20,16 @@ def test_listado_acepta_ciudad_con_tilde_y_entrega_datos_referenciales():
     assert sitios[0]["precio_referencial"]
 
 
-def test_listado_normaliza_cuzco_y_ciudad_sin_datos_en_una_linea():
+def test_listado_normaliza_cuzco_y_reconoce_valparaiso():
     sitios = listado_sitios_turisticos.invoke({"ciudad": "Cuzco", "fecha": "sábado"})
-    desconocidos = listado_sitios_turisticos.invoke(
+    valparaiso = listado_sitios_turisticos.invoke(
         {"ciudad": "Valparaíso", "fecha": "sábado"}
     )
 
     assert sitios[0]["nombre"] == "Sacsayhuamán"
-    assert desconocidos == "No tengo sitios turísticos registrados para Valparaíso."
-    assert "\n" not in desconocidos
+    assert len(valparaiso) == 3
+    assert valparaiso[0]["nombre"] == "Ascensor Artillería"
+    assert all(sitio["ciudad"] == "Valparaíso" for sitio in valparaiso)
 
 
 def test_horario_distingue_dia_cerrado_y_dia_sin_registro():
@@ -61,3 +63,10 @@ def test_agent_card_de_cristian_publica_url_publica(monkeypatch):
         servidor.tarjeta.supported_interfaces[0].url
         == "https://tunel-cristian.trycloudflare.com"
     )
+
+
+def test_prompt_pide_ciudad_y_conserva_datos_de_la_herramienta():
+    assert "sin indicar la ciudad" in SYSTEM_PROMPT
+    assert "solicita la ciudad" in SYSTEM_PROMPT
+    assert "no supongas un destino" in SYSTEM_PROMPT
+    assert "no los" in SYSTEM_PROMPT and "cambies" in SYSTEM_PROMPT

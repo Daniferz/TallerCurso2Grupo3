@@ -1,0 +1,42 @@
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py main.py dani "Voy cinco días a Punta Arenas en julio, ¿qué debería llevar?" --saltos
+C:\Agents\Projects\CursoUAI\TallerCurso2\.venv-t15\Lib\site-packages\langchain_google_genai\chat_models.py:3940: UserWarning: Model 'gemini-3.5-flash-lite' uses fixed sampling defaults; the sampling parameter(s) temperature will be ignored.
+  request = self._build_request_config(
+nodo: model
+  herramienta: lista_equipaje({'temporada': 'julio', 'dias': 5, 'destino': 'Punta Arenas'})
+nodo: tools
+C:\Agents\Projects\CursoUAI\TallerCurso2\.venv-t15\Lib\site-packages\langchain_google_genai\chat_models.py:3940: UserWarning: Model 'gemini-3.5-flash-lite' uses fixed sampling defaults; the sampling parameter(s) temperature will be ignored.
+  request = self._build_request_config(
+nodo: model
+Saltos: 3
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py main.py pato "Estoy empezando en el gimnasio; ¿qué rutina de piernas hago?" --saltos
+nodo: model
+  herramienta: rutina({'nivel': 'principiante', 'objetivo': 'hipertrofia', 'grupo_muscular': 'piernas', 'dias_por_semana': 3})
+nodo: tools
+nodo: model
+Saltos: 3 · Herramientas: rutina
+Respuesta: Como no me dijiste tu objetivo, nivel ni días disponibles, supuse hipertrofia, nivel principiante y 3 días por semana (usé 2 de esos días para entrenar piernas).
+
+Aquí tienes tu rutina de piernas:
+
+Rutina de piernas · objetivo hipertrofia · nivel principiante · 3 día(s) disponibles
+Músculos trabajados: cuádriceps, isquiotibiales, glúteos y pantorrillas.
+Volumen: 10 series semanales para piernas, repartidas en 2 sesión(es) por semana (5 series por sesión).
+Ejercicios por sesión:
+1. Sentadilla (con barra o goblet): 3 × 8-12
+2. Peso muerto rumano: 2 × 8-12
+Intensidad: terminar a 2-3 repeticiones del fallo.
+Descanso entre series: 2 minutos (1-1,5 en aislamiento).
+Progresión: cuando completes todas las series en el tope del rango, sube un poco el peso.
+Por qué funciona:
+- Más series semanales por músculo producen más hipertrofia (relación dosis-respuesta) — Schoenfeld, Ogborn y Krieger, 2017, J Sports Sci.
+- Entrenar cada músculo al menos 2 veces por semana supera a 1 vez; con el mismo volumen semanal la diferencia es pequeña — Schoenfeld, Ogborn y Krieger, 2016, Sports Med; Schoenfeld, Grgic y Krieger, 2019, J Sports Sci.
+- Terminar las series a pocas repeticiones del fallo favorece la hipertrofia; llegar siempre al fallo no es necesario — Refalo et al., 2023, Sports Med.
+- Sobrecarga progresiva y variables según objetivo y nivel — ACSM, 2009, Progression Models in Resistance Training for Healthy Adults, Med Sci Sports Exerc.
+
+*(Recuerda que si sientes algún dolor, debes consultar a un profesional de la salud antes de entrenar).*
+PS C:\Agents\Projects\CursoUAI\TallerCurso2> & $py main.py cristian "¿Qué lugares turísticos puedo visitar en Valparaíso?" --saltos
+nodo: model
+  herramienta: listado_sitios_turisticos({'fecha': 'hoy', 'ciudad': 'Valparaíso'})
+nodo: tools
+nodo: model
+Saltos: 3

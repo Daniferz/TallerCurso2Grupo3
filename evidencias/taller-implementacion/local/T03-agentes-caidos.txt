@@ -1,0 +1,71 @@
+T03 · LOCAL · 2026-11-18 · coordinador con los 3 agentes, agente caído y reintento
+Comando: script de verificación que levanta los agentes con uvicorn y le pregunta al coordinador por la consola (src.portal.cliente).
+
+### Caso A: agente que se cae y vuelve
+== Arranque del coordinador ==
+Agente sumado al catálogo: Agente de Entrenamiento de Pato (http://127.0.0.1:8005)
+Agente sumado al catálogo: Agente de Maleta de Dani (http://127.0.0.1:8003)
+Agente sumado al catálogo: Agente de cristian (http://127.0.0.1:8004)
+Supervisor con 3 agentes
+
+== 1. Los 3 agentes levantados ==
+
+[2026-11-18 19:56:18] > Arma una rutina de pecho para hipertrofia, 3 días por semana, nivel principiante.
+{'respuesta': '[Agente de Entrenamiento de Pato] Aquí tienes tu rutina de pecho basada en evidencia científica:\n\nRutina de pecho · objetivo hipertrofia · nivel principiante · 3 día(s) disponibles\nMúsculos trabajados: pectoral mayor, deltoides anterior y tríceps.\nVolumen: 10 series semanales para pecho, repartidas en 2 sesión(es) por semana (5 series por sesión).\nEjercicios por sesión:\n1. Press de banca (barra o mancuernas): 3 × 8-12\n2. Press inclinado con mancuernas: 2 × 8-12\nIntensidad: terminar a 2-3 repeticiones del fallo.\nDescanso entre series: 2 minutos (1-1,5 en aislamiento).\nProgresión: cuando completes todas las series en el tope del rango, sube un poco el peso.\n\nPor qué funciona:\n- Más series semanales por músculo producen más hipertrofia (relación dosis-respuesta) — Schoenfeld, Ogborn y Krieger, 2017, J Sports Sci.\n- Entrenar cada músculo al menos 2 veces por semana supera a 1 vez; con el mismo volumen semanal la diferencia es pequeña — Schoenfeld, Ogborn y Krieger, 2016, Sports Med; Schoenfeld, Grgic y Krieger, 2019, J Sports Sci.\n- Terminar las series a pocas repeticiones del fallo favorece la hipertrofia; llegar siempre al fallo no es necesario — Refalo et al., 2023, Sports Med.\n- Sobrecarga progresiva y variables según objetivo y nivel — ACSM, 2009, Progression Models in Resistance Training for Healthy Adults, Med Sci Sports Exerc.\nMotivo de selección: El usuario solicita una rutina de gimnasio basada en hipertrofia por grupo muscular, lo cual coincide con la especialidad del agente.', 'context_id': 't03-a', 'latencia_ms': 6333}
+
+[2026-11-18 19:56:24] > ¿Qué llevo en la maleta para Pucón 3 días en invierno?
+{'respuesta': '[Agente de Maleta de Dani] Aquí tienes la lista recomendada de equipaje para tu viaje a Pucón por 3 días en invierno:\n\n**Ropa:**\n- 4 × ropa interior\n- 4 × calcetines\n- 3 × primera capa térmica\n- Polar o suéter abrigado\n- Chaqueta impermeable\n- Pantalones cómodos\n- Gorro\n- Guantes\n\n**Documentos:**\n- Documento de identidad\n- Reservas y pasajes descargados\n\n**Tecnología:**\n- Teléfono y cargador\n- Batería externa\n\n**Botiquín:**\n- Medicamentos personales\n- Artículos básicos de primeros auxilios\n\n**No te olvides:**\n- Bolsa para ropa húmeda\n- Revisar documentos antes de salir\nMotivo de selección: El usuario necesita una lista de equipaje para Pucón, lo cual corresponde exactamente a la descripción de este agente.', 'context_id': 't03-b', 'latencia_ms': 4624}
+
+[2026-11-18 19:56:29] > ¿A qué hora puedo visitar el Cerro San Cristóbal el domingo?
+{'respuesta': '[Agente de cristian] El Cerro San Cristóbal abre el domingo de 06:00 a 20:30.\nMotivo de selección: El usuario solicita información sobre horarios de un lugar para visitar.', 'context_id': 't03-c', 'latencia_ms': 3659}
+
+== 2. Se apaga el agente de Pato ==
+[2026-11-18 19:56:33] Agente de Pato apagado
+
+[2026-11-18 19:56:33] > Arma una rutina de espalda para fuerza, 4 días por semana.
+{'respuesta': 'La parte de Agente de Entrenamiento de Pato no está disponible en este momento. Puedes seguir preguntando sobre los otros temas.', 'context_id': 't03-d', 'latencia_ms': 3286}
+
+[2026-11-18 19:56:36] > ¿Qué llevo en la maleta para Iquique 5 días en verano?
+{'respuesta': '[Agente de Maleta de Dani] Para tu viaje de 5 días a Iquique en verano, te sugiero llevar lo siguiente en tu maleta:\n\n**Ropa:**\n- 6 × ropa interior\n- 6 × calcetines\n- 5 × poleras ligeras\n- 2 × pantalones cómodos\n- Traje de baño\n- Sombrero o gorra\n- Sandalias\n\n**Documentos:**\n- Documento de identidad\n- Reservas y pasajes descargados\n\n**Tecnología:**\n- Teléfono y cargador\n- Batería externa\n\n**Botiquín:**\n- Medicamentos personales\n- Artículos básicos de primeros auxilios\n\n**No te olvides:**\n- Bolsa para ropa húmeda\n- Revisar documentos antes de salir\nMotivo de selección: El usuario solicita una lista de equipaje para Iquique por 5 días en verano.', 'context_id': 't03-e', 'latencia_ms': 4144}
+
+== 3. Se vuelve a levantar sin reiniciar el coordinador ==
+[2026-11-18 19:56:43] Agente de Pato en línea otra vez (3 s)
+
+[2026-11-18 19:56:43] > Arma una rutina de piernas para resistencia, 2 días por semana.
+{'respuesta': '[Agente de Entrenamiento de Pato] Aquí tienes tu rutina de piernas enfocada en resistencia para 2 días por semana (nivel principiante por defecto):\n\n* **Días por semana:** 2\n* **Ejercicios por sesión:**\n  1. Sentadilla (con barra o goblet): 2 series × 15-20 repeticiones\n  2. Peso muerto rumano: 2 series × 15-20 repeticiones\n* **Intensidad:** Terminar a 2-3 repeticiones del fallo.\n* **Descanso entre series:** 30-60 segundos.\n* **Progresión:** Cuando completes todas las series en el tope del rango, sube un poco el peso.\n\n**Por qué funciona:**\n- Sobrecarga progresiva y variables según objetivo y nivel — ACSM, 2009, Progression Models in Resistance Training for Healthy Adults, Med Sci Sports Exerc.\n- Cargas altas y bajas dan hipertrofia similar si las series terminan cerca del fallo; las cargas altas ganan en fuerza máxima — Schoenfeld, Grgic, Ogborn y Krieger, 2017, J Strength Cond Res.\n\n*(Nota: Si sientes algún dolor o molestia al entrenar, te recomiendo consultar a un profesional de la salud).*\nMotivo de selección: El usuario solicita una rutina de piernas basada en objetivos de resistencia y frecuencia semanal.', 'context_id': 't03-f', 'latencia_ms': 5707}
+Respondió 9 s después de volver a levantarlo.
+
+== Registro del coordinador ==
+Agente sumado al catálogo: Agente de Entrenamiento de Pato (http://127.0.0.1:8005)
+Agente sumado al catálogo: Agente de Maleta de Dani (http://127.0.0.1:8003)
+Agente sumado al catálogo: Agente de cristian (http://127.0.0.1:8004)
+Supervisor con 3 agentes
+Aviso: Agente de Entrenamiento de Pato (http://127.0.0.1:8005) no respondió: No se pudo conectar con el agente.
+
+
+### Caso B: agente apagado al arrancar el coordinador
+== Coordinador arrancó con Cristian apagado ==
+Agente sumado al catálogo: Agente de Entrenamiento de Pato (http://127.0.0.1:8005)
+Agente sumado al catálogo: Agente de Maleta de Dani (http://127.0.0.1:8003)
+Aviso: no se pudo sumar el agente en http://127.0.0.1:8004: No se pudo conectar con el agente en http://127.0.0.1:8004. (se reintenta en 60 s)
+Supervisor con 2 agentes
+
+
+[2026-11-18 19:57:13] > ¿A qué hora puedo visitar el Cerro San Cristóbal el domingo?
+{'respuesta': 'No tengo un agente para eso. Puedo ayudarte con: Agente de Entrenamiento de Pato, Agente de Maleta de Dani.\nMotivo de selección: La consulta sobre horarios de turismo no corresponde a las funciones de entrenamiento físico ni de equipaje de viaje de los agentes.', 'context_id': 't03-g', 'latencia_ms': 1496}
+[2026-11-18 19:57:18] Agente de Cristian en línea; se espera el reintento sin reiniciar el coordinador
+
+[2026-11-18 19:58:18] > ¿A qué hora puedo visitar el Cerro San Cristóbal el domingo?
+{'respuesta': '[Agente de cristian] El Cerro San Cristóbal abre el domingo de 06:00 a 20:30.\nMotivo de selección: El agente está especializado en recomendar lugares con horarios y precios de visita.', 'context_id': 't03-h', 'latencia_ms': 4005}
+Respondió 67 s después de levantar a Cristian.
+
+[2026-11-18 19:58:22] > Qué sitios turísticos puedo visitar en Valparaíso
+{'respuesta': '[Agente de cristian] No tengo sitios turísticos registrados para Valparaíso.\nMotivo de selección: El usuario solicita recomendaciones de lugares para visitar, lo cual corresponde a las funciones de este agente.', 'context_id': 't03-i', 'latencia_ms': 3584}
+
+== Registro del coordinador ==
+Agente sumado al catálogo: Agente de Entrenamiento de Pato (http://127.0.0.1:8005)
+Agente sumado al catálogo: Agente de Maleta de Dani (http://127.0.0.1:8003)
+Aviso: no se pudo sumar el agente en http://127.0.0.1:8004: No se pudo conectar con el agente en http://127.0.0.1:8004. (se reintenta en 60 s)
+Supervisor con 2 agentes
+Agente sumado al catálogo: Agente de cristian (http://127.0.0.1:8004)
+

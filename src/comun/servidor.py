@@ -1,5 +1,7 @@
 """Servidor A2A común: monta el agente sobre FastAPI una sola vez para los tres agentes."""
 
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
@@ -23,13 +25,33 @@ RUTA_FICHA = "/.well-known/agent-card.json"
 # Rutas públicas: la salud y la ficha A2A (la spec pide que la ficha sea descubrible).
 # Todo lo demás, en especial los mensajes JSON-RPC en "/", exige X-API-Key.
 RUTAS_PUBLICAS = {RUTA_SALUD, RUTA_FICHA}
+RUTAS_WEBHOOK = {"/telegram"}
 
 
-def crear_app(tarjeta: AgentCard, responder: FuncionResponder) -> FastAPI:
+class _SinStackTrace(logging.Filter):
+    """Deja el aviso de a2a-sdk en una línea: el motivo ya lo imprimió el Executor."""
+
+    def filter(self, registro: logging.LogRecord) -> bool:
+        registro.exc_info = None
+        registro.exc_text = None
+        registro.stack_info = None
+        return True
+
+
+# Cuando un agente falla (cuota o clave de Gemini, por ejemplo), a2a-sdk registra la excepción
+# con su stack trace. La regla del proyecto es una sola línea entendible, sin stack trace.
+logging.getLogger("a2a.server.agent_execution").addFilter(_SinStackTrace())
+logging.getLogger("a2a.server.agent_execution.active_task").addFilter(_SinStackTrace())
+
+
+def crear_app(
+    tarjeta: AgentCard, responder: FuncionResponder, variable_clave: str
+) -> FastAPI:
     """Devuelve la app FastAPI lista para `uvicorn src.agente_x.server:app`.
 
     Queda escuchando mensajes A2A en "/" y publicando la ficha en
-    "/.well-known/agent-card.json".
+    "/.well-known/agent-card.json". Los mensajes exigen X-API-Key igual a la
+    variable `variable_clave` del .env (ej.: CLAVE_PATO): cada agente tiene la suya.
     """
     manejador = DefaultRequestHandler(
         agent_executor=Executor(responder),
@@ -61,9 +83,13 @@ def crear_app(tarjeta: AgentCard, responder: FuncionResponder) -> FastAPI:
         ruta = request.url.path
         if request.method == "GET" and ruta in RUTAS_PUBLICAS:
             return await siguiente(request)
+        # El webhook no puede enviar X-API-Key: Telegram solo conoce su
+        # secreto propio, que valida la ruta /telegram del coordinador.
+        if request.method == "POST" and ruta in RUTAS_WEBHOOK:
+            return await siguiente(request)
 
         cliente = request.client.host if request.client else "desconocido"
-        rechazo = motivo_rechazo(request.headers.get(ENCABEZADO))
+        rechazo = motivo_rechazo(request.headers.get(ENCABEZADO), variable_clave)
         if rechazo:
             codigo, mensaje = rechazo
             registrar_acceso(tarjeta.name, f"{request.method} {ruta}", cliente, False, mensaje)

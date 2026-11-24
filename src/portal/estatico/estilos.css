@@ -684,7 +684,7 @@ code {
   }
 }
 
-/* Clave de acceso: la valida el servidor de la consola contra CLAVE_API. */
+/* Clave de acceso: la valida el servidor de la consola contra CLAVE_COORDINADOR. */
 .acciones-cabecera {
   display: flex;
   align-items: center;

@@ -8,7 +8,7 @@ Consulta: `¿Qué sitios turísticos puedo visitar en Lima el sábado?`
 
 La ejecución muestra la herramienta `listado_sitios_turisticos`:
 
-![Saltos de una consulta turística](evidencias/01-saltos.png)
+![Saltos de una consulta turística](evidencias/Cristian_Meza/01-saltos.png)
 
 ### Pregunta fuera del tema
 
@@ -20,7 +20,7 @@ El agente rechaza la consulta porque los vuelos corresponden a otro agente y no 
 
 Salida de `python main.py cristian "" --diagrama`:
 
-![Diagrama del agente Cristian](evidencias/02-diagrama.png)
+![Diagrama del agente Cristian](evidencias/Cristian_Meza/02-diagrama.png)
 
 ```mermaid
 ---
@@ -58,7 +58,7 @@ Consulta realizada desde el terminal:
 python main.py coordinador "¿Qué lugares puedo visitar en Bogotá un miércoles y cuáles son sus precios?" --saltos
 ```
 
-![Ronda de preguntas](evidencias/05-ronda.png)
+![Ronda de preguntas](evidencias/Cristian_Meza/05-ronda.png)
 
 ### Comentario de la ronda
 

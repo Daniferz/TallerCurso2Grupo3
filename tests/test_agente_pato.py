@@ -168,3 +168,62 @@ def test_ficha_declara_prevencion_y_limites(monkeypatch):
     assert "lesiones o dolores existentes" in descripcion
     assert "prevención" in descripcion
     assert "otros deportes" in descripcion
+
+
+def _turno(respuesta_final):
+    """Simula un turno: pregunta, llamada a la herramienta rutina, su salida y la respuesta del modelo."""
+    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+    from src.agente_pato.tools import rutina
+
+    salida = rutina.invoke({"grupo_muscular": "pecho", "objetivo": "fuerza", "dias_por_semana": 5})
+    return salida, [
+        HumanMessage(content="arma una rutina de pecho para fuerza, 5 días"),
+        AIMessage(content="", tool_calls=[{"name": "rutina", "args": {}, "id": "1"}]),
+        ToolMessage(content=salida, name="rutina", tool_call_id="1"),
+        AIMessage(content=respuesta_final),
+    ]
+
+
+def test_respuesta_sin_ejercicios_se_completa_con_la_rutina_de_la_herramienta(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.agente_pato.graph import completar_respuesta
+
+    intro = "Aquí tienes tu rutina de pecho para fuerza, nivel principiante y 5 días por semana."
+    salida, mensajes = _turno(intro)
+    final = completar_respuesta(mensajes)
+    assert final.startswith(intro)
+    assert salida in final
+    assert "Press de banca" in final and "2 × 5-8" in final
+
+
+def test_respuesta_completa_con_otro_formato_no_se_duplica(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from src.agente_pato.graph import completar_respuesta
+
+    completa = (
+        "Tu rutina:\n1. **Press de banca** (barra o mancuernas): 2 series de 5-8 repeticiones\n"
+        "2. **Press inclinado con mancuernas**: 2 series de 5-8 repeticiones\nDescanso 2-3 minutos."
+    )
+    _, mensajes = _turno(completa)
+    assert completar_respuesta(mensajes) == completa
+
+
+def test_sin_herramienta_rutina_en_el_turno_no_se_agrega_nada(monkeypatch):
+    monkeypatch.setenv("GOOGLE_API_KEY", "clave-de-prueba")
+    from langchain_core.messages import AIMessage, HumanMessage
+    from src.agente_pato.graph import completar_respuesta
+
+    _, anterior = _turno("Aquí tienes tu rutina.")
+    mensajes = anterior + [
+        HumanMessage(content="¿qué hace el bíceps?"),
+        AIMessage(content="El bíceps flexiona el codo."),
+    ]
+    assert completar_respuesta(mensajes) == "El bíceps flexiona el codo."
+
+
+def test_prompt_pide_grupo_faltante_y_no_inventa_memoria():
+    from src.agente_pato.prompts import SYSTEM_PROMPT
+
+    assert "si no se sabe el grupo muscular, no armes la rutina todavía" in SYSTEM_PROMPT
+    assert "Solo di que recuerdas algo" in SYSTEM_PROMPT
+    assert "No la resumas en una frase" in SYSTEM_PROMPT
