@@ -66,7 +66,7 @@ son el prompt de la terminal de quien ejecutó la prueba, no instrucciones de in
 |---|---|---|---|---|---|
 | LOCAL · 2026-11-23 20:04 | Usuario de Telegram no autorizado | "No tienes acceso…" y el coordinador no se llama | Igual | `local/Telegram/T15-LOCAL-06-pato-acceso-denegado.*` | ID tapado |
 | LOCAL · 2026-11-17 / 18 / 23 | A2A sin clave, clave incorrecta, clave de otro agente, clave correcta; `/chat` sin clave | 401 / 401 / 401 / 200; `/chat` 401 | Igual | `local/T08-chat-y-telegram.txt`, `local/T15-LOCAL-comparaciones-y-acceso-parcial.txt`, `local/T15-LOCAL-a2a-accesos-agentes.txt` | Las claves se muestran como "oculta" |
-| HEROKU · 2026-11-18 / 23 | A2A al agente desplegado sin clave y con clave | 401 `RECHAZADO` / 200 `PERMITIDO` | Igual | `heroku/T11-*-heroku.txt`, `heroku/T15-HEROKU-pato-logs.md` | Logs anonimizados |
+| HEROKU · 2026-11-18 / 23 | A2A al agente desplegado sin clave y con clave | 401 `RECHAZADO` / 200 `PERMITIDO` | Igual | `heroku/T11-*-heroku.txt`, `heroku/T15-HEROKU-pato-logs.md`, `heroku/T15-HEROKU-cristian-acceso.txt` | Logs anonimizados |
 
 ## 9. Registro de ejecución (solicitud ↔ agente ↔ A2A)
 
@@ -86,12 +86,13 @@ son el prompt de la terminal de quien ejecutó la prueba, no instrucciones de in
 | Entorno y fecha | Solicitud | Esperado | Obtenido | Evidencia | Observaciones |
 |---|---|---|---|---|---|
 | HEROKU · 2026-11-18 a 23 | `/salud`, ficha y A2A de cada agente desplegado | 200 / ficha con URL pública / 401 sin clave / 200 con clave | Igual en Maleta, Entrenamiento y Sitios | `heroku/T11-*-heroku.txt`, `heroku/T15-HEROKU-pato-logs.md`, `heroku/T15-HEROKU-dani-acceso-parcial.txt` | — |
+| HEROKU · 2026-11-23 21:39 (Chile; los archivos dicen 2026-11-24 00:39 porque Heroku registra en UTC) | "¿Qué sitios turísticos puedo visitar en Valparaíso?" por el bot del grupo | El coordinador recibe por webhook, elige a Sitios y lo llama por A2A con su clave | Igual: `POST /telegram` 200, agente elegido Sitios, `[acceso] … PERMITIDO` en el agente | `heroku/T15-HEROKU-coordinador-cristian.txt`, `heroku/T15-HEROKU-cristian-acceso.txt` | Correlación de una misma pregunta en Heroku; ID e IP anonimizados |
 | HEROKU · 2026-11-23 | Bot del grupo por webhook con los computadores apagados | Responde cada agente y avisa fuera de catálogo | Igual | `heroku/Telegram/` (capturas 01 a 04) | Ver "Pendiente" abajo |
 
 ## Probado, pendiente y simulado
 
 - **Probado:** todo lo anterior, con la fecha y el entorno de cada fila.
-- **Pendiente:** registros internos de Heroku del agente de Sitios (Cristian); autorizar el ID de
+- **Pendiente:** autorizar el ID de
   Telegram del evaluador en el bot de Heroku cuando lo envíe por vía privada; volver a desplegar en Heroku
   el coordinador, Maleta y Sitios con los ajustes del 2026-11-23 (ya probados en local).
 - **Simulado:** los datos de equipaje, rutinas/músculos y sitios turísticos son estáticos (`tools.py`
