@@ -205,6 +205,13 @@ python scripts/comparar_directo_coordinador.py pato "Arma una rutina de pecho pa
 pytest
 ```
 
+Los tests usan **modelos y agentes simulados** (dobles de prueba): verifican la lógica del código
+(enrutamiento, control de acceso, mensajes de error, que la respuesta no altere cifras), pero **no**
+demuestran que Gemini responda. Esa parte está en las evidencias, todas hechas con **Gemini real**
+(`evidencias/taller-implementacion/README.md`). Cuando una prueba real falló y se repitió (por
+ejemplo, la saturación de Gemini del 23-11), el índice muestra el primer intento y el definitivo por
+separado.
+
 ## Detener y evitar envíos accidentales
 
 - Cada servidor y el bot se detienen con **Ctrl+C** en su terminal.
@@ -248,8 +255,11 @@ en los logs ni en las capturas. El log del bot reemplaza el token por `<token>`.
   los sitios turísticos con sus horarios y precios.
 - **Probado:** cada caso de la pauta, en LOCAL y en HEROKU, con fecha, solicitud, resultado esperado
   y obtenido en `evidencias/taller-implementacion/README.md`.
-- **Pendiente:** los registros internos de Heroku del agente de Sitios, y autorizar el ID de
-  Telegram del evaluador en el bot de Heroku cuando lo envíe por vía privada.
+- **Pendiente:** los registros internos de Heroku del agente de Sitios; autorizar el ID de
+  Telegram del evaluador en el bot de Heroku cuando lo envíe por vía privada; y volver a desplegar
+  en Heroku el coordinador y los agentes de Maleta y Sitios para que tomen los últimos ajustes del
+  2026-11-23 (rótulo del saludo y reglas de seguridad y datos referenciales en sus prompts). En local
+  ya están aplicados y probados.
 
 ## Qué datos deben conservarse
 
