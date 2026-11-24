@@ -618,7 +618,11 @@
         "El evaluador está autorizado en el bot de Heroku antes de entregar.",
         ".env.example contiene todas las variables que el código lee con os.getenv, con valores ficticios."
       ],
-      "evidencia": [],
+      "evidencia": [
+        "2026-11-23 LOCAL (Patricio): git grep de patrones de clave (AIza, AQ., tokens de bot) sin resultados; .env no versionado y en .gitignore; .env.example tiene todas las variables que el código lee con os.getenv, con valores ficticios; pytest 92 passed.",
+        "2026-11-23 LOCAL (Patricio): prueba desde un clon nuevo siguiendo el README (requirements-lock.txt, .env desde .env.example, comandos de \"Iniciar en local\"): pytest pasa en el clon y por Telegram el saludo y una pregunta mixta (Maleta + Sitios) funcionan sin pasos no documentados. Evidencia: evidencias/taller-implementacion/local/Telegram/T16-LOCAL-07-clon-nuevo-varios-agentes.*",
+        "Pendiente: PR de taller-sistema-agentes a main, verificar pytest en main y autorizar al evaluador en el bot de Heroku por vía privada antes de entregar."
+      ],
       "reemplaza": [
         "T26",
         "T27"
